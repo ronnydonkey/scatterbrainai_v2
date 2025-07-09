@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          automations_used: number | null
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          max_automations: number | null
+          preferences: Json | null
+          reddit_username: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          automations_used?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          max_automations?: number | null
+          preferences?: Json | null
+          reddit_username?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          automations_used?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          max_automations?: number | null
+          preferences?: Json | null
+          reddit_username?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
