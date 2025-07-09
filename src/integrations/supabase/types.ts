@@ -14,6 +14,156 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_performance: {
+        Row: {
+          click_through_rate: number | null
+          comments: number | null
+          content_suggestion_id: string | null
+          created_at: string
+          engagement_rate: number | null
+          id: string
+          last_updated: string | null
+          likes: number | null
+          organization_id: string
+          platform: string
+          platform_content_id: string | null
+          published_at: string | null
+          revenue_attributed: number | null
+          shares: number | null
+          views: number | null
+        }
+        Insert: {
+          click_through_rate?: number | null
+          comments?: number | null
+          content_suggestion_id?: string | null
+          created_at?: string
+          engagement_rate?: number | null
+          id?: string
+          last_updated?: string | null
+          likes?: number | null
+          organization_id: string
+          platform: string
+          platform_content_id?: string | null
+          published_at?: string | null
+          revenue_attributed?: number | null
+          shares?: number | null
+          views?: number | null
+        }
+        Update: {
+          click_through_rate?: number | null
+          comments?: number | null
+          content_suggestion_id?: string | null
+          created_at?: string
+          engagement_rate?: number | null
+          id?: string
+          last_updated?: string | null
+          likes?: number | null
+          organization_id?: string
+          platform?: string
+          platform_content_id?: string | null
+          published_at?: string | null
+          revenue_attributed?: number | null
+          shares?: number | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_performance_content_suggestion_id_fkey"
+            columns: ["content_suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "content_suggestions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_performance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_suggestions: {
+        Row: {
+          ai_generated_content: string | null
+          content_outline: Json | null
+          content_type: string
+          created_at: string
+          description: string | null
+          engagement_prediction: number | null
+          estimated_word_count: number | null
+          id: string
+          is_used: boolean | null
+          organization_id: string
+          performance_data: Json | null
+          suggested_tone: string | null
+          target_keywords: string[] | null
+          title: string
+          trending_topic_id: string | null
+          updated_at: string
+          used_at: string | null
+          user_id: string
+          voice_authenticity_score: number | null
+        }
+        Insert: {
+          ai_generated_content?: string | null
+          content_outline?: Json | null
+          content_type: string
+          created_at?: string
+          description?: string | null
+          engagement_prediction?: number | null
+          estimated_word_count?: number | null
+          id?: string
+          is_used?: boolean | null
+          organization_id: string
+          performance_data?: Json | null
+          suggested_tone?: string | null
+          target_keywords?: string[] | null
+          title: string
+          trending_topic_id?: string | null
+          updated_at?: string
+          used_at?: string | null
+          user_id: string
+          voice_authenticity_score?: number | null
+        }
+        Update: {
+          ai_generated_content?: string | null
+          content_outline?: Json | null
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          engagement_prediction?: number | null
+          estimated_word_count?: number | null
+          id?: string
+          is_used?: boolean | null
+          organization_id?: string
+          performance_data?: Json | null
+          suggested_tone?: string | null
+          target_keywords?: string[] | null
+          title?: string
+          trending_topic_id?: string | null
+          updated_at?: string
+          used_at?: string | null
+          user_id?: string
+          voice_authenticity_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_suggestions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_suggestions_trending_topic_id_fkey"
+            columns: ["trending_topic_id"]
+            isOneToOne: false
+            referencedRelation: "trending_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       niche_templates: {
         Row: {
           content_types: Json
@@ -157,12 +307,80 @@ export type Database = {
           },
         ]
       }
+      trending_topics: {
+        Row: {
+          created_at: string
+          description: string | null
+          engagement_metrics: Json | null
+          expires_at: string | null
+          id: string
+          is_validated: boolean | null
+          keywords: string[] | null
+          organization_id: string
+          score: number
+          sentiment: number | null
+          source: string
+          source_data: Json | null
+          source_url: string | null
+          title: string | null
+          topic: string
+          validation_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          engagement_metrics?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_validated?: boolean | null
+          keywords?: string[] | null
+          organization_id: string
+          score?: number
+          sentiment?: number | null
+          source: string
+          source_data?: Json | null
+          source_url?: string | null
+          title?: string | null
+          topic: string
+          validation_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          engagement_metrics?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_validated?: boolean | null
+          keywords?: string[] | null
+          organization_id?: string
+          score?: number
+          sentiment?: number | null
+          source?: string
+          source_data?: Json | null
+          source_url?: string | null
+          title?: string | null
+          topic?: string
+          validation_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trending_topics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_trends: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       niche_type:
