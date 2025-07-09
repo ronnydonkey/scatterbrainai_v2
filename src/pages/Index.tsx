@@ -4,10 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Bot, TrendingUp, Sparkles, Library } from 'lucide-react';
+import { Loader2, Bot, TrendingUp, Sparkles, Library, BarChart3 } from 'lucide-react';
 import { TrendingTopics } from '@/components/TrendingTopics';
 import { ContentGenerator } from '@/components/ContentGenerator';
 import { ContentLibrary } from '@/components/ContentLibrary';
+import { PerformanceAnalytics } from '@/components/PerformanceAnalytics';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -65,7 +66,7 @@ const Index = () => {
           </div>
 
           <Tabs defaultValue="trends" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="trends" className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4" />
                 <span>Trending Topics</span>
@@ -77,6 +78,10 @@ const Index = () => {
               <TabsTrigger value="library" className="flex items-center space-x-2">
                 <Library className="h-4 w-4" />
                 <span>Content Library</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center space-x-2">
+                <BarChart3 className="h-4 w-4" />
+                <span>Analytics</span>
               </TabsTrigger>
             </TabsList>
 
@@ -90,6 +95,10 @@ const Index = () => {
 
             <TabsContent value="library" className="space-y-6">
               <ContentLibrary />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-6">
+              <PerformanceAnalytics />
             </TabsContent>
           </Tabs>
         </div>
