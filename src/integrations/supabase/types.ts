@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      niche_templates: {
+        Row: {
+          content_types: Json
+          created_at: string
+          data_sources: Json
+          default_keywords: Json
+          description: string | null
+          id: string
+          monetization_options: Json
+          name: string
+          niche: Database["public"]["Enums"]["niche_type"]
+          sample_voice_characteristics: Json | null
+        }
+        Insert: {
+          content_types?: Json
+          created_at?: string
+          data_sources?: Json
+          default_keywords?: Json
+          description?: string | null
+          id?: string
+          monetization_options?: Json
+          name: string
+          niche: Database["public"]["Enums"]["niche_type"]
+          sample_voice_characteristics?: Json | null
+        }
+        Update: {
+          content_types?: Json
+          created_at?: string
+          data_sources?: Json
+          default_keywords?: Json
+          description?: string | null
+          id?: string
+          monetization_options?: Json
+          name?: string
+          niche?: Database["public"]["Enums"]["niche_type"]
+          sample_voice_characteristics?: Json | null
+        }
+        Relationships: []
+      }
+      organizations: {
+        Row: {
+          branding_config: Json | null
+          created_at: string
+          domain: string | null
+          id: string
+          is_active: boolean | null
+          max_content_generations: number | null
+          max_users: number | null
+          name: string
+          niche: Database["public"]["Enums"]["niche_type"]
+          subscription_tier: string | null
+          updated_at: string
+        }
+        Insert: {
+          branding_config?: Json | null
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_content_generations?: number | null
+          max_users?: number | null
+          name: string
+          niche: Database["public"]["Enums"]["niche_type"]
+          subscription_tier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branding_config?: Json | null
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_content_generations?: number | null
+          max_users?: number | null
+          name?: string
+          niche?: Database["public"]["Enums"]["niche_type"]
+          subscription_tier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           automations_used: number | null
@@ -21,12 +102,16 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_active: boolean | null
           max_automations: number | null
+          organization_id: string | null
           preferences: Json | null
           reddit_username: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
           subscription_tier: string | null
           updated_at: string
           user_id: string
+          voice_profile_config: Json | null
         }
         Insert: {
           automations_used?: number | null
@@ -34,12 +119,16 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_active?: boolean | null
           max_automations?: number | null
+          organization_id?: string | null
           preferences?: Json | null
           reddit_username?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           subscription_tier?: string | null
           updated_at?: string
           user_id: string
+          voice_profile_config?: Json | null
         }
         Update: {
           automations_used?: number | null
@@ -47,14 +136,26 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_active?: boolean | null
           max_automations?: number | null
+          organization_id?: string | null
           preferences?: Json | null
           reddit_username?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string
+          voice_profile_config?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -64,7 +165,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      niche_type:
+        | "astrology"
+        | "fitness"
+        | "productivity"
+        | "business"
+        | "wellness"
+        | "finance"
+        | "technology"
+        | "lifestyle"
+      user_role: "owner" | "admin" | "creator" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -191,6 +301,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      niche_type: [
+        "astrology",
+        "fitness",
+        "productivity",
+        "business",
+        "wellness",
+        "finance",
+        "technology",
+        "lifestyle",
+      ],
+      user_role: ["owner", "admin", "creator", "viewer"],
+    },
   },
 } as const
