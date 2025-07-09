@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Bot, Users, Zap } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Bot, TrendingUp, Sparkles } from 'lucide-react';
+import { TrendingTopics } from '@/components/TrendingTopics';
+import { ContentGenerator } from '@/components/ContentGenerator';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -50,68 +53,36 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-4">
-              Welcome to Your Reddit Automation Hub
+              AI-Powered Content Intelligence
             </h2>
             <p className="text-xl text-muted-foreground">
-              Automate your Reddit presence with AI-powered tools
+              Generate authentic content with trend intelligence and voice preservation
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bot className="h-5 w-5 text-primary" />
-                  <span>AI Automation</span>
-                </CardTitle>
-                <CardDescription>
-                  Create intelligent Reddit bots that engage naturally
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" disabled>
-                  Coming Soon
-                </Button>
-              </CardContent>
-            </Card>
+          <Tabs defaultValue="trends" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="trends" className="flex items-center space-x-2">
+                <TrendingUp className="h-4 w-4" />
+                <span>Trending Topics</span>
+              </TabsTrigger>
+              <TabsTrigger value="generate" className="flex items-center space-x-2">
+                <Sparkles className="h-4 w-4" />
+                <span>Content Generator</span>
+              </TabsTrigger>
+            </TabsList>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <span>Community Growth</span>
-                </CardTitle>
-                <CardDescription>
-                  Grow your subreddit with targeted engagement
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" disabled>
-                  Coming Soon
-                </Button>
-              </CardContent>
-            </Card>
+            <TabsContent value="trends" className="space-y-6">
+              <TrendingTopics />
+            </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <span>Analytics</span>
-                </CardTitle>
-                <CardDescription>
-                  Track performance and optimize your strategy
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" disabled>
-                  Coming Soon
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+            <TabsContent value="generate" className="space-y-6">
+              <ContentGenerator />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
