@@ -369,6 +369,51 @@ export type Database = {
           },
         ]
       }
+      thoughts: {
+        Row: {
+          content: string
+          context: string | null
+          created_at: string
+          id: string
+          is_processed: boolean | null
+          mood: string | null
+          organization_id: string
+          processed_at: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          context?: string | null
+          created_at?: string
+          id?: string
+          is_processed?: boolean | null
+          mood?: string | null
+          organization_id: string
+          processed_at?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          context?: string | null
+          created_at?: string
+          id?: string
+          is_processed?: boolean | null
+          mood?: string | null
+          organization_id?: string
+          processed_at?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trending_topics: {
         Row: {
           created_at: string
