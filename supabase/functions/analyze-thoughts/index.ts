@@ -84,7 +84,7 @@ Respond only with valid JSON. No additional text.`;
 
     // Log the request for debugging
     const requestBody = {
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       messages: [
         {
