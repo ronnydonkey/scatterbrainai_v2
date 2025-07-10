@@ -202,8 +202,9 @@ export const ThoughtCapture = () => {
         fetchThoughts(); // Refresh to show processed status
         
         toast({
-          title: "Analysis Complete!",
-          description: `Extracted ${data.trending_topics?.length || 0} trending topics from your thoughts`,
+          title: "✨ Analysis Complete!",
+          description: `Successfully extracted ${data.trending_topics?.length || 0} trending topics! Check the "Trending Topics" tab to see results.`,
+          duration: 6000,
         });
       } else {
         throw new Error(data.error || 'Analysis failed');
