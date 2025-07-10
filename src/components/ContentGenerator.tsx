@@ -48,6 +48,7 @@ export const ContentGenerator = () => {
   const { user } = useAuth();
   const [thoughtsWithContent, setThoughtsWithContent] = useState<ThoughtWithContent[]>([]);
   const [selectedThought, setSelectedThought] = useState<string | null>(null);
+  const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
@@ -147,13 +148,11 @@ export const ContentGenerator = () => {
         throw new Error('Thought not found');
       }
 
-      // Get trending topics for context
-      const { data: topics } = await supabase
-        .from('trending_topics')
-        .select('*')
-        .eq('organization_id', profile.organization_id)
-        .order('score', { ascending: false })
-        .limit(5);
+      // Get selected trending topics for context
+      const selectedThoughtData = thoughtsWithContent.find(t => t.thought.id === thoughtId);
+      const selectedTopicsData = selectedThoughtData?.topics.filter(topic => 
+        selectedTopics.has(topic.id)
+      ) || [];
 
       const contentTypes = ['tweet_thread', 'instagram_post', 'social_post', 'blog_post'];
       const suggestions = [];
@@ -161,11 +160,15 @@ export const ContentGenerator = () => {
       for (const contentType of contentTypes) {
         console.log(`Generating ${contentType} content for thought: ${thought.title}`);
         
+        const topicContext = selectedTopicsData.length > 0 
+          ? ` incorporating these trending topics: ${selectedTopicsData.map(t => t.topic).join(', ')}`
+          : '';
+        
         const { data, error } = await supabase.functions.invoke('generate-content', {
           body: {
-            topic: `Generate ${contentType} content based on this specific thought: "${thought.title}" - ${thought.content}`,
+            topic: `Generate ${contentType} content based on this specific thought: "${thought.title}" - ${thought.content}${topicContext}`,
             contentType: contentType,
-            targetKeywords: topics?.flatMap(t => t.keywords).slice(0, 5) || [],
+            targetKeywords: selectedTopicsData.flatMap(t => t.keywords).slice(0, 5) || [],
             tone: 'engaging',
             voiceProfile: profile.voice_profile_config || {
               style: 'informative',
@@ -233,6 +236,118 @@ export const ContentGenerator = () => {
     } finally {
       setGenerating(false);
     }
+  };
+
+  const generateContentFromTopics = async () => {
+    if (!user || selectedTopics.size === 0) return;
+
+    setGenerating(true);
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id, voice_profile_config')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile?.organization_id) {
+        throw new Error('User profile not found');
+      }
+
+      // Get selected topics data
+      const allTopics = thoughtsWithContent.flatMap(t => t.topics);
+      const selectedTopicsData = allTopics.filter(topic => selectedTopics.has(topic.id));
+
+      const contentTypes = ['tweet_thread', 'instagram_post', 'social_post', 'blog_post'];
+      const suggestions = [];
+
+      for (const contentType of contentTypes) {
+        console.log(`Generating ${contentType} content for trending topics`);
+        
+        const topicsText = selectedTopicsData.map(t => `${t.topic}: ${t.description || ''}`).join('; ');
+        
+        const { data, error } = await supabase.functions.invoke('generate-content', {
+          body: {
+            topic: `Generate ${contentType} content about these trending topics: ${topicsText}`,
+            contentType: contentType,
+            targetKeywords: selectedTopicsData.flatMap(t => t.keywords).slice(0, 8) || [],
+            tone: 'engaging',
+            voiceProfile: profile.voice_profile_config || {
+              style: 'informative',
+              personality: 'friendly',
+              expertise_level: 'intermediate'
+            },
+            organizationId: profile.organization_id,
+            userId: user.id,
+            sourceThoughts: [],
+            thoughtId: null, // No specific thought linked
+            autoGenerate: true
+          }
+        });
+
+        console.log(`${contentType} generation result:`, { data, error });
+
+        if (error) {
+          console.error(`Error generating ${contentType} content:`, error);
+          continue;
+        }
+
+        if (data?.success) {
+          console.log(`Successfully generated ${contentType} content`);
+          suggestions.push(data.suggestion);
+        } else {
+          console.error(`Failed to generate ${contentType} content:`, data);
+        }
+      }
+
+      if (suggestions.length > 0) {
+        await loadThoughtsWithContent(); // Refresh the data
+        setSelectedTopics(new Set()); // Clear selection
+        toast({
+          title: "🎉 Content Generated!",
+          description: `Successfully created ${suggestions.length} new content suggestions from trending topics`,
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "⚠️ Generation Issue",
+          description: "No content was generated. This may be due to API credit limits or configuration issues.",
+          variant: "destructive",
+          duration: 8000,
+        });
+      }
+    } catch (error) {
+      console.error('Content generation error:', error);
+      
+      let errorMessage = "Failed to generate content";
+      if (error instanceof Error) {
+        if (error.message.includes('credit balance')) {
+          errorMessage = "OpenAI API credits are insufficient. Please add more credits to your OpenAI account.";
+        } else if (error.message.includes('API key')) {
+          errorMessage = "AI API configuration issue. Please check your API keys.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast({
+        title: "🚫 Generation Failed",
+        description: errorMessage,
+        variant: "destructive",
+        duration: 10000,
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const toggleTopicSelection = (topicId: string) => {
+    const newSelection = new Set(selectedTopics);
+    if (newSelection.has(topicId)) {
+      newSelection.delete(topicId);
+    } else {
+      newSelection.add(topicId);
+    }
+    setSelectedTopics(newSelection);
   };
 
   const moveToLibrary = async (suggestionIds: string[]) => {
@@ -388,20 +503,64 @@ export const ContentGenerator = () => {
             </div>
           )}
 
-          {/* Trending Topics for Selected Thought */}
+          {/* Trending Topics Selection */}
           {selectedThoughtData?.topics.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4" />
-                <span>Trending Topics</span>
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {selectedThoughtData.topics.map((topic) => (
-                  <Badge key={topic.id} variant="secondary" className="text-xs">
-                    {topic.topic} ({Math.round(topic.score)}%)
-                  </Badge>
-                ))}
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Select Trending Topics</span>
+                </h4>
+                {selectedTopics.size > 0 && (
+                  <Button
+                    onClick={generateContentFromTopics}
+                    disabled={generating}
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                  >
+                    {generating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate from Topics ({selectedTopics.size})
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedThoughtData.topics.map((topic) => {
+                  const isSelected = selectedTopics.has(topic.id);
+                  return (
+                    <Badge 
+                      key={topic.id} 
+                      variant={isSelected ? "default" : "secondary"} 
+                      className={`text-xs cursor-pointer transition-all ${
+                        isSelected 
+                          ? "bg-primary text-primary-foreground" 
+                          : "hover:bg-muted-foreground/20"
+                      }`}
+                      onClick={() => toggleTopicSelection(topic.id)}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={() => {}} // Controlled by parent click
+                        className="h-3 w-3 mr-1"
+                      />
+                      {topic.topic} ({Math.round(topic.score)}%)
+                    </Badge>
+                  );
+                })}
+              </div>
+              {selectedTopics.size > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  {selectedTopics.size} topic{selectedTopics.size !== 1 ? 's' : ''} selected. Content will be generated independently from any specific thought.
+                </div>
+              )}
             </div>
           )}
         </CardContent>
