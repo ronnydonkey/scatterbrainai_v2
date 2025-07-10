@@ -130,6 +130,18 @@ Keep the content authentic and avoid overly promotional language.`;
       throw new Error('Failed to save content suggestion');
     }
 
+    // Track usage for tier limits
+    await supabase
+      .from('usage_tracking')
+      .insert({
+        organization_id: organizationId,
+        user_id: userId,
+        resource_type: 'content_generation',
+        count: 1,
+        tier: 'unknown', // Will be determined by frontend
+        metadata: { content_type: contentType, topic }
+      });
+
     return new Response(JSON.stringify({
       success: true,
       suggestion,

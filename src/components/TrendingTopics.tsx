@@ -22,7 +22,11 @@ interface TrendingTopic {
   is_validated: boolean | null;
 }
 
-export const TrendingTopics = () => {
+interface TrendingTopicsProps {
+  onTopicSelect?: (topic: string) => void;
+}
+
+export const TrendingTopics: React.FC<TrendingTopicsProps> = ({ onTopicSelect }) => {
   const { user } = useAuth();
   const [topics, setTopics] = useState<TrendingTopic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,7 +115,11 @@ export const TrendingTopics = () => {
             </p>
           ) : (
             topics.map((topic) => (
-              <div key={topic.id} className="border rounded-lg p-4 space-y-3">
+              <div 
+                key={topic.id} 
+                className="border rounded-lg p-4 space-y-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => onTopicSelect?.(topic.title || topic.topic)}
+              >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h4 className="font-semibold text-sm">

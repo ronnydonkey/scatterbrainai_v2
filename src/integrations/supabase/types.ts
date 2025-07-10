@@ -277,6 +277,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          billing_cycle_start: string | null
           branding_config: Json | null
           created_at: string
           domain: string | null
@@ -286,10 +287,13 @@ export type Database = {
           max_users: number | null
           name: string
           niche: Database["public"]["Enums"]["niche_type"]
+          subscription_status: string | null
           subscription_tier: string | null
           updated_at: string
+          usage_limits: Json | null
         }
         Insert: {
+          billing_cycle_start?: string | null
           branding_config?: Json | null
           created_at?: string
           domain?: string | null
@@ -299,10 +303,13 @@ export type Database = {
           max_users?: number | null
           name: string
           niche: Database["public"]["Enums"]["niche_type"]
+          subscription_status?: string | null
           subscription_tier?: string | null
           updated_at?: string
+          usage_limits?: Json | null
         }
         Update: {
+          billing_cycle_start?: string | null
           branding_config?: Json | null
           created_at?: string
           domain?: string | null
@@ -312,10 +319,53 @@ export type Database = {
           max_users?: number | null
           name?: string
           niche?: Database["public"]["Enums"]["niche_type"]
+          subscription_status?: string | null
           subscription_tier?: string | null
           updated_at?: string
+          usage_limits?: Json | null
         }
         Relationships: []
+      }
+      perplexity_queries: {
+        Row: {
+          created_at: string | null
+          id: string
+          organization_id: string | null
+          query_text: string
+          response_data: Json | null
+          sources: Json | null
+          tier_used: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          query_text: string
+          response_data?: Json | null
+          sources?: Json | null
+          tier_used?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          query_text?: string
+          response_data?: Json | null
+          sources?: Json | null
+          tier_used?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perplexity_queries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -437,6 +487,7 @@ export type Database = {
           is_validated: boolean | null
           keywords: string[] | null
           organization_id: string
+          perplexity_research: Json | null
           score: number
           sentiment: number | null
           source: string
@@ -455,6 +506,7 @@ export type Database = {
           is_validated?: boolean | null
           keywords?: string[] | null
           organization_id: string
+          perplexity_research?: Json | null
           score?: number
           sentiment?: number | null
           source: string
@@ -473,6 +525,7 @@ export type Database = {
           is_validated?: boolean | null
           keywords?: string[] | null
           organization_id?: string
+          perplexity_research?: Json | null
           score?: number
           sentiment?: number | null
           source?: string
@@ -485,6 +538,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "trending_topics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_tracking: {
+        Row: {
+          count: number | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          resource_type: string
+          tier: string | null
+          tracked_date: string | null
+          user_id: string | null
+        }
+        Insert: {
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          resource_type: string
+          tier?: string | null
+          tracked_date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          resource_type?: string
+          tier?: string | null
+          tracked_date?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_tracking_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
