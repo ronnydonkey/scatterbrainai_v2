@@ -160,6 +160,7 @@ export type Database = {
           performance_data: Json | null
           suggested_tone: string | null
           target_keywords: string[] | null
+          thought_id: string | null
           title: string
           trending_topic_id: string | null
           updated_at: string
@@ -181,6 +182,7 @@ export type Database = {
           performance_data?: Json | null
           suggested_tone?: string | null
           target_keywords?: string[] | null
+          thought_id?: string | null
           title: string
           trending_topic_id?: string | null
           updated_at?: string
@@ -202,6 +204,7 @@ export type Database = {
           performance_data?: Json | null
           suggested_tone?: string | null
           target_keywords?: string[] | null
+          thought_id?: string | null
           title?: string
           trending_topic_id?: string | null
           updated_at?: string
@@ -215,6 +218,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_suggestions_thought_id_fkey"
+            columns: ["thought_id"]
+            isOneToOne: false
+            referencedRelation: "thoughts"
             referencedColumns: ["id"]
           },
           {

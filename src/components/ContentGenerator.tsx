@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Sparkles, RefreshCw, Send, Archive, Twitter, Linkedin, Instagram, Facebook, Copy, Check, Brain, TrendingUp } from 'lucide-react';
+import { Loader2, Sparkles, RefreshCw, Send, Archive, Twitter, Instagram, Copy, Check, Brain, TrendingUp, MessageSquare, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface ContentSuggestion {
@@ -19,6 +19,7 @@ interface ContentSuggestion {
   estimated_word_count: number;
   target_keywords: string[];
   created_at: string;
+  thought_id?: string;
 }
 
 interface TrendingTopic {
@@ -30,10 +31,23 @@ interface TrendingTopic {
   keywords: string[];
 }
 
+interface Thought {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+}
+
+interface ThoughtWithContent {
+  thought: Thought;
+  suggestions: ContentSuggestion[];
+  topics: TrendingTopic[];
+}
+
 export const ContentGenerator = () => {
   const { user } = useAuth();
-  const [suggestions, setSuggestions] = useState<ContentSuggestion[]>([]);
-  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [thoughtsWithContent, setThoughtsWithContent] = useState<ThoughtWithContent[]>([]);
+  const [selectedThought, setSelectedThought] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
@@ -42,78 +56,72 @@ export const ContentGenerator = () => {
 
   useEffect(() => {
     if (user) {
-      loadInitialData();
+      loadThoughtsWithContent();
     }
   }, [user]);
 
-  const loadInitialData = async () => {
+  const loadThoughtsWithContent = async () => {
     setLoading(true);
     try {
-      await Promise.all([
-        fetchContentSuggestions(),
-        fetchTrendingTopics()
-      ]);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile?.organization_id) return;
+
+      // Get recent thoughts
+      const { data: thoughts } = await supabase
+        .from('thoughts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!thoughts) return;
+
+      // For each thought, get its content suggestions and trending topics
+      const thoughtsWithContentData: ThoughtWithContent[] = [];
+
+      for (const thought of thoughts) {
+        // Get content suggestions for this thought
+        const { data: suggestions } = await supabase
+          .from('content_suggestions')
+          .select('*')
+          .eq('thought_id', thought.id)
+          .eq('is_used', false)
+          .order('created_at', { ascending: false });
+
+        // Get trending topics for this org (we could later filter by thought if needed)
+        const { data: topics } = await supabase
+          .from('trending_topics')
+          .select('*')
+          .eq('organization_id', profile.organization_id)
+          .order('score', { ascending: false })
+          .limit(5);
+
+        thoughtsWithContentData.push({
+          thought,
+          suggestions: suggestions || [],
+          topics: topics || []
+        });
+      }
+
+      setThoughtsWithContent(thoughtsWithContentData);
+      
+      // Auto-select first thought if none selected
+      if (!selectedThought && thoughtsWithContentData.length > 0) {
+        setSelectedThought(thoughtsWithContentData[0].thought.id);
+      }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading thoughts with content:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchContentSuggestions = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile?.organization_id) return;
-
-      const { data, error } = await supabase
-        .from('content_suggestions')
-        .select('*')
-        .eq('organization_id', profile.organization_id)
-        .eq('is_used', false)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      setSuggestions(data || []);
-    } catch (error) {
-      console.error('Error fetching suggestions:', error);
-    }
-  };
-
-  const fetchTrendingTopics = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile?.organization_id) return;
-
-      const { data, error } = await supabase
-        .from('trending_topics')
-        .select('*')
-        .eq('organization_id', profile.organization_id)
-        .order('score', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      setTrendingTopics(data || []);
-    } catch (error) {
-      console.error('Error fetching trending topics:', error);
-    }
-  };
-
-  const generateAutomaticSuggestions = async () => {
+  const generateContentForThought = async (thoughtId: string) => {
     if (!user) return;
 
     setGenerating(true);
@@ -128,25 +136,36 @@ export const ContentGenerator = () => {
         throw new Error('User profile not found');
       }
 
-      // Get recent thoughts for context
-      const { data: thoughts } = await supabase
+      // Get the specific thought
+      const { data: thought } = await supabase
         .from('thoughts')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .eq('id', thoughtId)
+        .single();
+
+      if (!thought) {
+        throw new Error('Thought not found');
+      }
+
+      // Get trending topics for context
+      const { data: topics } = await supabase
+        .from('trending_topics')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .order('score', { ascending: false })
+        .limit(5);
 
       const contentTypes = ['tweet_thread', 'instagram_post', 'social_post', 'blog_post'];
       const suggestions = [];
 
       for (const contentType of contentTypes) {
-        console.log(`Generating ${contentType} content...`);
+        console.log(`Generating ${contentType} content for thought: ${thought.title}`);
         
         const { data, error } = await supabase.functions.invoke('generate-content', {
           body: {
-            topic: `Generate ${contentType} content based on user's recent thoughts and trending topics`,
+            topic: `Generate ${contentType} content based on this specific thought: "${thought.title}" - ${thought.content}`,
             contentType: contentType,
-            targetKeywords: trendingTopics.flatMap(t => t.keywords).slice(0, 5),
+            targetKeywords: topics?.flatMap(t => t.keywords).slice(0, 5) || [],
             tone: 'engaging',
             voiceProfile: profile.voice_profile_config || {
               style: 'informative',
@@ -155,7 +174,8 @@ export const ContentGenerator = () => {
             },
             organizationId: profile.organization_id,
             userId: user.id,
-            sourceThoughts: thoughts?.slice(0, 5)?.map(t => t.id),
+            sourceThoughts: [thoughtId],
+            thoughtId: thoughtId, // Link to specific thought
             autoGenerate: true
           }
         });
@@ -176,10 +196,10 @@ export const ContentGenerator = () => {
       }
 
       if (suggestions.length > 0) {
-        await fetchContentSuggestions(); // Refresh the list
+        await loadThoughtsWithContent(); // Refresh the data
         toast({
           title: "🎉 Content Generated!",
-          description: `Successfully created ${suggestions.length} new content suggestions`,
+          description: `Successfully created ${suggestions.length} new content suggestions for this thought`,
           duration: 5000,
         });
       } else {
@@ -191,12 +211,12 @@ export const ContentGenerator = () => {
         });
       }
     } catch (error) {
-      console.error('Auto-generation error:', error);
+      console.error('Content generation error:', error);
       
       let errorMessage = "Failed to generate content";
       if (error instanceof Error) {
         if (error.message.includes('credit balance')) {
-          errorMessage = "Anthropic API credits are insufficient. Please add more credits to your Anthropic account.";
+          errorMessage = "OpenAI API credits are insufficient. Please add more credits to your OpenAI account.";
         } else if (error.message.includes('API key')) {
           errorMessage = "AI API configuration issue. Please check your API keys.";
         } else {
@@ -227,8 +247,8 @@ export const ContentGenerator = () => {
 
       if (error) throw error;
 
-      // Remove from current suggestions
-      setSuggestions(prev => prev.filter(s => !suggestionIds.includes(s.id)));
+      // Refresh data to remove moved suggestions
+      await loadThoughtsWithContent();
       setSelectedSuggestions(new Set());
 
       toast({
@@ -275,10 +295,6 @@ export const ContentGenerator = () => {
     }
   };
 
-  const filteredSuggestions = suggestions.filter(s => 
-    contentFilter === 'all' || s.content_type === contentFilter
-  );
-
   const toggleSuggestionSelection = (id: string) => {
     const newSelection = new Set(selectedSuggestions);
     if (newSelection.has(id)) {
@@ -297,24 +313,63 @@ export const ContentGenerator = () => {
     );
   }
 
+  const selectedThoughtData = thoughtsWithContent.find(t => t.thought.id === selectedThought);
+  const filteredSuggestions = selectedThoughtData?.suggestions.filter(s => 
+    contentFilter === 'all' || s.content_type === contentFilter
+  ) || [];
+
   return (
     <div className="space-y-6">
-      {/* Header with Actions */}
+      {/* Header with Thought Selection */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
-            <div>
+            <div className="flex-1">
               <CardTitle className="flex items-center space-x-2">
                 <Sparkles className="h-5 w-5" />
                 <span>AI Content Suggestions</span>
               </CardTitle>
               <CardDescription>
-                Automatically generated content based on your thoughts and trending topics
+                Generate content based on your specific thoughts and trending topics
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Thought Selection */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium flex items-center space-x-2">
+              <MessageSquare className="h-4 w-4" />
+              <span>Select a Thought</span>
+            </h4>
+            <Select value={selectedThought || ''} onValueChange={setSelectedThought}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose a thought to generate content for..." />
+              </SelectTrigger>
+              <SelectContent>
+                {thoughtsWithContent.map((item) => (
+                  <SelectItem key={item.thought.id} value={item.thought.id}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="truncate">{item.thought.title || 'Untitled Thought'}</span>
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {item.suggestions.length} content
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Generate Button for Selected Thought */}
+          {selectedThought && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Generate new content for this thought
+              </div>
               <Button
-                onClick={generateAutomaticSuggestions}
+                onClick={() => generateContentForThought(selectedThought)}
                 disabled={generating}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               >
@@ -325,36 +380,35 @@ export const ContentGenerator = () => {
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Generate New
+                    <Plus className="h-4 w-4 mr-2" />
+                    Generate Content
                   </>
                 )}
               </Button>
             </div>
-          </div>
-        </CardHeader>
+          )}
 
-        {trendingTopics.length > 0 && (
-          <CardContent>
+          {/* Trending Topics for Selected Thought */}
+          {selectedThoughtData?.topics.length > 0 && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4" />
-                <span>Current Trending Topics</span>
+                <span>Trending Topics</span>
               </h4>
               <div className="flex flex-wrap gap-2">
-                {trendingTopics.map((topic) => (
+                {selectedThoughtData.topics.map((topic) => (
                   <Badge key={topic.id} variant="secondary" className="text-xs">
                     {topic.topic} ({Math.round(topic.score)}%)
                   </Badge>
                 ))}
               </div>
             </div>
-          </CardContent>
-        )}
+          )}
+        </CardContent>
       </Card>
 
       {/* Content Filter and Bulk Actions */}
-      {suggestions.length > 0 && (
+      {selectedThoughtData && filteredSuggestions.length > 0 && (
         <Card>
           <CardContent className="py-4">
             <div className="flex justify-between items-center">
@@ -363,13 +417,15 @@ export const ContentGenerator = () => {
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Content Types</SelectItem>
-                      <SelectItem value="tweet_thread">Tweet Thread</SelectItem>
-                      <SelectItem value="instagram_post">Instagram Post</SelectItem>
-                      <SelectItem value="social_post">Social Post</SelectItem>
-                      <SelectItem value="blog_post">Blog Post</SelectItem>
-                    </SelectContent>
+                  <SelectContent>
+                    <SelectItem value="all">All Content Types</SelectItem>
+                    <SelectItem value="tweet_thread">Tweet Thread</SelectItem>
+                    <SelectItem value="instagram_post">Instagram Post</SelectItem>
+                    <SelectItem value="social_post">Social Post</SelectItem>
+                    <SelectItem value="blog_post">Blog Post</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="youtube_script">YouTube Script</SelectItem>
+                  </SelectContent>
                 </Select>
                 <span className="text-sm text-muted-foreground">
                   {filteredSuggestions.length} suggestions
@@ -397,16 +453,26 @@ export const ContentGenerator = () => {
       )}
 
       {/* Content Suggestions */}
-      {filteredSuggestions.length === 0 ? (
+      {!selectedThought ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Select a Thought</h3>
+            <p className="text-muted-foreground mb-4">
+              Choose a thought from the dropdown above to view and generate content suggestions
+            </p>
+          </CardContent>
+        </Card>
+      ) : filteredSuggestions.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Content Suggestions Yet</h3>
+            <h3 className="text-lg font-semibold mb-2">No Content Yet</h3>
             <p className="text-muted-foreground mb-4">
-              Generate AI-powered content suggestions based on your thoughts and trending topics
+              Generate AI-powered content suggestions for this thought
             </p>
             <Button
-              onClick={generateAutomaticSuggestions}
+              onClick={() => generateContentForThought(selectedThought)}
               disabled={generating}
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
@@ -418,100 +484,122 @@ export const ContentGenerator = () => {
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Your First Suggestions
+                  Generate Content
                 </>
               )}
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {filteredSuggestions.map((suggestion) => {
-            const PlatformIcon = getPlatformIcon(suggestion.content_type);
-            const isSelected = selectedSuggestions.has(suggestion.id);
-            
-            return (
-              <Card key={suggestion.id} className={`transition-all ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}`}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start space-x-3 flex-1">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => toggleSuggestionSelection(suggestion.id)}
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <PlatformIcon className="h-4 w-4" />
-                          <span className="text-sm font-medium capitalize">{suggestion.content_type}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {suggestion.estimated_word_count} words
-                          </Badge>
+        <div className="space-y-4">
+          {/* Selected Thought Info */}
+          <Card className="bg-muted/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-start space-x-3">
+                <MessageSquare className="h-5 w-5 mt-0.5 text-primary" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">{selectedThoughtData?.thought.title || 'Untitled Thought'}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {selectedThoughtData?.thought.content.substring(0, 200)}
+                    {selectedThoughtData?.thought.content.length > 200 ? '...' : ''}
+                  </p>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Created {new Date(selectedThoughtData?.thought.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Content Suggestions */}
+          <div className="grid gap-4">
+            {filteredSuggestions.map((suggestion) => {
+              const PlatformIcon = getPlatformIcon(suggestion.content_type);
+              const isSelected = selectedSuggestions.has(suggestion.id);
+              
+              return (
+                <Card key={suggestion.id} className={`transition-all ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}`}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start space-x-3 flex-1">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleSuggestionSelection(suggestion.id)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <PlatformIcon className="h-4 w-4" />
+                            <span className="text-sm font-medium capitalize">{suggestion.content_type.replace('_', ' ')}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {suggestion.estimated_word_count} words
+                            </Badge>
+                          </div>
+                          <CardTitle className="text-lg">{suggestion.title}</CardTitle>
                         </div>
-                        <CardTitle className="text-lg">{suggestion.title}</CardTitle>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(suggestion.ai_generated_content, suggestion.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          {copied === suggestion.id ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => moveToLibrary([suggestion.id])}
+                        >
+                          <Archive className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(suggestion.ai_generated_content, suggestion.id)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {copied === suggestion.id ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => moveToLibrary([suggestion.id])}
-                      >
-                        <Archive className="h-4 w-4 mr-2" />
-                        Save
-                      </Button>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="default">
+                        Engagement: {Math.round(suggestion.engagement_prediction)}%
+                      </Badge>
+                      <Badge variant="secondary">
+                        Voice Score: {Math.round(suggestion.voice_authenticity_score)}%
+                      </Badge>
                     </div>
-                  </div>
-                </CardHeader>
 
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="default">
-                      Engagement: {Math.round(suggestion.engagement_prediction)}%
-                    </Badge>
-                    <Badge variant="secondary">
-                      Voice Score: {Math.round(suggestion.voice_authenticity_score)}%
-                    </Badge>
-                  </div>
+                    {suggestion.target_keywords.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-sm font-medium">Keywords:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {suggestion.target_keywords.map((keyword, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {keyword}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                  {suggestion.target_keywords.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-sm font-medium">Keywords:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {suggestion.target_keywords.map((keyword, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {keyword}
-                          </Badge>
-                        ))}
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <div className="text-sm whitespace-pre-wrap">
+                        {suggestion.ai_generated_content}
                       </div>
                     </div>
-                  )}
 
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <div className="text-sm whitespace-pre-wrap">
-                      {suggestion.ai_generated_content}
+                    <div className="text-xs text-muted-foreground">
+                      Generated {new Date(suggestion.created_at).toLocaleDateString()}
                     </div>
-                  </div>
-
-                  <div className="text-xs text-muted-foreground">
-                    Generated {new Date(suggestion.created_at).toLocaleDateString()}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -22,7 +22,8 @@ serve(async (req) => {
       tone, 
       voiceProfile,
       organizationId,
-      userId 
+      userId,
+      thoughtId
     } = await req.json();
 
     console.log('Request data:', { topic, contentType, targetKeywords, tone, organizationId, userId });
@@ -118,7 +119,8 @@ Keep the content authentic and avoid overly promotional language.`;
         suggested_tone: tone,
         engagement_prediction: engagementPrediction,
         voice_authenticity_score: voiceProfile ? 85 : 70,
-        estimated_word_count: generatedContent.split(' ').length
+        estimated_word_count: generatedContent.split(' ').length,
+        thought_id: thoughtId || null
       })
       .select()
       .single();
