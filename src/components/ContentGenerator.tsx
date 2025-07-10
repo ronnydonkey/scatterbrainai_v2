@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Sparkles, Copy, Check, Brain } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface GeneratedContent {
@@ -22,11 +23,22 @@ interface GeneratedContent {
   target_keywords: string[];
 }
 
+interface Thought {
+  id: string;
+  title: string | null;
+  content: string;
+  tags: string[] | null;
+  created_at: string;
+}
+
 export const ContentGenerator = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [copied, setCopied] = useState(false);
+  const [thoughts, setThoughts] = useState<Thought[]>([]);
+  const [selectedThoughts, setSelectedThoughts] = useState<Set<string>>(new Set());
+  const [showThoughts, setShowThoughts] = useState(false);
   
   const [formData, setFormData] = useState({
     topic: '',
@@ -39,6 +51,28 @@ export const ContentGenerator = () => {
       expertise_level: 'intermediate'
     }
   });
+
+  useEffect(() => {
+    fetchThoughts();
+  }, [user]);
+
+  const fetchThoughts = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('thoughts')
+        .select('id, title, content, tags, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      setThoughts(data || []);
+    } catch (error) {
+      console.error('Error fetching thoughts:', error);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!user || !formData.topic.trim()) {
@@ -64,15 +98,25 @@ export const ContentGenerator = () => {
         throw new Error('User profile not found');
       }
 
+      // Get selected thoughts content if any
+      let thoughtsContext = '';
+      if (selectedThoughts.size > 0) {
+        const selectedThoughtData = thoughts.filter(t => selectedThoughts.has(t.id));
+        thoughtsContext = `\n\nUser's thoughts to incorporate:\n${selectedThoughtData.map(t => 
+          `- ${t.title || 'Untitled'}: ${t.content}`
+        ).join('\n')}`;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
-          topic: formData.topic,
+          topic: formData.topic + thoughtsContext,
           contentType: formData.contentType || 'blog_post',
           targetKeywords: formData.keywords.split(',').map(k => k.trim()).filter(Boolean),
           tone: formData.tone,
           voiceProfile: formData.voiceProfile,
           organizationId: profile.organization_id,
-          userId: user.id
+          userId: user.id,
+          sourceThoughts: selectedThoughts.size > 0 ? Array.from(selectedThoughts) : undefined
         }
       });
 
@@ -128,10 +172,66 @@ export const ContentGenerator = () => {
             <span>AI Content Generator</span>
           </CardTitle>
           <CardDescription>
-            Generate authentic, voice-preserved content using Claude AI
+            Generate authentic, voice-preserved content using Claude AI. Include your thoughts for personalized content.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Thoughts Integration */}
+          {thoughts.length > 0 && (
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Brain className="h-4 w-4" />
+                  <Label className="text-sm font-medium">Include Your Thoughts</Label>
+                  <Badge variant="secondary" className="text-xs">
+                    {thoughts.length} available
+                  </Badge>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowThoughts(!showThoughts)}
+                >
+                  {showThoughts ? 'Hide' : 'Show'} Thoughts
+                </Button>
+              </div>
+              
+              {showThoughts && (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {thoughts.map((thought) => (
+                    <div key={thought.id} className="flex items-start space-x-2 p-2 bg-background rounded border">
+                      <Checkbox
+                        checked={selectedThoughts.has(thought.id)}
+                        onCheckedChange={(checked) => {
+                          const newSelection = new Set(selectedThoughts);
+                          if (checked) {
+                            newSelection.add(thought.id);
+                          } else {
+                            newSelection.delete(thought.id);
+                          }
+                          setSelectedThoughts(newSelection);
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {thought.title || 'Untitled'}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {thought.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {selectedThoughts.size > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  {selectedThoughts.size} thought{selectedThoughts.size === 1 ? '' : 's'} selected for content generation
+                </div>
+              )}
+            </div>
+          )}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="topic">Topic *</Label>

@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb, Sparkles, TrendingUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Thought {
@@ -27,6 +28,8 @@ export const ThoughtCapture = () => {
   const [thoughts, setThoughts] = useState<Thought[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingThought, setIsAddingThought] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedThoughts, setSelectedThoughts] = useState<Set<string>>(new Set());
   
   const [newThought, setNewThought] = useState({
     title: '',
@@ -149,6 +152,80 @@ export const ThoughtCapture = () => {
       curious: '🤨'
     };
     return mood ? moodMap[mood] || '💭' : '💭';
+  };
+
+  const analyzeThoughts = async () => {
+    if (selectedThoughts.size === 0) {
+      toast({
+        title: "No Thoughts Selected",
+        description: "Please select thoughts to analyze",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    try {
+      // Get user's organization ID
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (!profile?.organization_id) {
+        throw new Error('User profile not found');
+      }
+
+      const { data, error } = await supabase.functions.invoke('analyze-thoughts', {
+        body: {
+          thoughtIds: Array.from(selectedThoughts),
+          userId: user!.id,
+          organizationId: profile.organization_id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setSelectedThoughts(new Set());
+        fetchThoughts(); // Refresh to show processed status
+        
+        toast({
+          title: "Analysis Complete!",
+          description: `Extracted ${data.trending_topics?.length || 0} trending topics from your thoughts`,
+        });
+      } else {
+        throw new Error(data.error || 'Analysis failed');
+      }
+    } catch (error) {
+      console.error('Thought analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze thoughts",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const toggleThoughtSelection = (thoughtId: string) => {
+    const newSelection = new Set(selectedThoughts);
+    if (newSelection.has(thoughtId)) {
+      newSelection.delete(thoughtId);
+    } else {
+      newSelection.add(thoughtId);
+    }
+    setSelectedThoughts(newSelection);
+  };
+
+  const selectAllUnprocessed = () => {
+    const unprocessedIds = thoughts
+      .filter(t => !t.is_processed)
+      .map(t => t.id);
+    setSelectedThoughts(new Set(unprocessedIds));
   };
 
   return (
@@ -274,10 +351,43 @@ export const ThoughtCapture = () => {
       {/* Thoughts List */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Brain className="h-5 w-5" />
-            <span>Your Thoughts</span>
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <Brain className="h-5 w-5" />
+              <span className="text-lg font-semibold">Your Thoughts</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              {thoughts.filter(t => !t.is_processed).length > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllUnprocessed}
+                    disabled={isAnalyzing}
+                  >
+                    Select Unprocessed ({thoughts.filter(t => !t.is_processed).length})
+                  </Button>
+                  <Button
+                    onClick={analyzeThoughts}
+                    disabled={selectedThoughts.size === 0 || isAnalyzing}
+                    size="sm"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Brain className="h-4 w-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Analyze Selected ({selectedThoughts.size})
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -296,15 +406,30 @@ export const ThoughtCapture = () => {
           ) : (
             <div className="space-y-4">
               {thoughts.map((thought) => (
-                <div key={thought.id} className="border rounded-lg p-4 space-y-3">
+                <div 
+                  key={thought.id} 
+                  className={`border rounded-lg p-4 space-y-3 transition-colors ${
+                    selectedThoughts.has(thought.id) ? 'ring-2 ring-primary bg-primary/5' : ''
+                  } ${thought.is_processed ? 'bg-muted/30' : ''}`}
+                >
                   <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      {thought.title && (
-                        <h4 className="font-semibold text-sm mb-1">{thought.title}</h4>
+                    <div className="flex items-start space-x-3 flex-1">
+                      {!thought.is_processed && (
+                        <input
+                          type="checkbox"
+                          checked={selectedThoughts.has(thought.id)}
+                          onChange={() => toggleThoughtSelection(thought.id)}
+                          className="mt-1"
+                        />
                       )}
-                      <p className="text-sm text-muted-foreground">
-                        {thought.content}
-                      </p>
+                      <div className="flex-1">
+                        {thought.title && (
+                          <h4 className="font-semibold text-sm mb-1">{thought.title}</h4>
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                          {thought.content}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <span className="text-lg">{getMoodEmoji(thought.mood)}</span>
