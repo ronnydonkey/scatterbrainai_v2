@@ -82,6 +82,29 @@ Please provide a JSON response with this structure:
 
 Respond only with valid JSON. No additional text.`;
 
+    // Log the request for debugging
+    const requestBody = {
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 2000,
+      messages: [
+        {
+          role: 'user',
+          content: analysisPrompt
+        }
+      ]
+    };
+    
+    console.log('Sending request to Anthropic:', {
+      url: 'https://api.anthropic.com/v1/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '[REDACTED]',
+        'anthropic-version': '2023-06-01'
+      },
+      bodyKeys: Object.keys(requestBody),
+      promptLength: analysisPrompt.length
+    });
+
     // Analyze with Claude
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -90,17 +113,10 @@ Respond only with valid JSON. No additional text.`;
         'x-api-key': anthropicApiKey,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 2000,
-        messages: [
-          {
-            role: 'user',
-            content: analysisPrompt
-          }
-        ]
-      })
+      body: JSON.stringify(requestBody)
     });
+
+    console.log('Anthropic response status:', response.status);
 
     if (!response.ok) {
       const error = await response.text();
