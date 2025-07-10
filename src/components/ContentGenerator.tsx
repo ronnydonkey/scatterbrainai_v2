@@ -140,6 +140,8 @@ export const ContentGenerator = () => {
       const suggestions = [];
 
       for (const contentType of contentTypes) {
+        console.log(`Generating ${contentType} content...`);
+        
         const { data, error } = await supabase.functions.invoke('generate-content', {
           body: {
             topic: `Generate ${contentType} content based on user's recent thoughts and trending topics`,
@@ -158,13 +160,18 @@ export const ContentGenerator = () => {
           }
         });
 
+        console.log(`${contentType} generation result:`, { data, error });
+
         if (error) {
           console.error(`Error generating ${contentType} content:`, error);
           continue;
         }
 
-        if (data.success) {
+        if (data?.success) {
+          console.log(`Successfully generated ${contentType} content`);
           suggestions.push(data.suggestion);
+        } else {
+          console.error(`Failed to generate ${contentType} content:`, data);
         }
       }
 
