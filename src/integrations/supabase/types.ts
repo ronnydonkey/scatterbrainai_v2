@@ -83,6 +83,68 @@ export type Database = {
           },
         ]
       }
+      content_schedule: {
+        Row: {
+          content_suggestion_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          is_recurring: boolean | null
+          organization_id: string
+          platform: string
+          platform_content: string | null
+          platform_settings: Json | null
+          published_at: string | null
+          recurrence_pattern: Json | null
+          scheduled_for: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_suggestion_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          organization_id: string
+          platform: string
+          platform_content?: string | null
+          platform_settings?: Json | null
+          published_at?: string | null
+          recurrence_pattern?: Json | null
+          scheduled_for: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_suggestion_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          organization_id?: string
+          platform?: string
+          platform_content?: string | null
+          platform_settings?: Json | null
+          published_at?: string | null
+          recurrence_pattern?: Json | null
+          scheduled_for?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_schedule_content_suggestion_id_fkey"
+            columns: ["content_suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "content_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_suggestions: {
         Row: {
           ai_generated_content: string | null
