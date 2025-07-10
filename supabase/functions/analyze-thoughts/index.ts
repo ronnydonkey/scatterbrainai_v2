@@ -54,19 +54,12 @@ serve(async (req) => {
 
 ${JSON.stringify(thoughtsContent, null, 2)}
 
-Please provide:
-1. 3-5 trending topics extracted from these thoughts with scores (1-100) based on relevance and frequency
-2. Key themes and patterns
-3. Sentiment analysis for each topic
-4. Suggested keywords for each topic
-5. Content opportunities based on these thoughts
-
-Format your response as JSON with this structure:
+Please provide a JSON response with this structure:
 {
   "trending_topics": [
     {
       "topic": "topic name",
-      "title": "descriptive title",
+      "title": "descriptive title", 
       "description": "detailed description",
       "score": 85,
       "sentiment": 0.7,
@@ -87,7 +80,7 @@ Format your response as JSON with this structure:
   "insights": "key insights about the user's thinking patterns"
 }
 
-Ensure all scores are realistic (trending topics: 60-95, sentiment: -1 to 1).`;
+Respond only with valid JSON. No additional text.`;
 
     // Analyze with Claude
     const response = await fetch('https://api.anthropic.com/v1/messages', {
