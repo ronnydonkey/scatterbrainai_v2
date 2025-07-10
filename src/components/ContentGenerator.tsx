@@ -136,7 +136,7 @@ export const ContentGenerator = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      const contentTypes = ['twitter', 'linkedin', 'instagram', 'facebook'];
+      const contentTypes = ['tweet_thread', 'instagram_post', 'social_post', 'blog_post'];
       const suggestions = [];
 
       for (const contentType of contentTypes) {
@@ -265,10 +265,12 @@ export const ContentGenerator = () => {
 
   const getPlatformIcon = (contentType: string) => {
     switch (contentType.toLowerCase()) {
-      case 'twitter': return Twitter;
-      case 'linkedin': return Linkedin;
-      case 'instagram': return Instagram;
-      case 'facebook': return Facebook;
+      case 'tweet_thread': return Twitter;
+      case 'instagram_post': return Instagram;
+      case 'social_post': return Send;
+      case 'blog_post': return Send;
+      case 'email': return Send;
+      case 'youtube_script': return Send;
       default: return Send;
     }
   };
@@ -361,13 +363,13 @@ export const ContentGenerator = () => {
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Platforms</SelectItem>
-                    <SelectItem value="twitter">Twitter</SelectItem>
-                    <SelectItem value="linkedin">LinkedIn</SelectItem>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                  </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="all">All Content Types</SelectItem>
+                      <SelectItem value="tweet_thread">Tweet Thread</SelectItem>
+                      <SelectItem value="instagram_post">Instagram Post</SelectItem>
+                      <SelectItem value="social_post">Social Post</SelectItem>
+                      <SelectItem value="blog_post">Blog Post</SelectItem>
+                    </SelectContent>
                 </Select>
                 <span className="text-sm text-muted-foreground">
                   {filteredSuggestions.length} suggestions
