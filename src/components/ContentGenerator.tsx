@@ -87,10 +87,10 @@ export const ContentGenerator = () => {
     setLoading(true);
     
     try {
-      // Get user's organization ID from profile
+      // Get user's organization ID and voice profile from profile
       const { data: profile } = await supabase
         .from('profiles')
-        .select('organization_id')
+        .select('organization_id, voice_profile_config')
         .eq('user_id', user.id)
         .single();
 
@@ -107,13 +107,16 @@ export const ContentGenerator = () => {
         ).join('\n')}`;
       }
 
+      // Use learned voice profile if available, otherwise fall back to form data
+      const voiceProfile = profile.voice_profile_config || formData.voiceProfile;
+      
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
           topic: formData.topic + thoughtsContext,
           contentType: formData.contentType || 'blog_post',
           targetKeywords: formData.keywords.split(',').map(k => k.trim()).filter(Boolean),
           tone: formData.tone,
-          voiceProfile: formData.voiceProfile,
+          voiceProfile: voiceProfile,
           organizationId: profile.organization_id,
           userId: user.id,
           sourceThoughts: selectedThoughts.size > 0 ? Array.from(selectedThoughts) : undefined

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb, Sparkles, TrendingUp } from 'lucide-react';
+import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb, Sparkles, TrendingUp, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Thought {
@@ -29,6 +29,7 @@ export const ThoughtCapture = () => {
   const [loading, setLoading] = useState(true);
   const [isAddingThought, setIsAddingThought] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLearningVoice, setIsLearningVoice] = useState(false);
   const [selectedThoughts, setSelectedThoughts] = useState<Set<string>>(new Set());
   
   const [newThought, setNewThought] = useState({
@@ -228,6 +229,48 @@ export const ThoughtCapture = () => {
     setSelectedThoughts(new Set(unprocessedIds));
   };
 
+  const learnVoiceProfile = async () => {
+    if (thoughts.length < 3) {
+      toast({
+        title: "More Thoughts Needed",
+        description: "Add at least 3 thoughts to learn your voice profile",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLearningVoice(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('learn-voice-profile', {
+        body: {
+          thoughts: thoughts,
+          userId: user!.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Voice Profile Learned!",
+          description: "Your writing style has been analyzed and saved for personalized content generation",
+        });
+      } else {
+        throw new Error(data.error || 'Voice learning failed');
+      }
+    } catch (error) {
+      console.error('Voice learning error:', error);
+      toast({
+        title: "Learning Failed",
+        description: error instanceof Error ? error.message : "Failed to learn voice profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLearningVoice(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -357,6 +400,27 @@ export const ThoughtCapture = () => {
               <span className="text-lg font-semibold">Your Thoughts</span>
             </div>
             <div className="flex items-center space-x-2">
+              {thoughts.length >= 3 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={learnVoiceProfile}
+                  disabled={isLearningVoice}
+                  className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-200"
+                >
+                  {isLearningVoice ? (
+                    <>
+                      <User className="h-4 w-4 mr-2 animate-spin" />
+                      Learning...
+                    </>
+                  ) : (
+                    <>
+                      <User className="h-4 w-4 mr-2" />
+                      Learn My Voice
+                    </>
+                  )}
+                </Button>
+              )}
               {thoughts.filter(t => !t.is_processed).length > 0 && (
                 <>
                   <Button
