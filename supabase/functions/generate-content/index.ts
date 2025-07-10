@@ -23,9 +23,9 @@ serve(async (req) => {
       userId 
     } = await req.json();
 
-    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!anthropicApiKey) {
-      throw new Error('Anthropic API key not configured');
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
+      throw new Error('OpenAI API key not configured');
     }
 
     // Initialize Supabase client
@@ -58,21 +58,24 @@ Generate comprehensive content including:
 
 Keep the content authentic and avoid overly promotional language.`;
 
-    // Generate content with Claude
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Generate content with OpenAI
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'gpt-4o-mini',
         max_tokens: 2000,
         messages: [
           {
-            role: 'user',
+            role: 'system',
             content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: `Create ${contentType} content about: ${topic}`
           }
         ]
       })
@@ -80,12 +83,12 @@ Keep the content authentic and avoid overly promotional language.`;
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('Claude API error:', error);
-      throw new Error(`Claude API error: ${response.status}`);
+      console.error('OpenAI API error:', error);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const generatedContent = data.content[0].text;
+    const generatedContent = data.choices[0].message.content;
 
     // Calculate engagement prediction (simple heuristic)
     const keywordScore = targetKeywords ? targetKeywords.length * 0.1 : 0;
