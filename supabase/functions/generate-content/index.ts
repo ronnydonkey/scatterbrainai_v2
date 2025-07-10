@@ -13,6 +13,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting generate-content function');
+    
     const { 
       topic, 
       contentType, 
@@ -22,6 +24,8 @@ serve(async (req) => {
       organizationId,
       userId 
     } = await req.json();
+
+    console.log('Request data:', { topic, contentType, targetKeywords, tone, organizationId, userId });
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
