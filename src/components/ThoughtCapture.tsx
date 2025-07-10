@@ -202,10 +202,19 @@ export const ThoughtCapture = () => {
         fetchThoughts(); // Refresh to show processed status
         
         toast({
-          title: "✨ Analysis Complete!",
-          description: `Successfully extracted ${data.trending_topics?.length || 0} trending topics! Check the "Trending Topics" tab to see results.`,
-          duration: 6000,
+          title: "🎉 Analysis Complete!",
+          description: `Successfully extracted ${data.trending_topics?.length || 0} trending topics! Click the "Trending Topics" tab to view them.`,
+          duration: 8000,
         });
+
+        // Add a brief delay then show success state
+        setTimeout(() => {
+          toast({
+            title: "💡 Next Steps",
+            description: "Your trending topics are now available. Try generating content suggestions!",
+            duration: 5000,
+          });
+        }, 1000);
       } else {
         throw new Error(data.error || 'Analysis failed');
       }
