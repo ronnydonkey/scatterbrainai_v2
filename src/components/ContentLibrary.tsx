@@ -17,7 +17,14 @@ import {
   Eye,
   Filter,
   CheckCircle,
-  Clock
+  Clock,
+  Twitter,
+  Linkedin,
+  Instagram,
+  Facebook,
+  Send,
+  ExternalLink,
+  Settings
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -48,6 +55,7 @@ export const ContentLibrary = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedContent, setSelectedContent] = useState<ContentSuggestion | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [posting, setPosting] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -161,6 +169,66 @@ export const ContentLibrary = () => {
     }
   };
 
+  const postToSocialMedia = async (item: ContentSuggestion) => {
+    setPosting(item.id);
+    
+    try {
+      // For now, this opens the respective platform's posting interface
+      // In a real implementation, this would use platform APIs
+      const content = item.ai_generated_content || '';
+      const urls = {
+        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(content)}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin)}&summary=${encodeURIComponent(content)}`,
+        instagram: 'https://www.instagram.com', // Instagram doesn't support direct posting via URL
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}&quote=${encodeURIComponent(content)}`
+      };
+
+      const url = urls[item.content_type as keyof typeof urls];
+      if (url) {
+        window.open(url, '_blank', 'width=600,height=400');
+        
+        // Mark as used when posting
+        await markAsUsed(item.id);
+        
+        toast({
+          title: "Opening Social Media",
+          description: `Opening ${item.content_type} to post your content`,
+        });
+      } else {
+        throw new Error('Platform not supported for direct posting');
+      }
+    } catch (error) {
+      console.error('Error posting to social media:', error);
+      toast({
+        title: "Posting Failed",
+        description: error instanceof Error ? error.message : "Failed to post content",
+        variant: "destructive",
+      });
+    } finally {
+      setPosting(null);
+    }
+  };
+
+  const getPlatformIcon = (contentType: string) => {
+    switch (contentType.toLowerCase()) {
+      case 'twitter': return Twitter;
+      case 'linkedin': return Linkedin;
+      case 'instagram': return Instagram;
+      case 'facebook': return Facebook;
+      default: return Send;
+    }
+  };
+
+  const getPlatformColor = (contentType: string) => {
+    switch (contentType.toLowerCase()) {
+      case 'twitter': return 'text-blue-500';
+      case 'linkedin': return 'text-blue-600';
+      case 'instagram': return 'text-pink-500';
+      case 'facebook': return 'text-blue-700';
+      default: return 'text-muted-foreground';
+    }
+  };
+
   const getContentTypes = () => {
     const types = [...new Set(content.map(item => item.content_type))];
     return types;
@@ -265,118 +333,152 @@ export const ContentLibrary = () => {
                 </p>
               </div>
             ) : (
-              filteredContent.map((item) => (
-                <Card key={item.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-lg mb-1">{item.title}</h4>
-                        {item.description && (
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        {item.is_used ? (
-                          <Badge variant="default" className="flex items-center space-x-1">
-                            <CheckCircle className="h-3 w-3" />
-                            <span>Used</span>
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="flex items-center space-x-1">
-                            <Clock className="h-3 w-3" />
-                            <span>Unused</span>
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge variant="outline">
-                        {formatContentType(item.content_type)}
-                      </Badge>
-                      {item.engagement_prediction && (
-                        <Badge variant="secondary">
-                          Engagement: {Math.round(item.engagement_prediction)}%
-                        </Badge>
-                      )}
-                      {item.estimated_word_count && (
-                        <Badge variant="outline">
-                          {item.estimated_word_count} words
-                        </Badge>
-                      )}
-                      {item.suggested_tone && (
-                        <Badge variant="outline">
-                          {item.suggested_tone}
-                        </Badge>
-                      )}
-                    </div>
-
-                    {item.target_keywords && item.target_keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {item.target_keywords.slice(0, 3).map((keyword, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {keyword}
-                          </Badge>
-                        ))}
-                        {item.target_keywords.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{item.target_keywords.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        <span>
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </span>
-                        {item.used_at && (
-                          <>
-                            <span>•</span>
-                            <span>Used {new Date(item.used_at).toLocaleDateString()}</span>
-                          </>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedContent(item)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(item.ai_generated_content || '', item.id)}
-                        >
-                          {copied === item.id ? (
-                            <Check className="h-4 w-4" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
+              filteredContent.map((item) => {
+                const PlatformIcon = getPlatformIcon(item.content_type);
+                const platformColor = getPlatformColor(item.content_type);
+                
+                return (
+                  <Card key={item.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <PlatformIcon className={`h-4 w-4 ${platformColor}`} />
+                            <h4 className="font-semibold text-lg">{item.title}</h4>
+                          </div>
+                          {item.description && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {item.description}
+                            </p>
                           )}
-                        </Button>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-4">
+                          {item.is_used ? (
+                            <Badge variant="default" className="flex items-center space-x-1">
+                              <CheckCircle className="h-3 w-3" />
+                              <span>Used</span>
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3" />
+                              <span>Ready</span>
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
 
-                        {!item.is_used && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => markAsUsed(item.id)}
-                          >
-                            Mark as Used
-                          </Button>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge variant="outline">
+                          {formatContentType(item.content_type)}
+                        </Badge>
+                        {item.engagement_prediction && (
+                          <Badge variant="secondary">
+                            Engagement: {Math.round(item.engagement_prediction)}%
+                          </Badge>
+                        )}
+                        {item.estimated_word_count && (
+                          <Badge variant="outline">
+                            {item.estimated_word_count} words
+                          </Badge>
+                        )}
+                        {item.suggested_tone && (
+                          <Badge variant="outline">
+                            {item.suggested_tone}
+                          </Badge>
                         )}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+
+                      {item.target_keywords && item.target_keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {item.target_keywords.slice(0, 3).map((keyword, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {keyword}
+                            </Badge>
+                          ))}
+                          {item.target_keywords.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{item.target_keywords.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Content Preview */}
+                      <div className="bg-muted/30 rounded-lg p-3 mb-3">
+                        <p className="text-sm line-clamp-3">
+                          {item.ai_generated_content}
+                        </p>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </span>
+                          {item.used_at && (
+                            <>
+                              <span>•</span>
+                              <span>Used {new Date(item.used_at).toLocaleDateString()}</span>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedContent(item)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(item.ai_generated_content || '', item.id)}
+                          >
+                            {copied === item.id ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+
+                          {!item.is_used && ['twitter', 'linkedin', 'instagram', 'facebook'].includes(item.content_type) && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => postToSocialMedia(item)}
+                              disabled={posting === item.id}
+                              className={`${platformColor.replace('text-', 'bg-').replace('500', '500')} hover:opacity-90`}
+                            >
+                              {posting === item.id ? (
+                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-1" />
+                                  Post
+                                </>
+                              )}
+                            </Button>
+                          )}
+
+                          {!item.is_used && !['twitter', 'linkedin', 'instagram', 'facebook'].includes(item.content_type) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => markAsUsed(item.id)}
+                            >
+                              Mark as Used
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         </CardContent>
