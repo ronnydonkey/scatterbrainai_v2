@@ -371,6 +371,7 @@ export type Database = {
       }
       thoughts: {
         Row: {
+          attachments: Json | null
           content: string
           context: string | null
           created_at: string
@@ -385,6 +386,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
           content: string
           context?: string | null
           created_at?: string
@@ -399,6 +401,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json | null
           content?: string
           context?: string | null
           created_at?: string

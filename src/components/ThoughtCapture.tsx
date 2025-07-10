@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb, Sparkles, TrendingUp, User } from 'lucide-react';
+import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb, Sparkles, TrendingUp, User, FileText, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { FileUpload, AttachmentFile } from './FileUpload';
 
 interface Thought {
   id: string;
@@ -21,6 +22,7 @@ interface Thought {
   context: string | null;
   is_processed: boolean;
   created_at: string;
+  attachments?: AttachmentFile[];
 }
 
 export const ThoughtCapture = () => {
@@ -31,6 +33,7 @@ export const ThoughtCapture = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isLearningVoice, setIsLearningVoice] = useState(false);
   const [selectedThoughts, setSelectedThoughts] = useState<Set<string>>(new Set());
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
   
   const [newThought, setNewThought] = useState({
     title: '',
@@ -55,7 +58,10 @@ export const ThoughtCapture = () => {
         .limit(20);
 
       if (error) throw error;
-      setThoughts(data || []);
+      setThoughts((data || []).map(thought => ({
+        ...thought,
+        attachments: thought.attachments ? (Array.isArray(thought.attachments) ? thought.attachments as unknown as AttachmentFile[] : []) : []
+      })));
     } catch (error) {
       console.error('Error fetching thoughts:', error);
       toast({
@@ -92,13 +98,15 @@ export const ThoughtCapture = () => {
           content: newThought.content.trim(),
           tags: newThought.tags.split(',').map(t => t.trim()).filter(Boolean),
           mood: newThought.mood || null,
-          context: newThought.context || null
+          context: newThought.context || null,
+          attachments: attachments as any
         });
 
       if (error) throw error;
 
       // Reset form
       setNewThought({ title: '', content: '', tags: '', mood: '', context: '' });
+      setAttachments([]);
       setIsAddingThought(false);
       
       // Refresh thoughts
@@ -271,6 +279,38 @@ export const ThoughtCapture = () => {
     }
   };
 
+  const downloadAttachment = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('thought-attachments')
+        .download(filePath);
+
+      if (error) throw error;
+
+      // Create download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${fileName}`,
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Could not download file",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -369,6 +409,44 @@ export const ThoughtCapture = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* File Upload Section */}
+              <div className="space-y-2">
+                <Label>Attachments (Optional)</Label>
+                <FileUpload 
+                  onFilesUploaded={(files) => setAttachments(prev => [...prev, ...files])}
+                  maxFiles={5}
+                  maxSizeInMB={10}
+                />
+                
+                {/* Show selected attachments */}
+                {attachments.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Selected files:</p>
+                    <div className="space-y-1">
+                      {attachments.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
+                          <div className="flex items-center space-x-2">
+                            <FileText className="h-4 w-4" />
+                            <span>{file.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {(file.size / 1024 / 1024).toFixed(1)}MB
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setAttachments(prev => prev.filter((_, i) => i !== index))}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex space-x-2">
@@ -529,6 +607,30 @@ export const ThoughtCapture = () => {
                       </Badge>
                     )}
                   </div>
+
+                  {/* Attachments Display */}
+                  {thought.attachments && thought.attachments.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Attachments:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {thought.attachments.map((attachment, index) => (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadAttachment(attachment.path, attachment.name)}
+                            className="h-8 text-xs"
+                          >
+                            <Download className="h-3 w-3 mr-1" />
+                            {attachment.name}
+                            <Badge variant="secondary" className="ml-1 text-xs">
+                              {(attachment.size / 1024 / 1024).toFixed(1)}MB
+                            </Badge>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3 mr-1" />
