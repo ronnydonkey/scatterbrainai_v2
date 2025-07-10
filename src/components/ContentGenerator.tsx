@@ -178,16 +178,37 @@ export const ContentGenerator = () => {
       if (suggestions.length > 0) {
         await fetchContentSuggestions(); // Refresh the list
         toast({
-          title: "Content Generated!",
-          description: `${suggestions.length} new content suggestions created`,
+          title: "🎉 Content Generated!",
+          description: `Successfully created ${suggestions.length} new content suggestions`,
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "⚠️ Generation Issue",
+          description: "No content was generated. This may be due to API credit limits or configuration issues.",
+          variant: "destructive",
+          duration: 8000,
         });
       }
     } catch (error) {
       console.error('Auto-generation error:', error);
+      
+      let errorMessage = "Failed to generate content";
+      if (error instanceof Error) {
+        if (error.message.includes('credit balance')) {
+          errorMessage = "Anthropic API credits are insufficient. Please add more credits to your Anthropic account.";
+        } else if (error.message.includes('API key')) {
+          errorMessage = "AI API configuration issue. Please check your API keys.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate content",
+        title: "🚫 Generation Failed",
+        description: errorMessage,
         variant: "destructive",
+        duration: 10000,
       });
     } finally {
       setGenerating(false);
