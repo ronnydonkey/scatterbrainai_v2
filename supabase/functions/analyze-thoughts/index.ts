@@ -111,8 +111,13 @@ Ensure all scores are realistic (trending topics: 60-95, sentiment: -1 to 1).`;
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('Claude API error:', error);
-      throw new Error(`Claude API error: ${response.status}`);
+      console.error('Claude API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: error,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      throw new Error(`Claude API error: ${response.status} - ${error}`);
     }
 
     const data = await response.json();
