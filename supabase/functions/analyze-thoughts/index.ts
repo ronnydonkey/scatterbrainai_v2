@@ -147,7 +147,7 @@ Return only valid JSON in this exact format:
       score: topic.score,
       sentiment: topic.sentiment,
       keywords: topic.keywords,
-      source: 'user_thoughts',
+      source: 'social_media',
       source_data: {
         source_thoughts: topic.source_thoughts,
         analysis_date: new Date().toISOString(),
