@@ -11,7 +11,7 @@ import { ContentGenerator } from '@/components/ContentGenerator';
 import { ContentLibrary } from '@/components/ContentLibrary';
 import { PerformanceAnalytics } from '@/components/PerformanceAnalytics';
 import { ThoughtCapture } from '@/components/ThoughtCapture';
-import PerplexityResearch from '@/components/PerplexityResearch';
+
 import SubscriptionTier from '@/components/SubscriptionTier';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -209,34 +209,17 @@ const Index = () => {
                   onUpgrade={handleUpgrade}
                 />
                 
-                {selectedTopic ? (
-                  <PerplexityResearch
-                    topic={selectedTopic}
-                    niche={organization?.niche}
-                    userTier={organization?.subscription_tier || 'starter'}
-                    organizationId={organization?.id}
-                    onUpgrade={handleUpgrade}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                    <div className="text-center">
-                      <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-foreground mb-2">
-                        No Topic Selected
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Go to Trending Topics and click on a topic to research it
-                      </p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => setActiveTab("trends")}
-                      >
-                        Browse Trending Topics
-                      </Button>
-                    </div>
+                <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                  <div className="text-center">
+                    <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">
+                      Research Feature Removed
+                    </h3>
+                    <p className="text-muted-foreground">
+                      The Perplexity research feature has been removed
+                    </p>
                   </div>
-                )}
+                </div>
               </div>
             </TabsContent>
 
