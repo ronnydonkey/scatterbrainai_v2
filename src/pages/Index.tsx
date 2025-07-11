@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Bot, TrendingUp, Sparkles, Library, BarChart3, Calendar, PenTool, Crown, Zap } from 'lucide-react';
+import { Loader2, Heart, TrendingUp, Sparkles, Library, BarChart3, Calendar, PenTool, Crown, Zap } from 'lucide-react';
 import { TrendingTopics } from '@/components/TrendingTopics';
 import { ContentGenerator } from '@/components/ContentGenerator';
 import { ContentLibrary } from '@/components/ContentLibrary';
@@ -122,8 +122,8 @@ const Index = () => {
       <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <Bot className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold">ScatterBrain AI</h1>
+            <Heart className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl font-bold">scatterbrainAI</h1>
           </div>
           <div className="flex items-center space-x-4">
             <Badge 
