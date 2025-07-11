@@ -1,1 +1,4 @@
 project_id = "mnfuwjrfaeiodexezedh"
+
+[functions.claude-research]
+verify_jwt = true

@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Bot, TrendingUp, Sparkles, Library, BarChart3, Calendar, PenTool, Crown, Zap } from 'lucide-react';
+import { Loader2, Bot, TrendingUp, Sparkles, Library, BarChart3, Calendar, PenTool, Crown, Brain } from 'lucide-react';
 import { TrendingTopics } from '@/components/TrendingTopics';
 import { ContentGenerator } from '@/components/ContentGenerator';
 import { ContentLibrary } from '@/components/ContentLibrary';
 import { PerformanceAnalytics } from '@/components/PerformanceAnalytics';
 import { ThoughtCapture } from '@/components/ThoughtCapture';
+import ClaudeResearch from '@/components/ClaudeResearch';
 
 import SubscriptionTier from '@/components/SubscriptionTier';
 import { supabase } from '@/integrations/supabase/client';
@@ -170,8 +171,8 @@ const Index = () => {
                 <span>Trending Topics</span>
               </TabsTrigger>
               <TabsTrigger value="research" className="flex items-center space-x-2 data-[state=active]:bg-background">
-                <Zap className="h-4 w-4" />
-                <span>Research</span>
+                <Brain className="h-4 w-4" />
+                <span>Claude Research</span>
                 {selectedTopic && (
                   <Badge variant="secondary" className="ml-1 text-xs">1</Badge>
                 )}
@@ -209,17 +210,34 @@ const Index = () => {
                   onUpgrade={handleUpgrade}
                 />
                 
-                <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                  <div className="text-center">
-                    <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                      Research Feature Removed
-                    </h3>
-                    <p className="text-muted-foreground">
-                      The Perplexity research feature has been removed
-                    </p>
+                {selectedTopic ? (
+                  <ClaudeResearch
+                    topic={selectedTopic}
+                    niche={organization?.niche}
+                    userTier={organization?.subscription_tier || 'starter'}
+                    organizationId={organization?.id}
+                    onUpgrade={handleUpgrade}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                    <div className="text-center">
+                      <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">
+                        No Topic Selected
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Go to Trending Topics and click on a topic to research it with Claude
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => setActiveTab("trends")}
+                      >
+                        Browse Trending Topics
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </TabsContent>
 
