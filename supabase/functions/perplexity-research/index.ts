@@ -35,6 +35,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
+    
+    // Create service role client for database operations
+    const supabaseService = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      { auth: { persistSession: false } }
+    );
 
     // Get user from auth header
     const authHeader = req.headers.get('Authorization')!;
@@ -48,8 +55,8 @@ serve(async (req) => {
     const user = userData.user;
     console.log('Authenticated user details:', { id: user.id, email: user.email });
 
-    // Get user's organization and profile
-    const { data: profile, error: profileError } = await supabaseClient
+    // Get user's organization and profile using service role
+    const { data: profile, error: profileError } = await supabaseService
       .from('profiles')
       .select('organization_id')
       .eq('user_id', user.id)
@@ -64,8 +71,8 @@ serve(async (req) => {
       throw new Error('User profile not found. Please complete your profile setup.');
     }
 
-    // Get organization details and subscription tier
-    const { data: organization, error: orgError } = await supabaseClient
+    // Get organization details and subscription tier using service role
+    const { data: organization, error: orgError } = await supabaseService
       .from('organizations')
       .select('subscription_tier, usage_limits, niche')
       .eq('id', profile.organization_id)
@@ -183,12 +190,7 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     };
 
-    // Use service role to save query and update usage
-    const supabaseService = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      { auth: { persistSession: false } }
-    );
+    // Save query record using existing service client
 
     // Save query record
     await supabaseService
