@@ -36,8 +36,15 @@ serve(async (req) => {
     console.log('Starting perplexity-research function');
     console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
-    const requestBody = await req.json();
-    console.log('Request body:', requestBody);
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log('Request body:', requestBody);
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+      throw new Error('Invalid JSON in request body');
+    }
+    
     const { topic, niche, queryType = 'trend_verification' } = requestBody;
 
     if (!topic) {
