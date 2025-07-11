@@ -39,7 +39,8 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const canUsePerplexity = userTier !== 'starter';
+  // Temporarily allow all users since backend handles tier checking properly
+  const canUsePerplexity = true; // userTier !== 'starter';
 
   const handleResearch = async (queryType: 'trend_verification' | 'competitive_analysis' | 'content_opportunity') => {
     if (!canUsePerplexity) {
