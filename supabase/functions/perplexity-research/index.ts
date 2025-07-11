@@ -229,9 +229,19 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in perplexity-research function:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    console.error('Error type:', typeof error);
+    console.error('Error keys:', Object.keys(error || {}));
+    
     return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
+      error: error.message || 'Unknown error occurred',
+      success: false,
+      debug: {
+        type: typeof error,
+        keys: Object.keys(error || {}),
+        stack: error.stack
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
