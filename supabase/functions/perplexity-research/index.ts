@@ -46,6 +46,7 @@ serve(async (req) => {
     }
 
     const user = userData.user;
+    console.log('Authenticated user details:', { id: user.id, email: user.email });
 
     // Get user's organization and profile
     const { data: profile, error: profileError } = await supabaseClient
