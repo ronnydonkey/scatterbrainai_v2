@@ -10,6 +10,7 @@ const corsHeaders = {
 const TIER_LIMITS = {
   starter: { perplexityQueries: 0 },
   professional: { perplexityQueries: 10 },
+  agency: { perplexityQueries: 25 },
   enterprise: { perplexityQueries: 999999 }
 };
 
