@@ -95,11 +95,51 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
     }
   };
 
+  const handleTestFunction = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('Calling test function...');
+      const { data, error } = await supabase.functions.invoke('test-function', {
+        body: { topic, niche, queryType: 'test' }
+      });
+      
+      console.log('Test function response:', { data, error });
+      
+      if (error) {
+        console.error('Test function error:', error);
+        throw error;
+      }
+      
+      if (data.results) {
+        setResearch({
+          content: `Test Results:\n${JSON.stringify(data.results, null, 2)}`,
+          sources: [],
+          model_used: 'test-function',
+          query_type: 'test',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (err: any) {
+      console.error('Test function error:', err);
+      setError(err.message || 'Test function failed');
+      toast({
+        title: "Test Failed",
+        description: err.message || 'Something went wrong with test',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getQueryTypeLabel = (type: string) => {
     switch (type) {
       case 'trend_verification': return 'Trend Verification';
       case 'competitive_analysis': return 'Competitive Analysis';
       case 'content_opportunity': return 'Content Opportunity';
+      case 'test': return 'Diagnostic Test';
       default: return type;
     }
   };
@@ -186,9 +226,23 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
               <Badge variant="secondary" className="ml-2 text-xs">
                 ENTERPRISE
               </Badge>
-            </Button>
-          )}
-        </div>
+             </Button>
+           )}
+           
+           <Button
+             onClick={handleTestFunction}
+             disabled={loading}
+             variant="secondary"
+             className="justify-start"
+           >
+             {loading ? (
+               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+             ) : (
+               <Zap className="h-4 w-4 mr-2" />
+             )}
+             🔧 Run Diagnostic Test
+           </Button>
+         </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
