@@ -21,8 +21,11 @@ serve(async (req) => {
 
   try {
     console.log('Starting perplexity-research function');
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
-    const { topic, niche, queryType = 'trend_verification' } = await req.json();
+    const requestBody = await req.json();
+    console.log('Request body:', requestBody);
+    const { topic, niche, queryType = 'trend_verification' } = requestBody;
 
     if (!topic) {
       throw new Error('Topic is required');
