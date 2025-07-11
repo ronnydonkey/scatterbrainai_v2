@@ -53,6 +53,30 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Trending topic status colors */
+    --trending-hot: 0 84% 60%;
+    --trending-hot-foreground: 0 0% 100%;
+    --trending-rising: 25 95% 53%;
+    --trending-rising-foreground: 0 0% 100%;
+    --trending-warm: 48 96% 53%;
+    --trending-warm-foreground: 0 0% 0%;
+    --trending-cool: 221 83% 53%;
+    --trending-cool-foreground: 0 0% 100%;
+
+    /* Source-specific colors */
+    --source-reddit: 16 100% 50%;
+    --source-reddit-muted: 16 100% 97%;
+    --source-reddit-foreground: 16 100% 20%;
+    --source-google: 221 83% 53%;
+    --source-google-muted: 221 83% 97%;
+    --source-google-foreground: 221 83% 20%;
+    --source-social: 270 95% 70%;
+    --source-social-muted: 270 95% 97%;
+    --source-social-foreground: 270 95% 25%;
+    --source-perplexity: 142 76% 36%;
+    --source-perplexity-muted: 142 76% 96%;
+    --source-perplexity-foreground: 142 76% 15%;
   }
 
   .dark {
@@ -91,6 +115,30 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Dark mode trending colors */
+    --trending-hot: 0 84% 50%;
+    --trending-hot-foreground: 0 0% 100%;
+    --trending-rising: 25 95% 45%;
+    --trending-rising-foreground: 0 0% 100%;
+    --trending-warm: 48 96% 45%;
+    --trending-warm-foreground: 0 0% 0%;
+    --trending-cool: 221 83% 45%;
+    --trending-cool-foreground: 0 0% 100%;
+
+    /* Dark mode source colors */
+    --source-reddit: 16 100% 45%;
+    --source-reddit-muted: 16 100% 10%;
+    --source-reddit-foreground: 16 100% 80%;
+    --source-google: 221 83% 45%;
+    --source-google-muted: 221 83% 10%;
+    --source-google-foreground: 221 83% 80%;
+    --source-social: 270 95% 60%;
+    --source-social-muted: 270 95% 10%;
+    --source-social-foreground: 270 95% 80%;
+    --source-perplexity: 142 76% 30%;
+    --source-perplexity-muted: 142 76% 10%;
+    --source-perplexity-foreground: 142 76% 80%;
   }
 }
 

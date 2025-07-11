@@ -61,6 +61,30 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				trending: {
+					hot: 'hsl(var(--trending-hot))',
+					'hot-foreground': 'hsl(var(--trending-hot-foreground))',
+					rising: 'hsl(var(--trending-rising))',
+					'rising-foreground': 'hsl(var(--trending-rising-foreground))',
+					warm: 'hsl(var(--trending-warm))',
+					'warm-foreground': 'hsl(var(--trending-warm-foreground))',
+					cool: 'hsl(var(--trending-cool))',
+					'cool-foreground': 'hsl(var(--trending-cool-foreground))'
+				},
+				source: {
+					reddit: 'hsl(var(--source-reddit))',
+					'reddit-muted': 'hsl(var(--source-reddit-muted))',
+					'reddit-foreground': 'hsl(var(--source-reddit-foreground))',
+					google: 'hsl(var(--source-google))',
+					'google-muted': 'hsl(var(--source-google-muted))',
+					'google-foreground': 'hsl(var(--source-google-foreground))',
+					social: 'hsl(var(--source-social))',
+					'social-muted': 'hsl(var(--source-social-muted))',
+					'social-foreground': 'hsl(var(--source-social-foreground))',
+					perplexity: 'hsl(var(--source-perplexity))',
+					'perplexity-muted': 'hsl(var(--source-perplexity-muted))',
+					'perplexity-foreground': 'hsl(var(--source-perplexity-foreground))'
 				}
 			},
 			borderRadius: {
