@@ -172,7 +172,7 @@ const Index = () => {
               </TabsTrigger>
               <TabsTrigger value="research" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <Brain className="h-4 w-4" />
-                <span>Claude Research</span>
+                <span>Research</span>
                 {selectedTopic && (
                   <Badge variant="secondary" className="ml-1 text-xs">1</Badge>
                 )}

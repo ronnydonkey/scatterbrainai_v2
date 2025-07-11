@@ -112,9 +112,12 @@ export const ThoughtCapture = () => {
       // Refresh thoughts
       fetchThoughts();
       
+      // Automatically trigger voice profile learning in the background
+      automaticVoiceLearning();
+      
       toast({
         title: "Thought Saved!",
-        description: "Your thought has been captured successfully",
+        description: "Your thought has been captured and automatically analyzed",
       });
     } catch (error) {
       console.error('Error saving thought:', error);
@@ -123,6 +126,50 @@ export const ThoughtCapture = () => {
         description: error instanceof Error ? error.message : "Failed to save thought",
         variant: "destructive",
       });
+    }
+  };
+
+  const automaticVoiceLearning = async () => {
+    try {
+      // Get user's profile and organization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (!profile?.organization_id) return;
+
+      // Get recent thoughts for analysis
+      const { data: recentThoughts } = await supabase
+        .from('thoughts')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!recentThoughts || recentThoughts.length < 2) return;
+
+      // Trigger voice learning in the background (don't await)
+      supabase.functions.invoke('learn-voice-profile', {
+        body: {
+          thoughts: recentThoughts,
+          userId: user!.id,
+          organizationId: profile.organization_id,
+          isAutomatic: true
+        }
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Automatic voice learning error:', error);
+        } else if (data?.success) {
+          console.log('Voice profile automatically updated');
+        }
+      }).catch(err => {
+        console.error('Background voice learning failed:', err);
+      });
+
+    } catch (error) {
+      console.error('Automatic voice learning setup error:', error);
     }
   };
 
@@ -330,7 +377,7 @@ export const ThoughtCapture = () => {
             <span>Thought Capture</span>
           </CardTitle>
           <CardDescription>
-            Capture your ideas, insights, and thoughts for AI-powered content generation
+            Capture your ideas, insights, and thoughts. Each entry automatically trains your AI voice profile.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -488,27 +535,6 @@ export const ThoughtCapture = () => {
               <span className="text-lg font-semibold">Your Thoughts</span>
             </div>
             <div className="flex items-center space-x-2">
-              {thoughts.length >= 3 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={learnVoiceProfile}
-                  disabled={isLearningVoice}
-                  className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-200"
-                >
-                  {isLearningVoice ? (
-                    <>
-                      <User className="h-4 w-4 mr-2 animate-spin" />
-                      Learning...
-                    </>
-                  ) : (
-                    <>
-                      <User className="h-4 w-4 mr-2" />
-                      Learn My Voice
-                    </>
-                  )}
-                </Button>
-              )}
               {thoughts.filter(t => !t.is_processed).length > 0 && (
                 <>
                   <Button
