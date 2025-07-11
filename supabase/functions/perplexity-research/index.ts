@@ -16,6 +16,8 @@ const TIER_LIMITS = {
 
 serve(async (req) => {
   console.log('=== PERPLEXITY FUNCTION START ===');
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
   
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request');
