@@ -25,6 +25,7 @@ const Index = () => {
   const [profile, setProfile] = useState<any>(null);
   const [usage, setUsage] = useState<any>({});
   const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("thoughts"); // Add tab state
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -98,6 +99,11 @@ const Index = () => {
     });
   };
 
+  // Handle navigation from trending topics to research
+  const handleNavigateToResearch = () => {
+    setActiveTab("research");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -113,7 +119,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Bot className="h-8 w-8 text-primary" />
@@ -122,15 +128,17 @@ const Index = () => {
           <div className="flex items-center space-x-4">
             <Badge 
               variant="outline" 
-              className={`${(organization?.subscription_tier === 'enterprise') ? 'border-purple-500 text-purple-700' : 
-                        (organization?.subscription_tier === 'professional') ? 'border-blue-500 text-blue-700' : 
-                        'border-gray-500 text-gray-700'}`}
+              className={`${
+                (organization?.subscription_tier === 'enterprise') ? 'border-trending-hot text-trending-hot bg-trending-hot/10' : 
+                (organization?.subscription_tier === 'professional') ? 'border-primary text-primary bg-primary/10' : 
+                'border-muted-foreground text-muted-foreground bg-muted'
+              }`}
             >
               {organization?.subscription_tier === 'enterprise' && <Crown className="h-3 w-3 mr-1" />}
               {(organization?.subscription_tier || 'starter').toUpperCase()}
             </Badge>
             <span className="text-sm text-muted-foreground">
-              Welcome, {user.email}
+              Welcome, {user.email?.split('@')[0]}
             </span>
             <Button variant="outline" onClick={signOut}>
               Sign Out
@@ -151,29 +159,32 @@ const Index = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="thoughts" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="thoughts" className="flex items-center space-x-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-6 bg-muted">
+              <TabsTrigger value="thoughts" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <PenTool className="h-4 w-4" />
                 <span>Thoughts</span>
               </TabsTrigger>
-              <TabsTrigger value="trends" className="flex items-center space-x-2">
+              <TabsTrigger value="trends" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <TrendingUp className="h-4 w-4" />
                 <span>Trending Topics</span>
               </TabsTrigger>
-              <TabsTrigger value="research" className="flex items-center space-x-2">
+              <TabsTrigger value="research" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <Zap className="h-4 w-4" />
                 <span>Research</span>
+                {selectedTopic && (
+                  <Badge variant="secondary" className="ml-1 text-xs">1</Badge>
+                )}
               </TabsTrigger>
-              <TabsTrigger value="generate" className="flex items-center space-x-2">
+              <TabsTrigger value="generate" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <Sparkles className="h-4 w-4" />
-                <span>Content Generator</span>
+                <span>Generator</span>
               </TabsTrigger>
-              <TabsTrigger value="library" className="flex items-center space-x-2">
+              <TabsTrigger value="library" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <Library className="h-4 w-4" />
-                <span>Content Library</span>
+                <span>Library</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center space-x-2">
+              <TabsTrigger value="analytics" className="flex items-center space-x-2 data-[state=active]:bg-background">
                 <BarChart3 className="h-4 w-4" />
                 <span>Analytics</span>
               </TabsTrigger>
@@ -184,7 +195,10 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="trends" className="space-y-6">
-              <TrendingTopics onTopicSelect={setSelectedTopic} />
+              <TrendingTopics 
+                onTopicSelect={setSelectedTopic}
+                onNavigateToResearch={handleNavigateToResearch}
+              />
             </TabsContent>
 
             <TabsContent value="research" className="space-y-6">
@@ -194,7 +208,8 @@ const Index = () => {
                   usage={usage}
                   onUpgrade={handleUpgrade}
                 />
-                {selectedTopic && (
+                
+                {selectedTopic ? (
                   <PerplexityResearch
                     topic={selectedTopic}
                     niche={organization?.niche}
@@ -202,6 +217,25 @@ const Index = () => {
                     organizationId={organization?.id}
                     onUpgrade={handleUpgrade}
                   />
+                ) : (
+                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                    <div className="text-center">
+                      <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">
+                        No Topic Selected
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Go to Trending Topics and click on a topic to research it
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => setActiveTab("trends")}
+                      >
+                        Browse Trending Topics
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
             </TabsContent>
