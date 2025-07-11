@@ -172,36 +172,43 @@ serve(async (req) => {
     console.log('Querying Perplexity with:', query);
 
     // Query Perplexity API
+    const perplexityPayload = {
+      model: 'llama-3.1-sonar-large-128k-online',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a trend research analyst. Provide current, factual information with specific examples and actionable insights.'
+        },
+        {
+          role: 'user',
+          content: query
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 1000,
+      return_citations: true,
+      return_images: false,
+      search_recency_filter: 'week'
+    };
+
+    console.log('Perplexity API payload:', JSON.stringify(perplexityPayload, null, 2));
+
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${perplexityApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'llama-3.1-sonar-large-128k-online',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a trend research analyst. Provide current, factual information with specific examples and actionable insights.'
-          },
-          {
-            role: 'user',
-            content: query
-          }
-        ],
-        temperature: 0.2,
-        max_tokens: 1000,
-        return_citations: true,
-        return_images: false,
-        search_recency_filter: 'week'
-      })
+      body: JSON.stringify(perplexityPayload)
     });
 
+    console.log('Perplexity API response status:', response.status);
+    console.log('Perplexity API response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Perplexity API error:', error);
-      throw new Error(`Perplexity API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Perplexity API error response:', errorText);
+      throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
