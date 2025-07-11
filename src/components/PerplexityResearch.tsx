@@ -51,6 +51,8 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
     setError(null);
 
     try {
+      console.log('Calling perplexity-research with:', { topic, niche, queryType });
+      
       const { data, error } = await supabase.functions.invoke('perplexity-research', {
         body: {
           topic,
@@ -59,7 +61,12 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
         }
       });
 
-      if (error) throw error;
+      console.log('Perplexity response:', { data, error });
+      
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
       if (data.error) {
         if (data.upgrade_required) {
