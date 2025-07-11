@@ -35,7 +35,17 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
   className = ""
 }) => {
   const [research, setResearch] = useState<ResearchResult | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<{
+    trend_verification: boolean;
+    competitive_analysis: boolean;
+    content_opportunity: boolean;
+    test: boolean;
+  }>({
+    trend_verification: false,
+    competitive_analysis: false,
+    content_opportunity: false,
+    test: false
+  });
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -48,7 +58,7 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
       return;
     }
 
-    setLoading(true);
+    setLoadingStates(prev => ({ ...prev, [queryType]: true }));
     setError(null);
 
     try {
@@ -92,12 +102,12 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => ({ ...prev, [queryType]: false }));
     }
   };
 
   const handleTestFunction = async () => {
-    setLoading(true);
+    setLoadingStates(prev => ({ ...prev, test: true }));
     setError(null);
 
     try {
@@ -131,7 +141,7 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => ({ ...prev, test: false }));
     }
   };
 
@@ -185,11 +195,11 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
         <div className="grid gap-2">
           <Button
             onClick={() => handleResearch('trend_verification')}
-            disabled={!canUsePerplexity || loading}
+            disabled={!canUsePerplexity || loadingStates.trend_verification}
             variant="outline"
             className="justify-start"
           >
-            {loading ? (
+            {loadingStates.trend_verification ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Zap className="h-4 w-4 mr-2" />
@@ -199,11 +209,11 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
 
           <Button
             onClick={() => handleResearch('content_opportunity')}
-            disabled={!canUsePerplexity || loading}
+            disabled={!canUsePerplexity || loadingStates.content_opportunity}
             variant="outline"
             className="justify-start"
           >
-            {loading ? (
+            {loadingStates.content_opportunity ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Zap className="h-4 w-4 mr-2" />
@@ -214,11 +224,11 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
           {userTier === 'enterprise' && (
             <Button
               onClick={() => handleResearch('competitive_analysis')}
-              disabled={loading}
+              disabled={loadingStates.competitive_analysis}
               variant="outline"
               className="justify-start"
             >
-              {loading ? (
+              {loadingStates.competitive_analysis ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Zap className="h-4 w-4 mr-2" />
@@ -232,11 +242,11 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
            
            <Button
              onClick={handleTestFunction}
-             disabled={loading}
+             disabled={loadingStates.test}
              variant="secondary"
              className="justify-start"
            >
-             {loading ? (
+             {loadingStates.test ? (
                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
              ) : (
                <Zap className="h-4 w-4 mr-2" />
