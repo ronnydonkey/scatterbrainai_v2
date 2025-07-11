@@ -127,7 +127,7 @@ const PerplexityResearch: React.FC<PerplexityResearchProps> = ({
                 </p>
                 <p className="text-sm text-amber-700 mt-1">
                   Upgrade to Professional for real-time research with 10 queries/month, 
-                  or Enterprise for unlimited research.
+                  Agency for 25 queries/month, or Enterprise for unlimited research.
                 </p>
               </div>
             </div>
