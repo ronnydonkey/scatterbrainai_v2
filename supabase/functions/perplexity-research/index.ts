@@ -15,9 +15,20 @@ const TIER_LIMITS = {
 };
 
 serve(async (req) => {
+  console.log('=== PERPLEXITY FUNCTION START ===');
+  
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
+
+  console.log('Processing POST request');
+  console.log('Available env vars:', {
+    hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+    hasSupabaseAnonKey: !!Deno.env.get('SUPABASE_ANON_KEY'),
+    hasSupabaseServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+    hasPerplexityKey: !!Deno.env.get('PERPLEXITY_API_KEY')
+  });
 
   try {
     console.log('Starting perplexity-research function');
