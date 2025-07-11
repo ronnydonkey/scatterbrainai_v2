@@ -215,9 +215,11 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('Perplexity API response data:', JSON.stringify(data, null, 2));
+    
     const researchData = {
-      content: data.choices[0].message.content,
-      sources: data.citations || [],
+      content: data.choices?.[0]?.message?.content || 'No content received',
+      sources: data.choices?.[0]?.message?.sources || [],
       model_used: 'llama-3.1-sonar-large-128k-online',
       query_type: queryType,
       timestamp: new Date().toISOString()
