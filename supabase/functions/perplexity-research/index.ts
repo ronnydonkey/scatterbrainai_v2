@@ -45,22 +45,32 @@ serve(async (req) => {
     const user = userData.user;
 
     // Get user's organization and profile
-    const { data: profile } = await supabaseClient
+    const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('organization_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      throw new Error('Failed to fetch user profile');
+    }
 
     if (!profile?.organization_id) {
-      throw new Error('User organization not found');
+      throw new Error('User profile not found. Please complete your profile setup.');
     }
 
     // Get organization details and subscription tier
-    const { data: organization } = await supabaseClient
+    const { data: organization, error: orgError } = await supabaseClient
       .from('organizations')
       .select('subscription_tier, usage_limits, niche')
       .eq('id', profile.organization_id)
-      .single();
+      .maybeSingle();
+
+    if (orgError) {
+      console.error('Organization query error:', orgError);
+      throw new Error('Failed to fetch organization details');
+    }
 
     if (!organization) {
       throw new Error('Organization not found');
