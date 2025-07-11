@@ -1,0 +1,170 @@
+{
+  "issue_summary": {
+    "title": "Perplexity Research Edge Function Returning 500 Error",
+    "description": "Edge function consistently returns 500 Internal Server Error when called from frontend, despite API key being configured and user having proper tier access",
+    "date_reported": "2025-07-11",
+    "status": "unresolved"
+  },
+  "user_configuration": {
+    "user_id": "19945897-3180-4bee-ad7a-0ca2d3d7fef1",
+    "email": "aarongreenberg@mac.com",
+    "subscription_tier": "agency",
+    "organization_id": "cda56d9b-63a2-4d64-b37f-e013d24e25c5",
+    "allowed_perplexity_queries": 25,
+    "current_usage": "0/25"
+  },
+  "environment_setup": {
+    "supabase_project_id": "mnfuwjrfaeiodexezedh",
+    "secrets_configured": {
+      "SUPABASE_URL": true,
+      "SUPABASE_ANON_KEY": true,
+      "SUPABASE_SERVICE_ROLE_KEY": true,
+      "SUPABASE_DB_URL": true,
+      "ANTHROPIC_API_KEY": true,
+      "OPENAI_API_KEY": true,
+      "PERPLEXITY_API_KEY": true
+    },
+    "edge_function_deployed": true
+  },
+  "database_structure": {
+    "profiles_table": {
+      "user_id": "uuid (references auth.users)",
+      "organization_id": "uuid",
+      "role": "user_role enum (creator)"
+    },
+    "organizations_table": {
+      "id": "uuid",
+      "subscription_tier": "text (agency)",
+      "usage_limits": {
+        "contentGenerations": 50,
+        "niches": 1,
+        "perplexityQueries": 25,
+        "users": 1,
+        "voiceTrainingSamples": 10
+      },
+      "niche": "lifestyle"
+    },
+    "perplexity_queries_table": {
+      "exists": true,
+      "rls_enabled": true,
+      "policies": ["Users can create perplexity queries", "Users can view their org perplexity queries"]
+    }
+  },
+  "error_symptoms": {
+    "frontend_error": "Edge Function returned a non-2xx status code",
+    "status_code": 500,
+    "function_response": "Internal Server Error",
+    "console_logs_visible": true,
+    "function_call_parameters": {
+      "topic": "social media management",
+      "niche": "lifestyle", 
+      "queryType": "content_opportunity"
+    }
+  },
+  "edge_function_details": {
+    "name": "perplexity-research",
+    "file_path": "supabase/functions/perplexity-research/index.ts",
+    "file_length": "240+ lines",
+    "cors_headers_configured": true,
+    "authentication_method": "Bearer token from auth header",
+    "database_access": "Service role key for bypassing RLS"
+  },
+  "logs_analysis": {
+    "edge_function_logs": {
+      "status": "No console logs appearing in Supabase analytics",
+      "http_requests_visible": true,
+      "request_pattern": "OPTIONS (200) -> POST (500)",
+      "recent_attempts": [
+        {"timestamp": "1752258183472", "status": 500, "method": "POST"},
+        {"timestamp": "1752258146364", "status": 500, "method": "POST"},
+        {"timestamp": "1752258053145", "status": 500, "method": "POST"}
+      ]
+    },
+    "browser_console_logs": {
+      "function_call_logs_present": true,
+      "supabase_function_invoke_visible": true,
+      "error_details": "FunctionHttpError: Edge Function returned a non-2xx status code"
+    }
+  },
+  "frontend_implementation": {
+    "component": "PerplexityResearch.tsx",
+    "call_method": "supabase.functions.invoke('perplexity-research')",
+    "authentication": "Uses authenticated supabase client",
+    "error_handling": "try-catch with toast notifications",
+    "debug_logging": "Added console.log statements"
+  },
+  "troubleshooting_attempts": {
+    "1": {
+      "action": "Added Perplexity API key to Supabase secrets",
+      "result": "Still 500 error"
+    },
+    "2": {
+      "action": "Changed .single() to .maybeSingle() for database queries",
+      "result": "Still 500 error"
+    },
+    "3": {
+      "action": "Added comprehensive error logging to edge function",
+      "result": "Logs not appearing in Supabase analytics"
+    },
+    "4": {
+      "action": "Switched from anon key to service role key for database queries",
+      "result": "Still 500 error"
+    },
+    "5": {
+      "action": "Added function start logging and environment variable checks",
+      "result": "Still 500 error, logs not visible"
+    }
+  },
+  "suspected_issues": {
+    "1": {
+      "theory": "RLS policy preventing database access",
+      "likelihood": "medium",
+      "evidence": "Service role key should bypass RLS, but tier detection might still be failing"
+    },
+    "2": {
+      "theory": "Missing environment variable at runtime",
+      "likelihood": "high", 
+      "evidence": "Console logs not appearing suggests early function failure"
+    },
+    "3": {
+      "theory": "Edge function syntax error or import issue",
+      "likelihood": "high",
+      "evidence": "No console logs appearing even with basic logging at function start"
+    },
+    "4": {
+      "theory": "Perplexity API key format or permissions issue",
+      "likelihood": "medium",
+      "evidence": "Function fails before reaching Perplexity API call"
+    }
+  },
+  "key_code_sections": {
+    "edge_function_auth": {
+      "file": "supabase/functions/perplexity-research/index.ts",
+      "lines": "47-53",
+      "code": "const authHeader = req.headers.get('Authorization')!;\nconst token = authHeader.replace('Bearer ', '');\nconst { data: userData, error: userError } = await supabaseClient.auth.getUser(token);"
+    },
+    "database_queries": {
+      "file": "supabase/functions/perplexity-research/index.ts", 
+      "lines": "58-88",
+      "code": "Uses supabaseService (service role) to query profiles and organizations tables"
+    },
+    "frontend_call": {
+      "file": "src/components/PerplexityResearch.tsx",
+      "lines": "54-60",
+      "code": "const { data, error } = await supabase.functions.invoke('perplexity-research', {\n  body: { topic, niche, queryType }\n});"
+    }
+  },
+  "next_steps_recommendations": {
+    "1": "Check if edge function is properly deployed by creating a minimal test function",
+    "2": "Verify all environment variables are accessible at runtime with simple logging",
+    "3": "Test database connectivity with service role key in a separate simple function",
+    "4": "Create a minimal version of perplexity-research function to isolate the issue",
+    "5": "Check Supabase project settings and edge function configuration"
+  },
+  "additional_context": {
+    "user_tier_discrepancy": "Frontend shows 'Starter' but database shows 'Agency' tier",
+    "api_key_location": "Confirmed present in Supabase Edge Function Secrets",
+    "authentication_working": "User successfully authenticated and can access other features",
+    "database_access_working": "Direct database queries work when tested via SQL editor"
+  }
+}
