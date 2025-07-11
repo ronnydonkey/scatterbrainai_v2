@@ -117,7 +117,7 @@ serve(async (req) => {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     
-    const { data: monthlyUsage } = await supabaseClient
+    const { data: monthlyUsage, error: usageError } = await supabaseService
       .from('usage_tracking')
       .select('count')
       .eq('organization_id', profile.organization_id)
