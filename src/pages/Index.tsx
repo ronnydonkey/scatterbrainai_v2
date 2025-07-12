@@ -12,8 +12,8 @@ import { ContentLibrary } from '@/components/ContentLibrary';
 import { PerformanceAnalytics } from '@/components/PerformanceAnalytics';
 import { ThoughtCapture } from '@/components/ThoughtCapture';
 import ClaudeResearch from '@/components/ClaudeResearch';
-
 import SubscriptionTier from '@/components/SubscriptionTier';
+import UserAccountDropdown from '@/components/UserAccountDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -126,25 +126,7 @@ const Index = () => {
             <Bot className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold">ScatterBrain AI</h1>
           </div>
-          <div className="flex items-center space-x-4">
-            <Badge 
-              variant="outline" 
-              className={`${
-                (organization?.subscription_tier === 'enterprise') ? 'border-trending-hot text-trending-hot bg-trending-hot/10' : 
-                (organization?.subscription_tier === 'professional') ? 'border-primary text-primary bg-primary/10' : 
-                'border-muted-foreground text-muted-foreground bg-muted'
-              }`}
-            >
-              {organization?.subscription_tier === 'enterprise' && <Crown className="h-3 w-3 mr-1" />}
-              {(organization?.subscription_tier || 'starter').toUpperCase()}
-            </Badge>
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user.email?.split('@')[0]}
-            </span>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
-          </div>
+          <UserAccountDropdown organization={organization} />
         </div>
       </header>
 
