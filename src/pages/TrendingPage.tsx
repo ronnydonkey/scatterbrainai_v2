@@ -29,10 +29,10 @@ const TrendingPage = () => {
         className="text-center py-6"
       >
         <h1 className="text-2xl font-bold mb-2 text-cosmic-light">
-          What are people talking about?
+          Community Insights
         </h1>
         <p className="text-cosmic-muted">
-          Current conversations happening now
+          Real-time discussions from Reddit and social platforms related to your thoughts
         </p>
       </motion.div>
 
@@ -50,7 +50,7 @@ const TrendingPage = () => {
           className="neural-border bg-cosmic-surface/50"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
+          Scan Communities
         </Button>
       </motion.div>
 
@@ -82,13 +82,14 @@ const TrendingPage = () => {
               transition={{ delay: index * 0.1 }}
             >
               <Card className="neural-border bg-cosmic-surface/30 hover:bg-cosmic-surface/50 transition-colors">
-                <CardContent className="p-4">
+                <CardContent className="p-4 space-y-3">
+                  {/* Header */}
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <MessageCircle className="w-4 h-4 text-cosmic-accent" />
                         <Badge variant="outline" className="text-xs">
-                          {trend.source}
+                          r/{trend.source || 'communities'}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
                           <Clock className="w-3 h-3 mr-1" />
@@ -111,6 +112,38 @@ const TrendingPage = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Pain Points & FAQs Section */}
+                  <div className="space-y-2">
+                    {/* Pain Points */}
+                    <div className="bg-cosmic-void/20 rounded-lg p-3">
+                      <h4 className="text-xs font-medium text-cosmic-glow mb-2">Common Pain Points</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {['Setup complexity', 'Learning curve', 'Time investment'].map((pain, i) => (
+                          <Badge key={i} variant="secondary" className="text-xs bg-cosmic-void/30 text-cosmic-muted">
+                            {pain}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Top Questions */}
+                    <div className="bg-cosmic-void/20 rounded-lg p-3">
+                      <h4 className="text-xs font-medium text-cosmic-accent mb-2">Trending Questions</h4>
+                      <div className="space-y-1">
+                        <p className="text-xs text-cosmic-muted">"How do I get started with this?"</p>
+                        <p className="text-xs text-cosmic-muted">"What's the best approach for beginners?"</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Connection to Your Thoughts */}
+                  <div className="bg-gradient-accent/10 rounded-lg p-3 border border-cosmic-accent/20">
+                    <h4 className="text-xs font-medium text-cosmic-accent mb-1">Connected to Your Thoughts</h4>
+                    <p className="text-xs text-cosmic-muted">
+                      This relates to your recent thoughts about productivity and learning new skills
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -120,10 +153,10 @@ const TrendingPage = () => {
             <CardContent className="p-8 text-center">
               <MessageCircle className="w-12 h-12 text-cosmic-muted mx-auto mb-4" />
               <h3 className="text-cosmic-light font-medium mb-2">
-                No conversations found
+                No community insights found
               </h3>
               <p className="text-cosmic-muted text-sm">
-                Check back later for trending discussions
+                Add some thoughts to discover related community discussions and pain points
               </p>
             </CardContent>
           </Card>
