@@ -206,8 +206,12 @@ const Index = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <SubscriptionTier
                   currentTier={organization?.subscription_tier || 'starter'}
-                  usage={usage}
-                  onUpgrade={handleUpgrade}
+                  onTierChange={(tier) => {
+                    if (organization) {
+                      // Update organization tier in state if needed
+                      console.log('Tier changed to:', tier);
+                    }
+                  }}
                 />
                 
                 {selectedTopic ? (

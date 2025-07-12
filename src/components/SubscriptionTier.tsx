@@ -1,222 +1,316 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Check, Zap, Star, Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Check, Zap, Crown, Star } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-interface TierFeatures {
-  contentGenerations: number;
-  perplexityQueries: number;
-  voiceTrainingSamples: number;
-  niches: number;
-  users: number;
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
   features: string[];
+  icon: React.ReactNode;
+  popular?: boolean;
 }
 
-const TIER_CONFIG: Record<string, TierFeatures & { name: string; price: string; icon: React.ReactNode; gradient: string }> = {
-  starter: {
+const plans: SubscriptionPlan[] = [
+  {
+    id: 'starter',
     name: 'Starter',
-    price: '$29/month',
-    icon: <Star className="h-5 w-5" />,
-    gradient: 'from-gray-500 to-gray-600',
-    contentGenerations: 50,
-    perplexityQueries: 0,
-    voiceTrainingSamples: 10,
-    niches: 1,
-    users: 1,
+    price: 0,
+    description: 'Perfect for getting started with AI content creation',
+    icon: <Zap className="h-6 w-6" />,
     features: [
       '1 niche monitoring',
-      'Basic trend intelligence',
-      'Standard voice training',
-      'Basic dashboard',
+      '50 AI content generations/month',
+      'Basic voice training',
+      'Standard analytics',
+      'Community support'
+    ]
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: 29,
+    description: 'For serious content creators and small teams',
+    icon: <Star className="h-6 w-6" />,
+    popular: true,
+    features: [
+      '5 niches monitoring',
+      '500 AI content generations/month',
+      'Advanced voice training',
+      'Basic research queries',
+      'Advanced analytics',
       'Email support'
     ]
   },
-  professional: {
-    name: 'Professional',
-    price: '$99/month',
-    icon: <Zap className="h-5 w-5" />,
-    gradient: 'from-blue-500 to-purple-600',
-    contentGenerations: 500,
-    perplexityQueries: 10,
-    voiceTrainingSamples: 50,
-    niches: 3,
-    users: 5,
+  {
+    id: 'agency',
+    name: 'Agency',
+    price: 99,
+    description: 'For agencies and enterprises with full features',
+    icon: <Crown className="h-6 w-6" />,
     features: [
-      '3 niche monitoring',
-      'Perplexity real-time research',
-      'Advanced voice training',
-      'Custom branding',
-      'Revenue tracking',
-      'Priority support'
-    ]
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: '$299/month',
-    icon: <Crown className="h-5 w-5" />,
-    gradient: 'from-purple-600 to-pink-600',
-    contentGenerations: 999999,
-    perplexityQueries: 999999,
-    voiceTrainingSamples: 999999,
-    niches: 999999,
-    users: 25,
-    features: [
-      'Unlimited everything',
-      'Advanced competitive analysis',
+      'Unlimited niches monitoring',
+      '2,000 AI content generations/month',
+      'Unlimited voice training',
+      'Unlimited deep research',
       'White-label platform',
-      'Multi-client management',
-      'API access',
-      'Dedicated support'
+      'Priority support',
+      'Custom integrations'
     ]
   }
-};
+];
 
 interface SubscriptionTierProps {
-  currentTier: string;
-  usage?: {
-    contentGenerations?: number;
-    perplexityQueries?: number;
-    voiceTrainingSamples?: number;
-  };
-  onUpgrade?: (tier: string) => void;
-  showUpgrade?: boolean;
+  currentTier?: string;
+  onTierChange?: (tier: string) => void;
 }
 
-const SubscriptionTier: React.FC<SubscriptionTierProps> = ({
-  currentTier,
-  usage = {},
-  onUpgrade,
-  showUpgrade = true
-}) => {
-  const current = TIER_CONFIG[currentTier] || TIER_CONFIG.starter;
+export default function SubscriptionTier({ currentTier, onTierChange }: SubscriptionTierProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
 
-  const getUsagePercentage = (used: number, limit: number) => {
-    if (limit === 999999) return 0; // Unlimited
-    return Math.min((used / limit) * 100, 100);
+  const checkSubscription = async () => {
+    if (!user) return;
+    
+    setIsCheckingSubscription(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) {
+        console.error('Error checking subscription:', error);
+        return;
+      }
+
+      setSubscriptionData(data);
+      onTierChange?.(data.subscription_tier);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    } finally {
+      setIsCheckingSubscription(false);
+    }
   };
 
-  const getNextTier = (tier: string) => {
-    if (tier === 'starter') return 'professional';
-    if (tier === 'professional') return 'enterprise';
-    return null;
+  useEffect(() => {
+    if (user) {
+      checkSubscription();
+    }
+  }, [user]);
+
+  const handleUpgrade = async (tier: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to upgrade your subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (tier === 'starter') {
+      toast({
+        title: "Already on Starter",
+        description: "You're already on the free starter plan.",
+      });
+      return;
+    }
+
+    setLoading(tier);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { tier }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(null);
+    }
   };
 
-  const nextTier = getNextTier(currentTier);
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open customer portal. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const effectiveTier = subscriptionData?.subscription_tier || currentTier || 'starter';
 
   return (
-    <div className="space-y-4">
-      {/* Current Tier Card */}
-      <Card className="relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-r ${current.gradient} opacity-10`} />
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {current.icon}
-              <CardTitle>{current.name}</CardTitle>
+    <div className="py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
+            Choose Your Plan
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Scale your content creation with AI-powered intelligence
+          </p>
+          {subscriptionData?.subscribed && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={handleManageSubscription}
+                className="flex items-center space-x-2"
+              >
+                <span>Manage Subscription</span>
+              </Button>
             </div>
-            <Badge variant="default" className={`bg-gradient-to-r ${current.gradient} text-white`}>
-              CURRENT
-            </Badge>
+          )}
+        </div>
+
+        {isCheckingSubscription && (
+          <div className="flex justify-center mt-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
-          <CardDescription>{current.price}</CardDescription>
-        </CardHeader>
+        )}
 
-        <CardContent className="space-y-4">
-          {/* Usage Metrics */}
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Content Generations</span>
-                <span>
-                  {usage.contentGenerations || 0} / {current.contentGenerations === 999999 ? '∞' : current.contentGenerations}
-                </span>
-              </div>
-              <Progress 
-                value={getUsagePercentage(usage.contentGenerations || 0, current.contentGenerations)} 
-                className="h-2"
-              />
-            </div>
+        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {plans.map((plan) => {
+            const isCurrentPlan = effectiveTier === plan.id;
+            
+            return (
+              <Card
+                key={plan.id}
+                className={`relative ${
+                  plan.popular
+                    ? 'border-primary ring-2 ring-primary/20'
+                    : ''
+                } ${isCurrentPlan ? 'bg-primary/5' : ''}`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground">
+                      Most Popular
+                    </Badge>
+                  </div>
+                )}
 
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Perplexity Queries</span>
-                <span>
-                  {usage.perplexityQueries || 0} / {current.perplexityQueries === 999999 ? '∞' : current.perplexityQueries}
-                </span>
-              </div>
-              <Progress 
-                value={getUsagePercentage(usage.perplexityQueries || 0, current.perplexityQueries)} 
-                className="h-2"
-              />
-            </div>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${
+                        plan.popular ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {plan.icon}
+                      </div>
+                      <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    </div>
+                    {isCurrentPlan && (
+                      <Badge variant="secondary">
+                        Current Plan
+                      </Badge>
+                    )}
+                  </div>
 
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Voice Training Samples</span>
-                <span>
-                  {usage.voiceTrainingSamples || 0} / {current.voiceTrainingSamples === 999999 ? '∞' : current.voiceTrainingSamples}
-                </span>
-              </div>
-              <Progress 
-                value={getUsagePercentage(usage.voiceTrainingSamples || 0, current.voiceTrainingSamples)} 
-                className="h-2"
-              />
-            </div>
-          </div>
+                  <div className="mt-4">
+                    <div className="flex items-baseline">
+                      <span className="text-4xl font-bold text-foreground">
+                        ${plan.price}
+                      </span>
+                      {plan.price > 0 && (
+                        <span className="ml-2 text-muted-foreground">/month</span>
+                      )}
+                    </div>
+                    <CardDescription className="mt-2">
+                      {plan.description}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
 
-          {/* Features */}
-          <div>
-            <h4 className="font-medium mb-2">Features</h4>
-            <div className="grid grid-cols-1 gap-1">
-              {current.features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm">
-                  <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
-                  <span>{feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-foreground uppercase tracking-wide">
+                        What's included
+                      </h4>
+                      <ul className="mt-4 space-y-3">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-start">
+                            <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                            <span className="ml-3 text-muted-foreground">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
 
-      {/* Upgrade Prompt */}
-      {showUpgrade && nextTier && (
-        <Card className="border-dashed border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-blue-50">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              {TIER_CONFIG[nextTier].icon}
-              <CardTitle className="text-purple-800">
-                Upgrade to {TIER_CONFIG[nextTier].name}
-              </CardTitle>
-            </div>
-            <CardDescription>
-              Unlock more powerful features for {TIER_CONFIG[nextTier].price}
-            </CardDescription>
-          </CardHeader>
+                    <div className="pt-4">
+                      <Button
+                        onClick={() => handleUpgrade(plan.id)}
+                        disabled={loading === plan.id || isCurrentPlan}
+                        className={`w-full ${
+                          isCurrentPlan
+                            ? 'opacity-50 cursor-not-allowed'
+                            : plan.popular
+                            ? 'bg-primary hover:bg-primary/90'
+                            : ''
+                        }`}
+                        variant={plan.popular ? 'default' : 'outline'}
+                      >
+                        {loading === plan.id ? (
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          </div>
+                        ) : isCurrentPlan ? (
+                          'Current Plan'
+                        ) : plan.price === 0 ? (
+                          'Get Started Free'
+                        ) : (
+                          `Upgrade to ${plan.name}`
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-1">
-              {TIER_CONFIG[nextTier].features.slice(0, 3).map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm">
-                  <Check className="h-3 w-3 text-purple-600 flex-shrink-0" />
-                  <span>{feature}</span>
-                </div>
-              ))}
-            </div>
-
-            <Button 
-              onClick={() => onUpgrade?.(nextTier)}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-            >
-              Upgrade to {TIER_CONFIG[nextTier].name}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+        <div className="mt-12 text-center">
+          <p className="text-muted-foreground">
+            All paid plans include a 7-day free trial. Cancel anytime.
+          </p>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
-export default SubscriptionTier;
