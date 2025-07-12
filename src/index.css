@@ -2,143 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Cosmic Neural Design System - All colors MUST be HSL */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Trending topic status colors */
-    --trending-hot: 0 84% 60%;
-    --trending-hot-foreground: 0 0% 100%;
-    --trending-rising: 25 95% 53%;
-    --trending-rising-foreground: 0 0% 100%;
-    --trending-warm: 48 96% 53%;
-    --trending-warm-foreground: 0 0% 0%;
-    --trending-cool: 221 83% 53%;
-    --trending-cool-foreground: 0 0% 100%;
-
-    /* Source-specific colors */
-    --source-reddit: 16 100% 50%;
-    --source-reddit-muted: 16 100% 97%;
-    --source-reddit-foreground: 16 100% 20%;
-    --source-google: 221 83% 53%;
-    --source-google-muted: 221 83% 97%;
-    --source-google-foreground: 221 83% 20%;
-    --source-social: 270 95% 70%;
-    --source-social-muted: 270 95% 97%;
-    --source-social-foreground: 270 95% 25%;
-    --source-perplexity: 142 76% 36%;
-    --source-perplexity-muted: 142 76% 96%;
-    --source-perplexity-foreground: 142 76% 15%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Dark mode trending colors */
-    --trending-hot: 0 84% 50%;
-    --trending-hot-foreground: 0 0% 100%;
-    --trending-rising: 25 95% 45%;
-    --trending-rising-foreground: 0 0% 100%;
-    --trending-warm: 48 96% 45%;
-    --trending-warm-foreground: 0 0% 0%;
-    --trending-cool: 221 83% 45%;
-    --trending-cool-foreground: 0 0% 100%;
-
-    /* Dark mode source colors */
-    --source-reddit: 16 100% 45%;
-    --source-reddit-muted: 16 100% 10%;
-    --source-reddit-foreground: 16 100% 80%;
-    --source-google: 221 83% 45%;
-    --source-google-muted: 221 83% 10%;
-    --source-google-foreground: 221 83% 80%;
-    --source-social: 270 95% 60%;
-    --source-social-muted: 270 95% 10%;
-    --source-social-foreground: 270 95% 80%;
-    --source-perplexity: 142 76% 30%;
-    --source-perplexity-muted: 142 76% 10%;
-    --source-perplexity-foreground: 142 76% 80%;
+    /* === COSMIC BASE COLORS === */
+    --space-black: 240 10% 3%;
+    --space-void: 245 15% 5%;
+    --nebula-dark: 250 20% 7%;
+    --cosmic-deep: 255 25% 10%;
+    --neural-gray: 240 8% 15%;
+    
+    /* === IRIDESCENT PALETTE === */
+    --cosmic-purple: 270 95% 65%;
+    --cosmic-purple-light: 275 85% 75%;
+    --cosmic-purple-dark: 265 100% 55%;
+    
+    --neural-blue: 220 100% 70%;
+    --neural-blue-light: 215 90% 80%;
+    --neural-blue-dark: 225 100% 60%;
+    
+    --stardust-gold: 45 100% 75%;
+    --stardust-gold-light: 50 90% 85%;
+    --stardust-gold-dark: 40 100% 65%;
+    
+    --plasma-pink: 330 100% 75%;
+    --plasma-pink-light: 325 90% 85%;
+    --plasma-pink-dark: 335 100% 65%;
+    
+    /* === NEURAL CONNECTIONS === */
+    --synapse-cyan: 180 100% 70%;
+    --electric-violet: 285 100% 80%;
+    --quantum-emerald: 160 80% 60%;
+    
+    /* === GRADIENTS === */
+    --neural-gradient: linear-gradient(135deg, hsl(var(--cosmic-purple)) 0%, hsl(var(--neural-blue)) 50%, hsl(var(--plasma-pink)) 100%);
+    --cosmic-gradient: linear-gradient(135deg, hsl(var(--space-black)) 0%, hsl(var(--cosmic-deep)) 100%);
+    --iridescent-gradient: linear-gradient(90deg, hsl(var(--cosmic-purple)) 0%, hsl(var(--neural-blue)) 25%, hsl(var(--stardust-gold)) 50%, hsl(var(--plasma-pink)) 75%, hsl(var(--synapse-cyan)) 100%);
+    --card-gradient: linear-gradient(145deg, hsl(var(--space-void)) 0%, hsl(var(--nebula-dark)) 100%);
+    
+    /* === SHADOWS & GLOWS === */
+    --neural-glow: 0 0 20px hsl(var(--cosmic-purple) / 0.3);
+    --cosmic-shadow: 0 8px 32px hsl(var(--space-black) / 0.8);
+    --plasma-glow: 0 0 40px hsl(var(--plasma-pink) / 0.4);
+    --quantum-shadow: 0 4px 16px hsl(var(--neural-blue) / 0.3);
+    --neural-border-glow: 0 0 1px hsl(var(--cosmic-purple) / 0.5);
+    
+    /* === SEMANTIC TOKENS === */
+    --background: var(--space-black);
+    --foreground: 240 10% 95%;
+    --card: var(--space-void);
+    --card-foreground: 240 10% 92%;
+    --popover: var(--nebula-dark);
+    --popover-foreground: 240 10% 95%;
+    --primary: var(--cosmic-purple);
+    --primary-foreground: 240 10% 98%;
+    --secondary: var(--neural-gray);
+    --secondary-foreground: 240 10% 85%;
+    --muted: var(--cosmic-deep);
+    --muted-foreground: 240 8% 65%;
+    --accent: var(--neural-blue);
+    --accent-foreground: 240 10% 98%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 240 10% 98%;
+    --border: var(--neural-gray);
+    --input: var(--cosmic-deep);
+    --ring: var(--cosmic-purple);
+    --radius: 0.75rem;
+    
+    /* === SIDEBAR TOKENS === */
+    --sidebar-background: var(--space-void);
+    --sidebar-foreground: 240 10% 90%;
+    --sidebar-primary: var(--cosmic-purple);
+    --sidebar-primary-foreground: 240 10% 98%;
+    --sidebar-accent: var(--cosmic-deep);
+    --sidebar-accent-foreground: 240 10% 85%;
+    --sidebar-border: var(--neural-gray);
+    --sidebar-ring: var(--cosmic-purple);
+    
+    /* === TOUCH TARGETS === */
+    --touch-min: 44px;
+    --touch-comfortable: 48px;
+    
+    /* === ANIMATIONS === */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-neural: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    
+    /* === ENHANCED TRENDING COLORS === */
+    --trending-hot: 0 84% 70%;
+    --trending-hot-foreground: 240 10% 98%;
+    --trending-rising: 25 95% 65%;
+    --trending-rising-foreground: 240 10% 98%;
+    --trending-warm: 48 96% 65%;
+    --trending-warm-foreground: 240 10% 98%;
+    --trending-cool: var(--neural-blue);
+    --trending-cool-foreground: 240 10% 98%;
+    
+    /* === SOURCE COLORS === */
+    --source-reddit: 16 100% 70%;
+    --source-reddit-muted: 16 100% 15%;
+    --source-reddit-foreground: 16 100% 90%;
+    --source-google: var(--neural-blue);
+    --source-google-muted: 220 100% 15%;
+    --source-google-foreground: 220 100% 90%;
+    --source-social: var(--plasma-pink);
+    --source-social-muted: 330 100% 15%;
+    --source-social-foreground: 330 100% 90%;
+    --source-perplexity: var(--quantum-emerald);
+    --source-perplexity-muted: 160 80% 15%;
+    --source-perplexity-foreground: 160 80% 85%;
   }
 }
 
@@ -146,8 +119,138 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter antialiased;
+    background: var(--cosmic-gradient);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* === NEURAL GRID BACKGROUND === */
+  .neural-grid {
+    background-image: 
+      radial-gradient(circle at 1px 1px, hsl(var(--cosmic-purple) / 0.08) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  
+  /* === COSMIC NOISE TEXTURE === */
+  .cosmic-texture {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+  
+  /* === FLOWING NEURAL LINES === */
+  .neural-flow {
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      hsl(var(--cosmic-purple) / 0.1) 50%,
+      transparent 70%
+    );
+    background-size: 120px 120px;
+    animation: flow 25s linear infinite;
+  }
+  
+  @keyframes flow {
+    0% { background-position: 0 0; }
+    100% { background-position: 120px 120px; }
+  }
+}
+
+@layer components {
+  /* === NEURAL BORDER COMPONENT === */
+  .neural-border {
+    @apply relative overflow-hidden;
+    border: 1px solid transparent;
+    background: var(--card-gradient);
+  }
+  
+  .neural-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] p-px;
+    background: var(--iridescent-gradient);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask-composite: xor;
+    opacity: 0.6;
+  }
+  
+  /* === FLOATING ACTION BUTTON === */
+  .fab {
+    @apply min-h-touch min-w-touch rounded-full shadow-lg flex items-center justify-center;
+    background: var(--neural-gradient);
+    box-shadow: var(--plasma-glow), var(--cosmic-shadow);
+    transition: var(--transition-bounce);
+    border: 1px solid hsl(var(--cosmic-purple) / 0.3);
+  }
+  
+  .fab:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: var(--neural-glow), 0 16px 48px hsl(var(--space-black) / 0.9);
+  }
+  
+  .fab:active {
+    transform: scale(1.05) translateY(0px);
+  }
+  
+  /* === GLASS MORPHISM === */
+  .glass {
+    @apply backdrop-blur-md border border-white/10;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: var(--quantum-shadow);
+  }
+  
+  /* === ORGANIC SHAPES === */
+  .organic-shape {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    animation: morph 12s ease-in-out infinite;
+  }
+  
+  @keyframes morph {
+    0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    33% { border-radius: 70% 30% 50% 50% / 30% 60% 70% 40%; }
+    66% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  }
+  
+  /* === NEURAL PULSE === */
+  .neural-pulse {
+    animation: pulse-neural 3s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-neural {
+    0%, 100% { 
+      opacity: 1; 
+      transform: scale(1);
+      filter: brightness(1);
+    }
+    50% { 
+      opacity: 0.8; 
+      transform: scale(1.02);
+      filter: brightness(1.1);
+    }
+  }
+  
+  /* === GLOW EFFECTS === */
+  .glow-cosmic {
+    box-shadow: var(--neural-glow);
+    animation: glow-pulse 4s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow-pulse {
+    0% { filter: brightness(1) saturate(1); }
+    100% { filter: brightness(1.15) saturate(1.2); }
+  }
+  
+  /* === NEURAL CARD === */
+  .neural-card {
+    @apply neural-border glass p-6 rounded-neural;
+    background: var(--card-gradient);
+    box-shadow: var(--cosmic-shadow), var(--neural-border-glow);
+    transition: var(--transition-neural);
+  }
+  
+  .neural-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--neural-glow), 0 20px 60px hsl(var(--space-black) / 0.8);
   }
 }
