@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check } from 'lucide-react';
+import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check, Menu, TrendingUp, BarChart3, Settings, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useVoiceCapture, useCreateThought, useContentSuggestions } from '@/hooks/api';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
 
 const MobileCapture = () => {
-  const [activeMode, setActiveMode] = useState<'home' | 'voice' | 'camera' | 'text' | 'upload' | 'results'>('home');
+  const [activeMode, setActiveMode] = useState<'home' | 'voice' | 'camera' | 'text' | 'upload' | 'results' | 'menu'>('home');
   const [textInput, setTextInput] = useState('');
   const [lastThoughtId, setLastThoughtId] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { 
     isRecording, 
@@ -85,6 +90,90 @@ const MobileCapture = () => {
     { platform: 'Instagram', emoji: '📸', maxLength: 2200 },
     { platform: 'TikTok', emoji: '🎵', maxLength: 300 },
   ];
+
+  const navigationItems = [
+    { title: 'Trending Topics', icon: TrendingUp, path: '/trending', description: 'Discover what\'s hot' },
+    { title: 'Analytics', icon: BarChart3, path: '/analytics', description: 'View your insights' },
+    { title: 'Settings', icon: Settings, path: '/settings', description: 'Manage your account' },
+  ];
+
+  // Menu Modal
+  if (activeMode === 'menu') {
+    return (
+      <div className="min-h-screen bg-cosmic-void p-4 pb-safe">
+        <div className="max-w-md mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 pt-8">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10 ring-2 ring-synaptic-500/30">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-gradient-neural text-cosmic-void">
+                  {user?.user_metadata?.display_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="text-neural-100 font-medium">
+                  {user?.user_metadata?.display_name || 'ScatterBrain User'}
+                </div>
+                <div className="text-neural-400 text-sm">
+                  {user?.email}
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveMode('home')}
+              className="text-neural-100"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Navigation Options */}
+          <div className="space-y-4">
+            {navigationItems.map((item) => (
+              <motion.div
+                key={item.title}
+                whileTap={{ scale: 0.98 }}
+                className="w-full"
+              >
+                <Button
+                  variant="ghost"
+                  className="w-full h-16 justify-start text-left bg-neural-900/30 border border-neural-700 rounded-2xl hover:bg-neural-800/50"
+                  onClick={() => navigate(item.path)}
+                >
+                  <item.icon className="w-6 h-6 mr-4 text-synaptic-400" />
+                  <div>
+                    <div className="text-neural-100 font-medium">{item.title}</div>
+                    <div className="text-neural-400 text-sm">{item.description}</div>
+                  </div>
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-8 pt-8 border-t border-neural-700">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-neural-900/30 rounded-xl p-3">
+                <div className="text-lg font-bold text-neural-100">12</div>
+                <div className="text-xs text-neural-400">Today</div>
+              </div>
+              <div className="bg-neural-900/30 rounded-xl p-3">
+                <div className="text-lg font-bold text-neural-100">8</div>
+                <div className="text-xs text-neural-400">Generated</div>
+              </div>
+              <div className="bg-neural-900/30 rounded-xl p-3">
+                <div className="text-lg font-bold text-neural-100">3</div>
+                <div className="text-xs text-neural-400">Trending</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (activeMode === 'results' && contentSuggestions?.length) {
     return (
@@ -334,17 +423,39 @@ const MobileCapture = () => {
     <div className="min-h-screen bg-cosmic-void p-4 pb-safe">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 pt-8">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-16 h-16 rounded-full bg-gradient-neural mx-auto mb-4 flex items-center justify-center"
+        <div className="flex items-center justify-between pt-8 mb-6">
+          <div className="flex items-center gap-3">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-10 h-10 rounded-full bg-gradient-neural flex items-center justify-center"
+            >
+              <Sparkles className="w-5 h-5 text-cosmic-void" />
+            </motion.div>
+            <div>
+              <h1 className="text-lg font-bold text-neural-100">
+                ScatterBrain
+              </h1>
+              <p className="text-xs text-neural-400">
+                Capture mode
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveMode('menu')}
+            className="text-neural-400 hover:text-neural-100"
           >
-            <Sparkles className="w-8 h-8 text-cosmic-void" />
-          </motion.div>
-          <h1 className="text-2xl font-bold text-neural-100 mb-2">
+            <Menu className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Main Prompt */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-neural-100 mb-2">
             What're you thinking about?
-          </h1>
+          </h2>
           <p className="text-neural-400">
             Capture your ideas instantly
           </p>
