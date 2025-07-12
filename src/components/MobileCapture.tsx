@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check, Menu, TrendingUp, BarChart3, Settings, X } from 'lucide-react';
+import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check, Menu, TrendingUp, BarChart3, Settings, X, Video, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,9 @@ const MobileCapture = () => {
   const [textInput, setTextInput] = useState('');
   const [lastThoughtId, setLastThoughtId] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [capturedMedia, setCapturedMedia] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'photo' | 'video' | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -71,6 +74,28 @@ const MobileCapture = () => {
       toast({
         title: "Copy failed",
         description: "Unable to copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+      const url = URL.createObjectURL(file);
+      setCapturedMedia(url);
+      setMediaType(file.type.startsWith('image/') ? 'photo' : 'video');
+      
+      toast({
+        title: "Media captured! 📸",
+        description: `${file.type.startsWith('image/') ? 'Photo' : 'Video'} ready for processing`,
+      });
+    } else {
+      toast({
+        title: "Unsupported file type",
+        description: "Please select a photo or video file",
         variant: "destructive",
       });
     }
@@ -418,6 +443,133 @@ const MobileCapture = () => {
     );
   }
 
+  if (activeMode === 'camera') {
+    return (
+      <div className="min-h-screen bg-cosmic-void p-4 pb-safe">
+        <div className="max-w-md mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveMode('home')}
+              className="text-neural-100"
+            >
+              ← Back
+            </Button>
+            <Badge variant="secondary" className="bg-neural-800/50">
+              Photo/Video
+            </Badge>
+          </div>
+
+          {/* Camera Interface */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-neural-100 mb-2">
+              Capture Photo or Video
+            </h2>
+            <p className="text-neural-400">
+              Choose from gallery or take a new photo/video
+            </p>
+          </div>
+
+          {/* Media Display */}
+          {capturedMedia && (
+            <div className="mb-6">
+              <Card className="bg-neural-900/50 border-neural-700 p-4">
+                <div className="aspect-video rounded-lg overflow-hidden bg-neural-800">
+                  {mediaType === 'photo' ? (
+                    <img 
+                      src={capturedMedia} 
+                      alt="Captured media"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video 
+                      src={capturedMedia} 
+                      controls
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-2">
+                    {mediaType === 'photo' ? (
+                      <ImageIcon className="w-4 h-4 text-synaptic-300" />
+                    ) : (
+                      <Video className="w-4 h-4 text-synaptic-300" />
+                    )}
+                    <span className="text-sm text-neural-200">
+                      {mediaType === 'photo' ? 'Photo' : 'Video'} captured
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setCapturedMedia(null);
+                      setMediaType(null);
+                    }}
+                    className="text-neural-400 hover:text-neural-100"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Capture Actions */}
+          <div className="space-y-4">
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-16 bg-gradient-neural text-cosmic-void font-medium text-lg rounded-2xl"
+            >
+              <Camera className="w-6 h-6 mr-3" />
+              Choose Photo/Video
+            </Button>
+
+            {capturedMedia && (
+              <Button
+                className="w-full bg-synaptic-600 hover:bg-synaptic-700 text-white font-medium"
+                size="lg"
+                onClick={() => {
+                  // Here you would process the media and create a thought
+                  toast({
+                    title: "Media processed! 🎉",
+                    description: "Your visual thought has been captured",
+                  });
+                  setActiveMode('home');
+                  setCapturedMedia(null);
+                  setMediaType(null);
+                }}
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Process {mediaType === 'photo' ? 'Photo' : 'Video'}
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              onClick={() => setActiveMode('home')}
+              className="w-full text-neural-300"
+            >
+              Cancel
+            </Button>
+          </div>
+
+          {/* Hidden File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+        </div>
+      </div>
+    );
+  }
+
   // Home Screen - Main Capture Interface
   return (
     <div className="min-h-screen bg-cosmic-void p-4 pb-safe">
@@ -500,7 +652,7 @@ const MobileCapture = () => {
             className="h-14 border-neural-600 text-neural-200 hover:bg-neural-800/50 rounded-xl"
           >
             <Camera className="w-5 h-5 mr-2" />
-            Photo
+            Photo/Video
           </Button>
           
           <Button

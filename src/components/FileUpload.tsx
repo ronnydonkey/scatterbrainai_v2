@@ -43,6 +43,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     'image/png',
     'image/gif',
     'image/webp',
+    // Videos
+    'video/mp4',
+    'video/webm',
+    'video/mov',
+    'video/avi',
+    'video/quicktime',
     // Audio
     'audio/mpeg',
     'audio/wav',
