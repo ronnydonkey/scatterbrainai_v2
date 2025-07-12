@@ -64,7 +64,7 @@ serve(async (req) => {
         {
           price_data: {
             currency: "usd",
-            product_data: { name: selectedPlan.name },
+            product_data: { name: selectedPlan.name, description: selectedPlan.description },
             unit_amount: selectedPlan.amount,
             recurring: { interval: "month" },
           },
@@ -72,6 +72,9 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 7, // 7-day trial for all plans
+      },
       success_url: `${req.headers.get("origin")}/success?tier=${tier}`,
       cancel_url: `${req.headers.get("origin")}/`,
       metadata: {

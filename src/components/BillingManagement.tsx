@@ -45,7 +45,7 @@ export default function BillingManagement({ organization }: BillingManagementPro
     }
   }
 
-  const getTierInfo = (tier: string) => {
+  const getTierInfo = (tier: string | null) => {
     switch (tier) {
       case 'creator':
         return {
@@ -67,20 +67,26 @@ export default function BillingManagement({ organization }: BillingManagementPro
         }
       default:
         return {
-          name: 'Starter',
-          price: 'Free',
+          name: 'No Active Plan',
+          price: 'Free Trial Available',
           color: 'text-gray-600 bg-gray-100'
         }
     }
   }
 
-  const getStatusInfo = (status?: string) => {
+  const getStatusInfo = (status?: string, tier?: string | null) => {
     switch (status) {
       case 'active':
         return {
           text: 'Active',
           icon: <CheckCircle className="h-4 w-4 text-green-500" />,
           color: 'text-green-600'
+        }
+      case 'trialing':
+        return {
+          text: 'Free Trial',
+          icon: <CheckCircle className="h-4 w-4 text-blue-500" />,
+          color: 'text-blue-600'
         }
       case 'past_due':
         return {
@@ -96,7 +102,7 @@ export default function BillingManagement({ organization }: BillingManagementPro
         }
       default:
         return {
-          text: 'Free Plan',
+          text: tier ? 'Trial Available' : 'No Plan',
           icon: <CheckCircle className="h-4 w-4 text-gray-500" />,
           color: 'text-gray-600'
         }
@@ -104,7 +110,7 @@ export default function BillingManagement({ organization }: BillingManagementPro
   }
 
   const tierInfo = getTierInfo(organization.subscription_tier)
-  const statusInfo = getStatusInfo(organization.subscription_status)
+  const statusInfo = getStatusInfo(organization.subscription_status, organization.subscription_tier)
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -131,14 +137,16 @@ export default function BillingManagement({ organization }: BillingManagementPro
                 )}
               </div>
               <p className="mt-2 text-gray-600">
-                {organization.subscription_tier === 'starter' 
-                  ? 'Upgrade to unlock premium features and increase limits'
+                {!organization.subscription_tier 
+                  ? 'Start your free trial to unlock premium features'
+                  : organization.subscription_status === 'trialing'
+                  ? 'Enjoying your trial? Upgrade to continue with full access'
                   : 'You have access to all premium features in this tier'
                 }
               </p>
             </div>
             
-            {organization.subscription_tier !== 'starter' && (
+            {organization.subscription_tier && organization.subscription_status === 'active' && (
               <button
                 onClick={handleManageBilling}
                 disabled={loading}
@@ -186,12 +194,12 @@ export default function BillingManagement({ organization }: BillingManagementPro
 
         {/* Actions */}
         <div className="flex space-x-4">
-          {organization.subscription_tier === 'starter' ? (
+          {!organization.subscription_tier || organization.subscription_status === 'trialing' ? (
             <button
               onClick={() => window.location.href = '/pricing'}
               className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors"
             >
-              Upgrade Plan
+              {organization.subscription_status === 'trialing' ? 'Upgrade Now' : 'Start Free Trial'}
             </button>
           ) : (
             <>
@@ -214,7 +222,7 @@ export default function BillingManagement({ organization }: BillingManagementPro
         </div>
 
         {/* Billing History Preview */}
-        {organization.subscription_tier !== 'starter' && (
+        {organization.subscription_tier && organization.subscription_status === 'active' && (
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Billing</h3>
             <div className="space-y-3">

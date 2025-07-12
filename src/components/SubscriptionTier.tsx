@@ -15,23 +15,11 @@ interface SubscriptionPlan {
   features: string[];
   icon: React.ReactNode;
   popular?: boolean;
+  trial?: boolean;
+  trialDays?: number;
 }
 
 const plans: SubscriptionPlan[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 0,
-    description: 'Perfect for getting started with AI content creation',
-    icon: <Zap className="h-6 w-6" />,
-    features: [
-      '1 niche monitoring',
-      '50 AI content generations/month',
-      'Basic voice training',
-      'Standard analytics',
-      'Community support'
-    ]
-  },
   {
     id: 'creator',
     name: 'Creator',
@@ -39,13 +27,16 @@ const plans: SubscriptionPlan[] = [
     description: 'Perfect for individual content creators and freelancers',
     icon: <Star className="h-6 w-6" />,
     popular: true,
+    trial: true,
+    trialDays: 7,
     features: [
       '2 niches monitoring',
       '200 AI content generations/month',
       'Basic voice training (20 samples)',
       'Standard analytics',
       'Email support',
-      'Trend analysis'
+      'Trend analysis',
+      '7-day free trial included'
     ]
   },
   {
@@ -135,13 +126,6 @@ export default function SubscriptionTier({ currentTier, onTierChange }: Subscrip
       return;
     }
 
-    if (tier === 'starter') {
-      toast({
-        title: "Already on Starter",
-        description: "You're already on the free starter plan.",
-      });
-      return;
-    }
 
     setLoading(tier);
 
@@ -191,7 +175,7 @@ export default function SubscriptionTier({ currentTier, onTierChange }: Subscrip
     }
   };
 
-  const effectiveTier = subscriptionData?.subscription_tier || currentTier || 'starter';
+  const effectiveTier = subscriptionData?.subscription_tier || currentTier || 'creator';
 
   return (
     <div className="py-12">
@@ -262,11 +246,22 @@ export default function SubscriptionTier({ currentTier, onTierChange }: Subscrip
 
                   <div className="mt-4">
                     <div className="flex items-baseline">
-                      <span className="text-4xl font-bold text-foreground">
-                        ${plan.price}
-                      </span>
-                      {plan.price > 0 && (
-                        <span className="ml-2 text-muted-foreground">/month</span>
+                      {plan.trial ? (
+                        <div className="flex flex-col">
+                          <span className="text-2xl font-bold text-green-600">
+                            Free for {plan.trialDays} days
+                          </span>
+                          <span className="text-lg text-muted-foreground">
+                            then ${plan.price}/month
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-bold text-foreground">
+                            ${plan.price}
+                          </span>
+                          <span className="ml-2 text-muted-foreground">/month</span>
+                        </>
                       )}
                     </div>
                     <CardDescription className="mt-2">
@@ -310,8 +305,8 @@ export default function SubscriptionTier({ currentTier, onTierChange }: Subscrip
                           </div>
                         ) : isCurrentPlan ? (
                           'Current Plan'
-                        ) : plan.price === 0 ? (
-                          'Get Started Free'
+                        ) : plan.trial ? (
+                          `Start Free ${plan.trialDays}-Day Trial`
                         ) : (
                           `Upgrade to ${plan.name}`
                         )}
