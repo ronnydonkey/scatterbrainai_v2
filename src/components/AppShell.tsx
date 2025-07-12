@@ -1,24 +1,78 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, TrendingUp, Sparkles, BarChart3, Settings, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileCapture from './MobileCapture';
 
-const tabs = [
-  { id: 'constellation', label: 'Constellation', icon: Brain, path: '/' },
-  { id: 'trending', label: 'Trending', icon: TrendingUp, path: '/trending' },
-  { id: 'generator', label: 'Generator', icon: Sparkles, path: '/generator' },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
-  { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
-];
-
-export default function AppShell() {
+const AppShell = () => {
+  const { user, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [isCapturing, setIsCapturing] = useState(false);
+  const isMobile = useIsMobile();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cosmic-void flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-cosmic-accent border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Mobile-first experience - show simplified capture interface
+  if (isMobile) {
+    // Only show simplified mobile capture on the home route
+    if (location.pathname === '/') {
+      return <MobileCapture />;
+    }
+    
+    // For other routes on mobile, show minimal navigation
+    return (
+      <div className="min-h-screen bg-cosmic-void">
+        <div className="bg-neural-900/80 backdrop-blur-md border-b border-neural-700 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="text-neural-100"
+            >
+              ← Home
+            </Button>
+            <div className="text-neural-100 font-medium">
+              {location.pathname.slice(1).charAt(0).toUpperCase() + location.pathname.slice(2)}
+            </div>
+            <div className="w-14" /> {/* Spacer */}
+          </div>
+        </div>
+        <div className="p-4">
+          <Outlet />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop experience - full navigation and features
+  const tabs = [
+    { id: 'constellation', path: '/', icon: Brain, label: 'Constellation' },
+    { id: 'trending', path: '/trending', icon: TrendingUp, label: 'Trending' },
+    { id: 'generator', path: '/generator', icon: Sparkles, label: 'Generator' },
+    { id: 'analytics', path: '/analytics', icon: BarChart3, label: 'Analytics' },
+    { id: 'settings', path: '/settings', icon: Settings, label: 'Settings' },
+  ];
 
   const currentTab = tabs.find(tab => tab.path === location.pathname) || tabs[0];
 
@@ -227,4 +281,6 @@ export default function AppShell() {
       </motion.nav>
     </div>
   );
-}
+};
+
+export default AppShell;

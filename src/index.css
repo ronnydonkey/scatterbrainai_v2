@@ -298,4 +298,12 @@
   .touch-manipulation {
     touch-action: manipulation;
   }
+  /* Mobile safe areas */
+  .pb-safe {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+  
+  .pt-safe {
+    padding-top: calc(1rem + env(safe-area-inset-top));
+  }
 }
