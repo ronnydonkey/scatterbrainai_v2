@@ -185,46 +185,34 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="research" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <SubscriptionTier
-                  currentTier={organization?.subscription_tier || 'starter'}
-                  onTierChange={(tier) => {
-                    if (organization) {
-                      // Update organization tier in state if needed
-                      console.log('Tier changed to:', tier);
-                    }
-                  }}
+              {selectedTopic ? (
+                <ClaudeResearch
+                  topic={selectedTopic}
+                  niche={organization?.niche}
+                  userTier={organization?.subscription_tier || 'creator'}
+                  organizationId={organization?.id}
+                  onUpgrade={handleUpgrade}
                 />
-                
-                {selectedTopic ? (
-                  <ClaudeResearch
-                    topic={selectedTopic}
-                    niche={organization?.niche}
-                    userTier={organization?.subscription_tier || 'starter'}
-                    organizationId={organization?.id}
-                    onUpgrade={handleUpgrade}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                    <div className="text-center">
-                      <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-foreground mb-2">
-                        No Topic Selected
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Go to Trending Topics and click on a topic to research it with Claude
-                      </p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => setActiveTab("trends")}
-                      >
-                        Browse Trending Topics
-                      </Button>
-                    </div>
+              ) : (
+                <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                  <div className="text-center">
+                    <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">
+                      No Topic Selected
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Go to Trending Topics and click on a topic to research it with Claude
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => setActiveTab("trends")}
+                    >
+                      Browse Trending Topics
+                    </Button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="generate" className="space-y-6">
