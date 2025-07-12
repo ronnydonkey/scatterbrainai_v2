@@ -4,11 +4,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import Index from "./pages/Index";
+import AppShell from "./components/AppShell";
+import Constellation from "./pages/Constellation";
+import TrendingPage from "./pages/TrendingPage";
+import GeneratorPage from "./pages/GeneratorPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
-import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,11 +25,16 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/billing" element={<Billing />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/" element={<AppShell />}>
+              <Route index element={<Constellation />} />
+              <Route path="trending" element={<TrendingPage />} />
+              <Route path="generator" element={<GeneratorPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
