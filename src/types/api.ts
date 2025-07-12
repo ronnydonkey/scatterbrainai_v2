@@ -3,7 +3,6 @@ import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase
 
 // Enhanced Thought interface with neural connections
 export interface Thought extends Tables<'thoughts'> {
-  status: 'spark' | 'developing' | 'ready';
   connections?: string[]; // IDs of related thoughts
   voiceData?: {
     duration: number;
@@ -14,15 +13,13 @@ export interface Thought extends Tables<'thoughts'> {
   neuralScore?: number; // AI-calculated relevance score
 }
 
-export interface ThoughtInsert extends Omit<TablesInsert<'thoughts'>, 'status'> {
-  status?: 'spark' | 'developing' | 'ready';
+export interface ThoughtInsert extends TablesInsert<'thoughts'> {
   connections?: string[];
   voiceData?: Thought['voiceData'];
   neuralScore?: number;
 }
 
-export interface ThoughtUpdate extends Omit<TablesUpdate<'thoughts'>, 'status'> {
-  status?: 'spark' | 'developing' | 'ready';
+export interface ThoughtUpdate extends TablesUpdate<'thoughts'> {
   connections?: string[];
   voiceData?: Thought['voiceData'];
   neuralScore?: number;
@@ -116,7 +113,6 @@ export interface PublishContentParams {
 
 // Query params
 export interface ThoughtsQueryParams {
-  status?: Thought['status'];
   tags?: string[];
   search?: string;
   sortBy?: 'created_at' | 'updated_at' | 'neuralScore';

@@ -116,7 +116,6 @@ export const useCreateThought = () => {
         tags: params.tags || [],
         context: params.context,
         mood: params.mood,
-        status: 'spark', // New thoughts start as sparks
       };
 
       const { data, error } = await supabase
@@ -145,7 +144,6 @@ export const useCreateThought = () => {
         tags: params.tags || [],
         context: params.context || null,
         mood: params.mood || null,
-        status: 'spark',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         is_processed: false,
