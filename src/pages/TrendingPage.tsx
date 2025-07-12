@@ -7,18 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { useTrending } from '@/hooks/api';
 
 const TrendingPage = () => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  const { data: trends, isLoading, refetch } = useTrending({ 
+  const { data: trends, isLoading } = useTrending({ 
     timeframe: '24h',
     limit: 10 
   });
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await refetch();
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
 
   return (
     <div className="p-4 space-y-6">
@@ -34,24 +26,6 @@ const TrendingPage = () => {
         <p className="text-cosmic-muted">
           Real-time discussions from Reddit and social platforms related to your thoughts
         </p>
-      </motion.div>
-
-      {/* Refresh Button */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="flex justify-center"
-      >
-        <Button
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="neural-border bg-cosmic-surface/50"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Scan Communities
-        </Button>
       </motion.div>
 
       {/* Trending Topics */}
@@ -81,7 +55,12 @@ const TrendingPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="neural-border bg-cosmic-surface/30 hover:bg-cosmic-surface/50 transition-colors">
+              <Card className="neural-border bg-cosmic-surface/30 hover:bg-cosmic-surface/50 transition-colors cursor-pointer group"
+                    onClick={() => {
+                      // Could navigate to detail view or expand inline
+                      console.log('View details for:', trend.topic);
+                    }}
+              >
                 <CardContent className="p-4 space-y-3">
                   {/* Header */}
                   <div className="flex items-start justify-between">
@@ -137,12 +116,17 @@ const TrendingPage = () => {
                     </div>
                   </div>
 
-                  {/* Connection to Your Thoughts */}
-                  <div className="bg-gradient-accent/10 rounded-lg p-3 border border-cosmic-accent/20">
-                    <h4 className="text-xs font-medium text-cosmic-accent mb-1">Connected to Your Thoughts</h4>
-                    <p className="text-xs text-cosmic-muted">
-                      This relates to your recent thoughts about productivity and learning new skills
-                    </p>
+                  {/* Connection to Your Thoughts with Click Hint */}
+                  <div className="bg-gradient-accent/10 rounded-lg p-3 border border-cosmic-accent/20 flex items-center justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-xs font-medium text-cosmic-accent mb-1">Connected to Your Thoughts</h4>
+                      <p className="text-xs text-cosmic-muted">
+                        This relates to your recent thoughts about productivity and learning new skills
+                      </p>
+                    </div>
+                    <div className="text-cosmic-accent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-xs">Click to explore →</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
