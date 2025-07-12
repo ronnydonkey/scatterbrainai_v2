@@ -91,9 +91,11 @@ serve(async (req) => {
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
       
-      if (amount <= 3000) { // $30 or less
-        subscriptionTier = "pro";
-      } else {
+      if (amount <= 5000) { // $50 or less - Creator tier
+        subscriptionTier = "creator";
+      } else if (amount <= 15000) { // $150 or less - Professional tier
+        subscriptionTier = "professional";
+      } else { // Above $150 - Agency tier
         subscriptionTier = "agency";
       }
       

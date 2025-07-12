@@ -175,7 +175,7 @@ const ClaudeResearch: React.FC<ClaudeResearchProps> = ({
                   Professional Feature
                 </p>
                 <p className="text-sm text-amber-700 mt-1">
-                  Upgrade to Pro for 25 queries/month or Agency for unlimited Claude research.
+                  Upgrade to Creator for basic research, Professional for 25 queries/month, or Agency for unlimited Claude research.
                 </p>
               </div>
             </div>

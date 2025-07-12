@@ -33,35 +33,55 @@ const plans: SubscriptionPlan[] = [
     ]
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: 29,
-    description: 'For serious content creators and small teams',
+    id: 'creator',
+    name: 'Creator',
+    price: 49,
+    description: 'Perfect for individual content creators and freelancers',
     icon: <Star className="h-6 w-6" />,
     popular: true,
     features: [
+      '2 niches monitoring',
+      '200 AI content generations/month',
+      'Basic voice training (20 samples)',
+      'Standard analytics',
+      'Email support',
+      'Trend analysis'
+    ]
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    price: 149,
+    description: 'For established creators and small agencies',
+    icon: <Crown className="h-6 w-6" />,
+    features: [
       '5 niches monitoring',
-      '500 AI content generations/month',
-      'Advanced voice training',
-      'Basic research queries',
-      'Advanced analytics',
-      'Email support'
+      '1,000 AI content generations/month',
+      'Advanced voice training (100 samples)',
+      'Perplexity research (25 queries/month)',
+      'Revenue tracking',
+      'Priority support',
+      'Custom branding',
+      'Advanced analytics'
     ]
   },
   {
     id: 'agency',
     name: 'Agency',
-    price: 99,
-    description: 'For agencies and enterprises with full features',
+    price: 399,
+    description: 'For agencies, enterprises, and consultants',
     icon: <Crown className="h-6 w-6" />,
     features: [
       'Unlimited niches monitoring',
-      '2,000 AI content generations/month',
+      '5,000 AI content generations/month',
       'Unlimited voice training',
-      'Unlimited deep research',
+      'Unlimited Perplexity research',
       'White-label platform',
-      'Priority support',
-      'Custom integrations'
+      'Multi-client management',
+      'API access',
+      'Dedicated support',
+      'Custom integrations',
+      'Revenue sharing opportunities'
     ]
   }
 ];

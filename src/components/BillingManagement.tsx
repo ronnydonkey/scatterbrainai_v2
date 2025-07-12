@@ -47,17 +47,23 @@ export default function BillingManagement({ organization }: BillingManagementPro
 
   const getTierInfo = (tier: string) => {
     switch (tier) {
-      case 'pro':
+      case 'creator':
         return {
-          name: 'Pro',
-          price: '$29',
+          name: 'Creator',
+          price: '$49',
           color: 'text-blue-600 bg-blue-100'
+        }
+      case 'professional':
+        return {
+          name: 'Professional',
+          price: '$149',
+          color: 'text-purple-600 bg-purple-100'
         }
       case 'agency':
         return {
           name: 'Agency',
-          price: '$99',
-          color: 'text-purple-600 bg-purple-100'
+          price: '$399',
+          color: 'text-gold-600 bg-gold-100'
         }
       default:
         return {

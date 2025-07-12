@@ -47,8 +47,9 @@ serve(async (req) => {
 
     // Define pricing based on tier
     const pricing = {
-      pro: { amount: 2900, name: "Pro Plan" }, // $29/month
-      agency: { amount: 9900, name: "Agency Plan" } // $99/month
+      creator: { amount: 4900, name: "ScatterbrainAI Creator", description: "Perfect for individual content creators and freelancers" }, // $49/month
+      professional: { amount: 14900, name: "ScatterbrainAI Professional", description: "For established creators and small agencies" }, // $149/month
+      agency: { amount: 39900, name: "ScatterbrainAI Agency", description: "For agencies, enterprises, and consultants" } // $399/month
     };
 
     const selectedPlan = pricing[tier as keyof typeof pricing];
