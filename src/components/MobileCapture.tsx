@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check, Menu, TrendingUp, BarChart3, Settings, X, Video, Image as ImageIcon } from 'lucide-react';
+import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check, Menu, TrendingUp, BarChart3, Settings, X, Video, Image as ImageIcon, Brain, Zap, Eye, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,12 +12,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 
 const MobileCapture = () => {
-  const [activeMode, setActiveMode] = useState<'home' | 'voice' | 'camera' | 'text' | 'upload' | 'results' | 'menu'>('home');
+  const [activeMode, setActiveMode] = useState<'home' | 'voice' | 'camera' | 'text' | 'upload' | 'results' | 'thinking' | 'menu'>('home');
   const [textInput, setTextInput] = useState('');
   const [lastThoughtId, setLastThoughtId] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [capturedMedia, setCapturedMedia] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'photo' | 'video' | null>(null);
+  const [processingStage, setProcessingStage] = useState<'analyzing' | 'extracting' | 'connecting' | 'generating'>('analyzing');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -44,18 +45,36 @@ const MobileCapture = () => {
   const handleTextSubmit = () => {
     if (!textInput.trim()) return;
     
+    // Start thinking animation
+    setActiveMode('thinking');
+    
+    // Simulate processing stages
+    const stages = ['analyzing', 'extracting', 'connecting', 'generating'] as const;
+    let currentStage = 0;
+    
+    const stageInterval = setInterval(() => {
+      if (currentStage < stages.length - 1) {
+        currentStage++;
+        setProcessingStage(stages[currentStage]);
+      }
+    }, 1500);
+    
     createThought({
       content: textInput,
       title: textInput.split(' ').slice(0, 4).join(' ') + '...',
     }, {
       onSuccess: (data) => {
+        clearInterval(stageInterval);
         setLastThoughtId(data.id);
-        setActiveMode('results');
-        setTextInput('');
-        toast({
-          title: "Thought captured! ✨",
-          description: "Neural pathways are forming...",
-        });
+        // Small delay to show completion
+        setTimeout(() => {
+          setActiveMode('results');
+          setTextInput('');
+        }, 1000);
+      },
+      onError: () => {
+        clearInterval(stageInterval);
+        setActiveMode('text');
       }
     });
   };
@@ -214,68 +233,153 @@ const MobileCapture = () => {
             >
               ← Back
             </Button>
-            <Badge variant="secondary" className="bg-neural-800/50">
-              Content Ready
+            <Badge variant="secondary" className="bg-neural-800/50 text-synaptic-300">
+              Analysis Complete
             </Badge>
           </div>
 
-          {/* Content Cards */}
-          <div className="space-y-4">
-            {socialFormats.map((format) => {
-              const content = contentSuggestions.find(c => 
-                c.content_type.toLowerCase().includes(format.platform.toLowerCase())
-              );
-              
-              if (!content) return null;
-
-              return (
-                <motion.div
-                  key={format.platform}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-neural-900/50 border border-neural-700 rounded-2xl p-4"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{format.emoji}</span>
-                      <span className="font-medium text-neural-100">{format.platform}</span>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyToClipboard(content.ai_generated_content || '')}
-                      className="p-2"
-                    >
-                      {copiedText === content.ai_generated_content ? (
-                        <Check className="w-4 h-4 text-synaptic-300" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-neural-200 text-sm leading-relaxed">
-                    {content.ai_generated_content}
-                  </p>
-                  <div className="flex justify-between items-center mt-3 text-xs text-neural-400">
-                    <span>{content.ai_generated_content?.length || 0}/{format.maxLength}</span>
-                    <Badge variant="outline" className="border-synaptic-500/30 text-synaptic-300">
-                      {Math.round((content.neuralAlignment || 0) * 100)}% match
-                    </Badge>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Generate More Button */}
-          <Button
-            className="w-full mt-6 bg-gradient-neural text-cosmic-void font-medium"
-            size="lg"
-            disabled={isLoadingContent}
+          {/* Analysis Report */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Generate More Variations
-          </Button>
+            {/* Summary Section */}
+            <Card className="bg-neural-900/50 border-neural-700 p-4">
+              <div className="flex items-center mb-3">
+                <Brain className="w-5 h-5 text-synaptic-300 mr-2" />
+                <h3 className="font-semibold text-neural-100">Thought Summary</h3>
+              </div>
+              <p className="text-neural-200 text-sm leading-relaxed">
+                Your thought explores the intersection of creativity and environment, emphasizing how physical spaces can influence creative output. The mention of Monterey as a place of reset and simplicity suggests a desire for authentic, peaceful creation rather than forced productivity.
+              </p>
+            </Card>
+
+            {/* Key Quotes */}
+            <Card className="bg-neural-900/50 border-neural-700 p-4">
+              <div className="flex items-center mb-3">
+                <MessageCircle className="w-5 h-5 text-synaptic-300 mr-2" />
+                <h3 className="font-semibold text-neural-100">Key Insights</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="bg-neural-800/30 rounded-lg p-3 border-l-2 border-synaptic-400">
+                  <p className="text-neural-200 text-sm italic">
+                    "the whole point of moving to Monterey was to reset, simplify, and make my environment my ally"
+                  </p>
+                </div>
+                <div className="bg-neural-800/30 rounded-lg p-3 border-l-2 border-synaptic-400">
+                  <p className="text-neural-200 text-sm italic">
+                    "useful, calm, natural, beautiful"
+                  </p>
+                </div>
+                <div className="bg-neural-800/30 rounded-lg p-3 border-l-2 border-synaptic-400">
+                  <p className="text-neural-200 text-sm italic">
+                    "coming from a peaceful place — not just hustle energy"
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Tweet Suggestion */}
+            <Card className="bg-neural-900/50 border-neural-700 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <span className="text-lg mr-2">🐦</span>
+                  <h3 className="font-semibold text-neural-100">Tweet Suggestion</h3>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copyToClipboard("Sometimes I forget: the whole point of moving to Monterey was to reset, simplify, and make my environment my ally. 🌊\n\nMy ideas should reflect that same vibe: useful, calm, natural, beautiful.\n\nEven my build-in-public work should feel peaceful — not just hustle energy. ✨")}
+                  className="p-2"
+                >
+                  {copiedText?.includes("Sometimes I forget") ? (
+                    <Check className="w-4 h-4 text-synaptic-300" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <div className="bg-neural-800/30 rounded-lg p-3">
+                <p className="text-neural-200 text-sm leading-relaxed">
+                  Sometimes I forget: the whole point of moving to Monterey was to reset, simplify, and make my environment my ally. 🌊
+                  <br /><br />
+                  My ideas should reflect that same vibe: useful, calm, natural, beautiful.
+                  <br /><br />
+                  Even my build-in-public work should feel peaceful — not just hustle energy. ✨
+                </p>
+                <div className="flex justify-between items-center mt-3 text-xs text-neural-400">
+                  <span>267/280 characters</span>
+                  <Badge variant="outline" className="border-synaptic-500/30 text-synaptic-300">
+                    High engagement potential
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+
+            {/* LinkedIn Version */}
+            <Card className="bg-neural-900/50 border-neural-700 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <span className="text-lg mr-2">💼</span>
+                  <h3 className="font-semibold text-neural-100">LinkedIn Post</h3>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copyToClipboard("🌊 Environment as Creative Catalyst\n\nSometimes I forget: the whole point of moving to Monterey was to reset, simplify, and make my environment my ally.\n\nI have my pottery studio, my garden, my ocean. My ideas should reflect that same vibe: useful, calm, natural, beautiful.\n\nEven my build-in-public work should feel like it's coming from a peaceful place — not just hustle energy.\n\nYour environment shapes your output. What does yours say about your work?\n\n#creativity #environment #buildingInPublic #minimalism #monterey")}
+                  className="p-2"
+                >
+                  {copiedText?.includes("Environment as Creative Catalyst") ? (
+                    <Check className="w-4 h-4 text-synaptic-300" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <div className="bg-neural-800/30 rounded-lg p-3">
+                <p className="text-neural-200 text-sm leading-relaxed">
+                  🌊 <strong>Environment as Creative Catalyst</strong>
+                  <br /><br />
+                  Sometimes I forget: the whole point of moving to Monterey was to reset, simplify, and make my environment my ally.
+                  <br /><br />
+                  I have my pottery studio, my garden, my ocean. My ideas should reflect that same vibe: useful, calm, natural, beautiful.
+                  <br /><br />
+                  Even my build-in-public work should feel like it's coming from a peaceful place — not just hustle energy.
+                  <br /><br />
+                  Your environment shapes your output. What does yours say about your work?
+                  <br /><br />
+                  #creativity #environment #buildingInPublic #minimalism #monterey
+                </p>
+                <div className="flex justify-between items-center mt-3 text-xs text-neural-400">
+                  <span>Professional tone • 587 characters</span>
+                  <Badge variant="outline" className="border-synaptic-500/30 text-synaptic-300">
+                    95% voice match
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                className="flex-1 bg-gradient-neural text-cosmic-void font-medium"
+                size="lg"
+                disabled={isLoadingContent}
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Generate More
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex-1 border-neural-600 text-neural-100"
+                onClick={() => setActiveMode('home')}
+              >
+                New Thought
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -438,6 +542,157 @@ const MobileCapture = () => {
               </div>
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Thinking/Processing State
+  if (activeMode === 'thinking') {
+    const getStageInfo = (stage: typeof processingStage) => {
+      switch (stage) {
+        case 'analyzing':
+          return {
+            icon: Eye,
+            title: 'Analyzing Thought',
+            description: 'Reading and understanding your input...',
+            progress: 25
+          };
+        case 'extracting':
+          return {
+            icon: Brain,
+            title: 'Extracting Insights',
+            description: 'Finding key themes and connections...',
+            progress: 50
+          };
+        case 'connecting':
+          return {
+            icon: Zap,
+            title: 'Making Connections',
+            description: 'Linking to trending topics and patterns...',
+            progress: 75
+          };
+        case 'generating':
+          return {
+            icon: MessageCircle,
+            title: 'Generating Content',
+            description: 'Creating personalized suggestions...',
+            progress: 100
+          };
+      }
+    };
+
+    const currentStage = getStageInfo(processingStage);
+
+    return (
+      <div className="min-h-screen bg-cosmic-void p-4 pb-safe flex flex-col items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          {/* Animated Brain Icon */}
+          <div className="relative mb-8">
+            <motion.div
+              animate={{
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="w-32 h-32 rounded-full bg-gradient-to-br from-synaptic-400 to-neural-600 flex items-center justify-center mx-auto relative overflow-hidden"
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{
+                  x: ['-100%', '100%'],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <Brain className="w-16 h-16 text-white relative z-10" />
+            </motion.div>
+            
+            {/* Pulsing rings */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ 
+                scale: [0.8, 1.3, 0.8], 
+                opacity: [0, 0.6, 0] 
+              }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+              className="absolute inset-0 rounded-full border-2 border-synaptic-300/30"
+            />
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ 
+                scale: [0.8, 1.5, 0.8], 
+                opacity: [0, 0.4, 0] 
+              }}
+              transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+              className="absolute inset-0 rounded-full border-2 border-synaptic-300/20"
+            />
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="w-full bg-neural-800 rounded-full h-2 mb-4">
+              <motion.div
+                className="bg-gradient-to-r from-synaptic-400 to-neural-500 h-2 rounded-full"
+                initial={{ width: '0%' }}
+                animate={{ width: `${currentStage.progress}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              />
+            </div>
+            <div className="text-xs text-neural-400">
+              {currentStage.progress}% Complete
+            </div>
+          </div>
+
+          {/* Current Stage */}
+          <motion.div
+            key={processingStage}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-center mb-3">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <currentStage.icon className="w-6 h-6 text-synaptic-300 mr-2" />
+              </motion.div>
+              <h2 className="text-xl font-bold text-neural-100">
+                {currentStage.title}
+              </h2>
+            </div>
+            <p className="text-neural-400">
+              {currentStage.description}
+            </p>
+          </motion.div>
+
+          {/* Processing Dots */}
+          <div className="flex justify-center space-x-2">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 bg-synaptic-300 rounded-full"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
