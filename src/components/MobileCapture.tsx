@@ -158,11 +158,11 @@ const MobileCapture = () => {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="bg-neural-900/30 rounded-xl p-3">
                 <div className="text-lg font-bold text-neural-100">12</div>
-                <div className="text-xs text-neural-400">Today</div>
+                <div className="text-xs text-neural-400">Total</div>
               </div>
               <div className="bg-neural-900/30 rounded-xl p-3">
                 <div className="text-lg font-bold text-neural-100">8</div>
-                <div className="text-xs text-neural-400">Generated</div>
+                <div className="text-xs text-neural-400">Today</div>
               </div>
               <div className="bg-neural-900/30 rounded-xl p-3">
                 <div className="text-lg font-bold text-neural-100">3</div>
@@ -517,11 +517,11 @@ const MobileCapture = () => {
         <div className="mt-8 grid grid-cols-3 gap-4 text-center">
           <div className="bg-neural-900/30 rounded-xl p-3">
             <div className="text-lg font-bold text-neural-100">12</div>
-            <div className="text-xs text-neural-400">Today</div>
+            <div className="text-xs text-neural-400">Total</div>
           </div>
           <div className="bg-neural-900/30 rounded-xl p-3">
             <div className="text-lg font-bold text-neural-100">8</div>
-            <div className="text-xs text-neural-400">Generated</div>
+            <div className="text-xs text-neural-400">Today</div>
           </div>
           <div className="bg-neural-900/30 rounded-xl p-3">
             <div className="text-lg font-bold text-neural-100">3</div>
