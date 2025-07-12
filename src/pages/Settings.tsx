@@ -34,7 +34,8 @@ export default function Settings() {
     content: {
       default_tone: 'professional',
       auto_save: true,
-      content_language: 'en'
+      content_language: 'en',
+      ai_adaptation: true
     }
   });
 
@@ -399,6 +400,55 @@ export default function Settings() {
                     <SelectItem value="it">Italian</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Privacy & AI Training */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="h-5 w-5" />
+                <span>Privacy & AI Training</span>
+              </CardTitle>
+              <CardDescription>
+                Understand how we use your data and customize your AI experience
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  Your Privacy is Protected
+                </h4>
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                  Our AI training is completely internal and personal to you. We never use your thoughts, 
+                  content, or data to train large language models or share with external services. 
+                  The AI adapts only to your own writing style and preferences.
+                </p>
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                  <li>• Your thoughts remain completely private</li>
+                  <li>• AI learns only from your own input patterns</li>
+                  <li>• No data shared with external AI providers</li>
+                  <li>• Personal adaptation stays within your account</li>
+                </ul>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Personal AI Adaptation</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow the AI to learn from your writing style and preferences for better content generation
+                  </p>
+                </div>
+                <Switch
+                  checked={preferences.content?.ai_adaptation ?? true}
+                  onCheckedChange={(checked) => 
+                    handlePreferenceChange('content', 'ai_adaptation', checked)
+                  }
+                  disabled={isUpdating}
+                />
               </div>
             </CardContent>
           </Card>
