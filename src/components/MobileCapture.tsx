@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useVoiceCapture, useCreateThought, useContentSuggestions } from '@/hooks/api';
+import { useVoiceCapture, useCreateThought, useContentSuggestions, useGenerateContent } from '@/hooks/api';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,6 +32,7 @@ const MobileCapture = () => {
 
   const { mutate: createThought, isPending: isCreatingThought } = useCreateThought();
   const { data: contentSuggestions, isPending: isLoadingContent } = useContentSuggestions(lastThoughtId || undefined);
+  const { mutate: generateContent, isPending: isGeneratingContent } = useGenerateContent();
 
   const handleVoiceCapture = () => {
     if (isRecording) {
@@ -66,6 +67,20 @@ const MobileCapture = () => {
       onSuccess: (data) => {
         clearInterval(stageInterval);
         setLastThoughtId(data.id);
+        
+        // Generate content suggestions for multiple platforms
+        const platforms = ['twitter', 'linkedin', 'instagram'];
+        platforms.forEach(platform => {
+          generateContent({
+            thoughtId: data.id,
+            platform: platform as any,
+            contentType: platform === 'linkedin' ? 'professional_post' : 'social_post',
+            tone: 'engaging',
+            length: 'medium',
+            targetAudience: 'general'
+          });
+        });
+        
         // Small delay to show completion
         setTimeout(() => {
           setActiveMode('results');
