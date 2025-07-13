@@ -175,6 +175,12 @@ export const useVoiceCapture = () => {
 
       // Auto-create thought if transcript is good quality
       if (transcript && confidence > 0.7) {
+        // Notify that we're creating the thought
+        toast({
+          title: "Processing your thought...",
+          description: "Analyzing and generating insights.",
+        });
+
         createThoughtFromVoice({
           content: transcript,
           title: generateTitle(transcript),
@@ -185,14 +191,20 @@ export const useVoiceCapture = () => {
             audioUrl: publicUrl,
           },
         });
+      } else {
+        toast({
+          title: "Voice captured",
+          description: confidence < 0.5 ? "Low quality recording - please try again" : "Transcript needs review",
+          variant: confidence < 0.5 ? "destructive" : "default",
+        });
       }
 
-      toast({
-        title: "Voice memo processed! 🎙️",
-        description: confidence > 0.7 
-          ? "Thought has been automatically captured."
-          : "Transcript available for review.",
-      });
+      // Trigger processing mode in parent component if callback provided
+      if (window.dispatchEvent) {
+        window.dispatchEvent(new CustomEvent('voiceProcessingComplete', { 
+          detail: { transcript, confidence, thoughtCreated: confidence > 0.7 } 
+        }));
+      }
 
     } catch (error) {
       console.error('Voice processing error:', error);
@@ -248,9 +260,27 @@ export const useVoiceCapture = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (insertedThought) => {
       // Invalidate thoughts cache
       queryClient.invalidateQueries({ queryKey: thoughtsKeys.all });
+
+      // Trigger thought analysis in the background
+      supabase.functions.invoke('analyze-thought', {
+        body: { 
+          thoughtId: insertedThought.id, 
+          content: insertedThought.content 
+        }
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Analysis failed:', error);
+        } else {
+          console.log('Analysis completed:', data);
+          // Trigger event for UI to show analysis results
+          window.dispatchEvent(new CustomEvent('thoughtAnalysisComplete', { 
+            detail: { thoughtId: insertedThought.id, analysis: data.analysis } 
+          }));
+        }
+      }).catch(console.error);
     },
   });
 

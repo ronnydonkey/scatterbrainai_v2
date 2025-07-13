@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Camera, PenTool, Upload, Sparkles, Copy, Check, Menu, TrendingUp, BarChart3, Settings, X, Video, Image as ImageIcon, Brain, Zap, Eye, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ const MobileCapture = () => {
   const [capturedMedia, setCapturedMedia] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'photo' | 'video' | null>(null);
   const [processingStage, setProcessingStage] = useState<'analyzing' | 'extracting' | 'connecting' | 'generating'>('analyzing');
+  const [analysisData, setAnalysisData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -42,6 +43,35 @@ const MobileCapture = () => {
       setActiveMode('voice');
     }
   };
+
+  // Listen for voice processing completion
+  useEffect(() => {
+    const handleVoiceProcessingComplete = (event: CustomEvent) => {
+      const { thoughtCreated } = event.detail;
+      if (thoughtCreated) {
+        setActiveMode('thinking');
+        // Auto-transition to results after analysis
+        setTimeout(() => {
+          setActiveMode('results');
+        }, 3000);
+      }
+    };
+
+    const handleThoughtAnalysisComplete = (event: CustomEvent) => {
+      const { thoughtId, analysis } = event.detail;
+      setLastThoughtId(thoughtId);
+      setAnalysisData(analysis);
+      setActiveMode('results');
+    };
+
+    window.addEventListener('voiceProcessingComplete', handleVoiceProcessingComplete as EventListener);
+    window.addEventListener('thoughtAnalysisComplete', handleThoughtAnalysisComplete as EventListener);
+    
+    return () => {
+      window.removeEventListener('voiceProcessingComplete', handleVoiceProcessingComplete as EventListener);
+      window.removeEventListener('thoughtAnalysisComplete', handleThoughtAnalysisComplete as EventListener);
+    };
+  }, []);
 
   const handleTextSubmit = () => {
     if (!textInput.trim()) return;
@@ -234,7 +264,9 @@ const MobileCapture = () => {
     );
   }
 
-  if (activeMode === 'results' && contentSuggestions?.length) {
+  if (activeMode === 'results') {
+    const hasAnalysisData = analysisData && Object.keys(analysisData).length > 0;
+    
     return (
       <div className="min-h-screen bg-cosmic-void p-4 pb-safe">
         <div className="max-w-md mx-auto">
@@ -266,7 +298,9 @@ const MobileCapture = () => {
                 <h3 className="font-semibold text-neural-100">Thought Summary</h3>
               </div>
               <p className="text-neural-200 text-sm leading-relaxed">
-                Your thought explores the intersection of creativity and environment, emphasizing how physical spaces can influence creative output. The mention of Monterey as a place of reset and simplicity suggests a desire for authentic, peaceful creation rather than forced productivity.
+                {hasAnalysisData ? analysisData.summary : 
+                "Your thought explores the intersection of creativity and environment, emphasizing how physical spaces can influence creative output. The mention of Monterey as a place of reset and simplicity suggests a desire for authentic, peaceful creation rather than forced productivity."
+                }
               </p>
             </Card>
 
