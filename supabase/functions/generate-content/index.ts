@@ -16,52 +16,74 @@ serve(async (req) => {
     console.log('Starting generate-content function');
     
     const { 
-      topic, 
+      thoughtId,
+      platform,
       contentType, 
-      targetKeywords, 
       tone, 
-      voiceProfile,
-      organizationId,
-      userId,
-      thoughtId
+      length,
+      targetAudience
     } = await req.json();
 
-    console.log('Request data:', { topic, contentType, targetKeywords, tone, organizationId, userId });
+    console.log('Request data:', { thoughtId, platform, contentType, tone, length, targetAudience });
+
+    // Get the thought content if thoughtId is provided
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let thoughtContent = '';
+    let organizationId = '';
+    let userId = '';
+
+    if (thoughtId) {
+      const { data: thought, error: thoughtError } = await supabase
+        .from('thoughts')
+        .select('content, user_id, organization_id')
+        .eq('id', thoughtId)
+        .single();
+
+      if (thoughtError) {
+        console.error('Error fetching thought:', thoughtError);
+        throw new Error('Failed to fetch thought content');
+      }
+
+      thoughtContent = thought.content;
+      organizationId = thought.organization_id;
+      userId = thought.user_id;
+    } else {
+      throw new Error('Thought ID is required');
+    }
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Create system prompt for content generation
+    const systemPrompt = `You are an expert content creator specializing in ${platform} content.
 
-    // Create system prompt for voice preservation
-    const systemPrompt = `You are an expert content creator who specializes in maintaining authentic voice and tone across different content types. 
-
-Voice Profile: ${JSON.stringify(voiceProfile)}
+Platform: ${platform}
 Content Type: ${contentType}
 Target Tone: ${tone}
-Target Keywords: ${targetKeywords?.join(', ') || 'None specified'}
+Length: ${length}
+Target Audience: ${targetAudience}
 
 Create engaging, authentic content that:
-1. Matches the specified voice profile characteristics
-2. Incorporates target keywords naturally
-3. Maintains the requested tone throughout
-4. Is optimized for the specified content type
-5. Provides genuine value to the audience
+1. Is optimized for ${platform}
+2. Maintains the requested ${tone} tone throughout
+3. Is appropriate for ${length} length content
+4. Resonates with ${targetAudience} audience
+5. Provides genuine value and engagement
 
-Topic: ${topic}
+Original Thought: ${thoughtContent}
 
 Generate comprehensive content including:
-- A compelling title
-- Main content body
+- A compelling title/hook
+- Main content body optimized for ${platform}
 - Key takeaways or call-to-action
-- Suggested hashtags (if applicable)
+- Suggested hashtags (if applicable for the platform)
 
-Keep the content authentic and avoid overly promotional language.`;
+Keep the content authentic and engaging for ${platform}.`;
 
     // Generate content with OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -80,7 +102,7 @@ Keep the content authentic and avoid overly promotional language.`;
           },
           {
             role: 'user',
-            content: `Create ${contentType} content about: ${topic}`
+            content: `Transform this thought into ${contentType} content for ${platform}: "${thoughtContent}"`
           }
         ]
       })
@@ -96,14 +118,14 @@ Keep the content authentic and avoid overly promotional language.`;
     const generatedContent = data.choices[0].message.content;
 
     // Calculate engagement prediction (simple heuristic)
-    const keywordScore = targetKeywords ? targetKeywords.length * 0.1 : 0;
-    const lengthScore = Math.min(generatedContent.length / 1000, 1) * 0.3;
-    const voiceScore = voiceProfile ? 0.4 : 0.2;
-    const engagementPrediction = Math.min((keywordScore + lengthScore + voiceScore) * 100, 95);
+    const lengthScore = Math.min(generatedContent.length / 1000, 1) * 0.5;
+    const platformScore = platform ? 0.3 : 0.1;
+    const toneScore = tone ? 0.2 : 0.1;
+    const engagementPrediction = Math.min((lengthScore + platformScore + toneScore) * 100, 95);
 
     // Extract title from generated content (assumes first line is title)
     const lines = generatedContent.split('\n').filter(line => line.trim());
-    const title = lines[0] || topic;
+    const title = lines[0]?.replace(/^#+\s*/, '').trim() || `${platform} content from thought`;
     
     // Store content suggestion in database
     const { data: suggestion, error: dbError } = await supabase
@@ -112,13 +134,13 @@ Keep the content authentic and avoid overly promotional language.`;
         organization_id: organizationId,
         user_id: userId,
         title,
-        description: `AI-generated ${contentType} content about ${topic}`,
+        description: `AI-generated ${contentType} content for ${platform}`,
         content_type: contentType,
         ai_generated_content: generatedContent,
-        target_keywords: targetKeywords,
+        target_keywords: [],
         suggested_tone: tone,
         engagement_prediction: engagementPrediction,
-        voice_authenticity_score: voiceProfile ? 85 : 70,
+        voice_authenticity_score: 75,
         estimated_word_count: generatedContent.split(' ').length,
         thought_id: thoughtId || null
       })
@@ -139,7 +161,7 @@ Keep the content authentic and avoid overly promotional language.`;
         resource_type: 'content_generation',
         count: 1,
         tier: 'unknown', // Will be determined by frontend
-        metadata: { content_type: contentType, topic }
+        metadata: { content_type: contentType, platform: platform }
       });
 
     return new Response(JSON.stringify({
