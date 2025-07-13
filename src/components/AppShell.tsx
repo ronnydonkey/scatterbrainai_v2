@@ -67,7 +67,7 @@ const AppShell = () => {
 
   // Desktop experience - full navigation and features
   const tabs = [
-    { id: 'constellation', path: '/', icon: Brain, label: 'Constellation' },
+    { id: 'dashboard', path: '/', icon: Brain, label: 'Dashboard' },
     { id: 'trending', path: '/trending', icon: TrendingUp, label: 'Trending' },
     { id: 'generator', path: '/generator', icon: Sparkles, label: 'Generator' },
     { id: 'analytics', path: '/analytics', icon: BarChart3, label: 'Analytics' },

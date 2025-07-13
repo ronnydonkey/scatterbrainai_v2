@@ -40,14 +40,14 @@ export default function Constellation() {
         </motion.div>
         
         <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-          Your Neural Constellation
+          Thought Dashboard
         </h1>
         <p className="text-cosmic-muted text-lg">
           Capture thoughts and watch them evolve into content
         </p>
       </motion.div>
 
-      {/* Quick Stats */}
+      {/* Useful Insights */}
       <motion.div 
         className="grid grid-cols-1 md:grid-cols-3 gap-4"
         variants={itemVariants}
@@ -56,8 +56,9 @@ export default function Constellation() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-cosmic-muted">Thoughts Today</p>
-                <p className="text-2xl font-bold text-cosmic-light">12</p>
+                <p className="text-sm text-cosmic-muted">Pending Analysis</p>
+                <p className="text-2xl font-bold text-cosmic-light">2</p>
+                <p className="text-xs text-cosmic-muted mt-1">Thoughts being processed</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-gradient-primary/20 flex items-center justify-center">
                 <Brain className="w-6 h-6 text-cosmic-accent" />
@@ -70,8 +71,9 @@ export default function Constellation() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-cosmic-muted">Generated</p>
-                <p className="text-2xl font-bold text-cosmic-light">8</p>
+                <p className="text-sm text-cosmic-muted">Ready to Share</p>
+                <p className="text-2xl font-bold text-cosmic-light">5</p>
+                <p className="text-xs text-cosmic-muted mt-1">Content suggestions available</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-gradient-secondary/20 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-cosmic-glow" />
@@ -84,8 +86,9 @@ export default function Constellation() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-cosmic-muted">Trending</p>
-                <p className="text-2xl font-bold text-cosmic-light">3</p>
+                <p className="text-sm text-cosmic-muted">Top Insight</p>
+                <p className="text-sm font-bold text-cosmic-light leading-tight">"AI creativity parallels"</p>
+                <p className="text-xs text-cosmic-muted mt-1">High engagement potential</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-gradient-accent/20 flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-cosmic-accent" />
