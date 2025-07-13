@@ -34,6 +34,9 @@ import {
   PieChart as PieChartIcon,
   RefreshCw
 } from 'lucide-react';
+import { BrainIcon, NeuralNetworkIcon, SynapseIcon } from '@/components/ui/neural-icons';
+import { NeuralLoading, ProcessingNeural } from '@/components/ui/neural-loading';
+import { NeuralBorder, NeuralConnections } from '@/components/ui/neural-connections';
 import { toast } from '@/hooks/use-toast';
 
 interface ContentPerformance {
@@ -241,41 +244,54 @@ export const PerformanceAnalytics = () => {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <BarChart3 className="h-5 w-5" />
-            <span>Performance Analytics</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-20 bg-muted rounded"></div>
+      <div className="relative">
+        <NeuralConnections className="opacity-20" density="medium" />
+        <NeuralBorder>
+          <Card className="border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BrainIcon size={20} />
+                <span>Neural Performance Analytics</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center mb-6">
+                <NeuralLoading size="lg" text="Analyzing neural performance patterns..." />
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <NeuralBorder key={i} className="h-20">
+                    <div className="h-full bg-cosmic-surface/20 rounded animate-pulse" />
+                  </NeuralBorder>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </NeuralBorder>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Neural background connections */}
+      <NeuralConnections className="opacity-30" density="low" />
+      
       {/* Header & Controls */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5" />
-                <span>Performance Analytics</span>
-              </CardTitle>
-              <CardDescription>
-                Track and analyze your content performance across platforms
-              </CardDescription>
-            </div>
+      <NeuralBorder>
+        <Card className="border-0">
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="flex items-center space-x-3">
+                  <NeuralNetworkIcon size={24} />
+                  <span>Neural Performance Analytics</span>
+                  <SynapseIcon size={20} />
+                </CardTitle>
+                <CardDescription>
+                  Track and analyze neural pathways of your content performance across platforms
+                </CardDescription>
+              </div>
             <Button variant="outline" size="sm" onClick={fetchAnalyticsData}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
@@ -311,69 +327,96 @@ export const PerformanceAnalytics = () => {
           </div>
         </CardContent>
       </Card>
+      </NeuralBorder>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Eye className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Total Views</span>
-            </div>
-            <div className="text-2xl font-bold">{metrics.totalViews.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">
-              {metrics.totalPosts} posts
-            </div>
-          </CardContent>
-        </Card>
+      {/* Neural Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+        <NeuralBorder active={metrics.totalViews > 1000}>
+          <Card className="border-0 bg-cosmic-surface/30">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Eye className="h-4 w-4 text-cosmic-accent" />
+                <span className="text-sm font-medium">Neural Views</span>
+              </div>
+              <div className="text-2xl font-bold text-cosmic-light">{metrics.totalViews.toLocaleString()}</div>
+              <div className="text-xs text-cosmic-muted">
+                {metrics.totalPosts} synaptic posts
+              </div>
+              <div className="mt-2">
+                <SynapseIcon size={12} className="opacity-60" />
+              </div>
+            </CardContent>
+          </Card>
+        </NeuralBorder>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Heart className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Total Likes</span>
-            </div>
-            <div className="text-2xl font-bold">{metrics.totalLikes.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">
-              Avg: {metrics.totalPosts > 0 ? Math.round(metrics.totalLikes / metrics.totalPosts) : 0} per post
-            </div>
-          </CardContent>
-        </Card>
+        <NeuralBorder active={metrics.totalLikes > 500}>
+          <Card className="border-0 bg-cosmic-surface/30">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Heart className="h-4 w-4 text-cosmic-glow" />
+                <span className="text-sm font-medium">Neural Resonance</span>
+              </div>
+              <div className="text-2xl font-bold text-cosmic-light">{metrics.totalLikes.toLocaleString()}</div>
+              <div className="text-xs text-cosmic-muted">
+                Avg: {metrics.totalPosts > 0 ? Math.round(metrics.totalLikes / metrics.totalPosts) : 0} per pathway
+              </div>
+              <div className="mt-2">
+                <div className="w-2 h-2 bg-cosmic-glow rounded-full animate-pulse" />
+              </div>
+            </CardContent>
+          </Card>
+        </NeuralBorder>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Avg Engagement</span>
-            </div>
-            <div className="text-2xl font-bold">{metrics.avgEngagement.toFixed(1)}%</div>
-            <div className="text-xs text-muted-foreground">
-              Engagement rate
-            </div>
-          </CardContent>
-        </Card>
+        <NeuralBorder active={metrics.avgEngagement > 5}>
+          <Card className="border-0 bg-cosmic-surface/30">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Target className="h-4 w-4 text-cosmic-accent" />
+                <span className="text-sm font-medium">Synaptic Strength</span>
+              </div>
+              <div className="text-2xl font-bold text-cosmic-light">{metrics.avgEngagement.toFixed(1)}%</div>
+              <div className="text-xs text-cosmic-muted">
+                Neural engagement rate
+              </div>
+              <div className="mt-2">
+                <BrainIcon size={12} animate={metrics.avgEngagement > 5} />
+              </div>
+            </CardContent>
+          </Card>
+        </NeuralBorder>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Revenue</span>
-            </div>
-            <div className="text-2xl font-bold">${metrics.totalRevenue.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">
-              Total attributed
-            </div>
-          </CardContent>
-        </Card>
+        <NeuralBorder active={metrics.totalRevenue > 100}>
+          <Card className="border-0 bg-cosmic-surface/30">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-cosmic-glow" />
+                <span className="text-sm font-medium">Neural Value</span>
+              </div>
+              <div className="text-2xl font-bold text-cosmic-light">${metrics.totalRevenue.toFixed(2)}</div>
+              <div className="text-xs text-cosmic-muted">
+                Total neural attribution
+              </div>
+              <div className="mt-2 flex space-x-1">
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="w-1 h-1 bg-cosmic-accent rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </NeuralBorder>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      {/* Neural Charts Grid */}
+      <div className="grid lg:grid-cols-2 gap-6 relative z-10">
         {/* Time Series Chart */}
-        <Card>
+        <NeuralBorder>
+          <Card className="border-0 bg-cosmic-surface/20">
           <CardHeader>
-            <CardTitle className="text-lg">Performance Over Time</CardTitle>
-            <CardDescription>Views and engagement trends</CardDescription>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <SynapseIcon size={18} />
+              Neural Performance Over Time
+            </CardTitle>
+            <CardDescription>Synaptic views and engagement evolution</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -389,12 +432,17 @@ export const PerformanceAnalytics = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+        </NeuralBorder>
 
         {/* Platform Performance */}
-        <Card>
+        <NeuralBorder>
+          <Card className="border-0 bg-cosmic-surface/20">
           <CardHeader>
-            <CardTitle className="text-lg">Platform Performance</CardTitle>
-            <CardDescription>Performance breakdown by platform</CardDescription>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <NeuralNetworkIcon size={18} />
+              Neural Platform Distribution
+            </CardTitle>
+            <CardDescription>Performance breakdown across neural pathways</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -408,6 +456,7 @@ export const PerformanceAnalytics = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+        </NeuralBorder>
 
         {/* Content Type Distribution */}
         <Card>

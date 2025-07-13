@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, TrendingUp, Clock, RefreshCw } from 'lucide-react';
+import { BrainIcon, ThoughtCluster } from '@/components/ui/neural-icons';
+import { NeuralConnections } from '@/components/ui/neural-connections';
+import { NeuralLoading } from '@/components/ui/neural-loading';
+import { NeuralBorder } from '@/components/ui/neural-connections';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,18 +17,25 @@ const TrendingPage = () => {
   });
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 relative">
+      {/* Neural background connections */}
+      <NeuralConnections className="opacity-30" density="low" />
+      
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-6"
+        className="text-center py-6 relative z-10"
       >
-        <h1 className="text-2xl font-bold mb-2 text-cosmic-light">
-          Community Insights
-        </h1>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <BrainIcon size={32} />
+          <h1 className="text-2xl font-bold text-cosmic-light">
+            Community Neural Network
+          </h1>
+          <ThoughtCluster thoughts={6} className="w-8 h-8" />
+        </div>
         <p className="text-cosmic-muted">
-          Real-time discussions from Reddit and social platforms related to your thoughts
+          Real-time synaptic connections from Reddit and social platforms related to your thoughts
         </p>
       </motion.div>
 
@@ -36,17 +47,26 @@ const TrendingPage = () => {
         className="space-y-4"
       >
         {isLoading ? (
-          // Loading state
-          [...Array(5)].map((_, i) => (
-            <Card key={i} className="neural-border bg-cosmic-surface/30">
-              <CardContent className="p-4">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-cosmic-void/20 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-cosmic-void/20 rounded w-1/2"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+          // Neural loading state
+          <div className="flex flex-col items-center py-8 space-y-6">
+            <NeuralLoading size="lg" text="Analyzing neural patterns..." />
+            {[...Array(3)].map((_, i) => (
+              <NeuralBorder key={i} className="w-full">
+                <Card className="bg-cosmic-surface/30 border-0">
+                  <CardContent className="p-4">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-cosmic-void/20 rounded w-3/4"></div>
+                      <div className="h-3 bg-cosmic-void/20 rounded w-1/2"></div>
+                      <div className="flex space-x-2">
+                        <div className="h-6 bg-cosmic-void/20 rounded w-16"></div>
+                        <div className="h-6 bg-cosmic-void/20 rounded w-20"></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </NeuralBorder>
+            ))}
+          </div>
         ) : trends && trends.length > 0 ? (
           trends.slice(0, 8).map((trend, index) => (
             <motion.div
@@ -55,25 +75,35 @@ const TrendingPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="neural-border bg-cosmic-surface/30 hover:bg-cosmic-surface/50 transition-colors cursor-pointer group"
-                    onClick={() => {
-                      // Could navigate to detail view or expand inline
-                      console.log('View details for:', trend.topic);
-                    }}
+              <NeuralBorder 
+                className="cursor-pointer group"
+                active={trend.score > 80}
               >
+                <Card className="bg-cosmic-surface/30 hover:bg-cosmic-surface/50 transition-all duration-300 border-0 group-hover:shadow-lg group-hover:shadow-cosmic-accent/10"
+                      onClick={() => {
+                        // Could navigate to detail view or expand inline
+                        console.log('View details for:', trend.topic);
+                      }}
+                >
                 <CardContent className="p-4 space-y-3">
                   {/* Header */}
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <MessageCircle className="w-4 h-4 text-cosmic-accent" />
-                        <Badge variant="outline" className="text-xs">
+                        <BrainIcon size={16} animate={trend.score > 80} />
+                        <Badge variant="outline" className="text-xs bg-cosmic-void/20 border-cosmic-accent/30">
                           r/{trend.source || 'communities'}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs bg-cosmic-void/20 border-cosmic-accent/30">
                           <Clock className="w-3 h-3 mr-1" />
                           {getTimeAgo(trend.created_at)}
                         </Badge>
+                        {trend.score > 80 && (
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-cosmic-glow rounded-full animate-pulse" />
+                            <span className="text-xs text-cosmic-glow">Hot</span>
+                          </div>
+                        )}
                       </div>
                       <h3 className="text-cosmic-light font-medium mb-1">
                         {trend.topic}
@@ -130,20 +160,25 @@ const TrendingPage = () => {
                   </div>
                 </CardContent>
               </Card>
+              </NeuralBorder>
             </motion.div>
           ))
         ) : (
-          <Card className="neural-border bg-cosmic-surface/30">
-            <CardContent className="p-8 text-center">
-              <MessageCircle className="w-12 h-12 text-cosmic-muted mx-auto mb-4" />
-              <h3 className="text-cosmic-light font-medium mb-2">
-                No community insights found
-              </h3>
-              <p className="text-cosmic-muted text-sm">
-                Add some thoughts to discover related community discussions and pain points
-              </p>
-            </CardContent>
-          </Card>
+          <NeuralBorder>
+            <Card className="bg-cosmic-surface/30 border-0">
+              <CardContent className="p-8 text-center">
+                <div className="flex items-center justify-center mb-4">
+                  <BrainIcon size={48} animate={false} className="opacity-50" />
+                </div>
+                <h3 className="text-cosmic-light font-medium mb-2">
+                  Neural network inactive
+                </h3>
+                <p className="text-cosmic-muted text-sm">
+                  Add some thoughts to activate neural pathways and discover related community discussions
+                </p>
+              </CardContent>
+            </Card>
+          </NeuralBorder>
         )}
       </motion.div>
     </div>
