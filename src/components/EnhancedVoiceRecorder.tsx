@@ -42,9 +42,6 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
     browserSupport,
   } = useEnhancedVoiceRecording();
 
-  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
-  const [isHoldMode, setIsHoldMode] = useState(false);
-
   // Handle recording completion
   const handleStopRecording = useCallback(async () => {
     const result = await stopRecording();
@@ -71,36 +68,7 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
     }
   }, [state.isRecording, state.duration, maxDuration, autoStop, handleStopRecording]);
 
-  // Handle touch/mouse events for hold-to-record
-  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    setTouchStartTime(Date.now());
-    setIsHoldMode(true);
-    
-    if (!state.isRecording) {
-      handleStartRecording();
-    }
-  }, [state.isRecording, handleStartRecording]);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    
-    if (isHoldMode) {
-      const holdDuration = touchStartTime ? Date.now() - touchStartTime : 0;
-      
-      // Minimum hold duration to prevent accidental recordings
-      if (holdDuration < 500) {
-        reset();
-      } else if (state.isRecording) {
-        handleStopRecording();
-      }
-    }
-    
-    setTouchStartTime(null);
-    setIsHoldMode(false);
-  }, [isHoldMode, touchStartTime, state.isRecording, handleStopRecording, reset]);
-
-  // Handle tap to toggle
+  // Handle tap to toggle recording (simple tap-to-start, tap-to-stop)
   const handleTap = useCallback(() => {
     if (state.isRecording) {
       if (state.isPaused) {
@@ -250,11 +218,6 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
               ? "bg-destructive hover:bg-destructive/90"
               : "bg-primary hover:bg-primary/90"
           )}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleTouchStart}
-          onMouseUp={handleTouchEnd}
-          onMouseLeave={handleTouchEnd}
           onClick={handleTap}
           disabled={state.stage === 'requesting-permission' || state.stage === 'processing'}
         >
@@ -371,7 +334,7 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
                 exit={{ y: -10, opacity: 0 }}
                 className="text-muted-foreground"
               >
-                {isHoldMode ? 'Hold to record' : 'Tap to record'}
+                Tap to record
               </motion.span>
             )}
 
@@ -395,7 +358,7 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
                 exit={{ y: -10, opacity: 0 }}
                 className="text-destructive"
               >
-                Recording... {isHoldMode ? 'Release to stop' : 'Tap to stop'}
+                Recording... Tap to stop
               </motion.span>
             )}
 
