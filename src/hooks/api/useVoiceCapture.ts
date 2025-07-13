@@ -189,20 +189,17 @@ export const useVoiceCapture = () => {
     mutationFn: async (params: CreateThoughtParams) => {
       if (!user) throw new Error('Authentication required');
 
-      // Get user's organization
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
+      // Get user's organization using the helper function
+      const { data: orgId, error: orgError } = await supabase
+        .rpc('get_user_organization_id');
 
-      if (!profile?.organization_id) {
+      if (orgError || !orgId) {
         throw new Error('User organization not found');
       }
 
       const thoughtData = {
         user_id: user.id,
-        organization_id: profile.organization_id,
+        organization_id: orgId,
         content: params.content,
         title: params.title,
         tags: params.tags || [],
