@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useVoiceCapture, useCreateThought, useContentSuggestions, useGenerateContent } from '@/hooks/api';
+import { useCreateThought, useContentSuggestions, useGenerateContent } from '@/hooks/api';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { EnhancedVoiceRecorder } from '@/components/EnhancedVoiceRecorder';
+import { type AudioProcessingResult } from '@/hooks/useEnhancedVoiceRecording';
+import { supabase } from '@/integrations/supabase/client';
 
 const MobileCapture = () => {
   const [activeMode, setActiveMode] = useState<'home' | 'voice' | 'camera' | 'text' | 'upload' | 'results' | 'thinking' | 'menu'>('home');
@@ -24,24 +27,121 @@ const MobileCapture = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { 
-    isRecording, 
-    startRecording, 
-    stopRecording, 
-    captures 
-  } = useVoiceCapture();
-
+  // Add missing hooks
   const { mutate: createThought, isPending: isCreatingThought } = useCreateThought();
   const { data: contentSuggestions, isPending: isLoadingContent } = useContentSuggestions(lastThoughtId || undefined);
   const { mutate: generateContent, isPending: isGeneratingContent } = useGenerateContent();
 
-  const handleVoiceCapture = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
+  // Voice recording functionality with enhanced processing
+  const handleVoiceRecordingComplete = async (result: AudioProcessingResult) => {
+    if (!user) return;
+
+    setActiveMode('thinking');
+    
+    try {
+      // Upload audio to Supabase storage
+      const fileName = `voice-memo-${Date.now()}.webm`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('thought-attachments')
+        .upload(`${user.id}/voice-memos/${fileName}`, result.audioBlob, {
+          contentType: result.audioBlob.type || 'audio/webm',
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('thought-attachments')
+        .getPublicUrl(uploadData.path);
+
+      // Process with AI transcription using Whisper API
+      const audioBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.readAsDataURL(result.audioBlob);
+      });
+
+      const transcriptionResult = await supabase.functions.invoke('transcribe-voice', {
+        body: { audio: audioBase64 }
+      });
+
+      if (transcriptionResult.error) {
+        throw new Error(`Transcription failed: ${transcriptionResult.error.message}`);
+      }
+
+      const { text: transcript, confidence } = transcriptionResult.data;
+
+      // Auto-create thought if transcript is good quality
+      if (transcript && confidence > 0.7) {
+        toast({
+          title: "Processing your thought...",
+          description: "Analyzing and generating insights.",
+        });
+
+        createThought({
+          content: transcript,
+          title: transcript.split(' ').slice(0, 6).join(' ') + (transcript.split(' ').length > 6 ? '...' : ''),
+        }, {
+          onSuccess: (data) => {
+            setLastThoughtId(data.id);
+            
+            // Trigger analysis
+            supabase.functions.invoke('analyze-thought', {
+              body: { 
+                thoughtId: data.id, 
+                content: data.content 
+              }
+            }).then(({ data: analysisData, error }) => {
+              if (error) {
+                console.error('Analysis failed:', error);
+              } else {
+                console.log('Analysis completed:', analysisData);
+                setAnalysisData(analysisData?.analysis);
+              }
+              setActiveMode('results');
+            }).catch(console.error);
+          },
+          onError: () => {
+            setActiveMode('voice');
+          }
+        });
+      } else {
+        toast({
+          title: "Voice captured",
+          description: confidence < 0.5 ? "Low quality recording - please try again" : "Transcript needs review",
+          variant: confidence < 0.5 ? "destructive" : "default",
+        });
+        setActiveMode('voice');
+      }
+
+    } catch (error) {
+      console.error('Voice processing error:', error);
+      toast({
+        title: "Voice processing failed",
+        description: "Unable to process the audio. Please try again.",
+        variant: "destructive",
+      });
       setActiveMode('voice');
     }
+  };
+
+  const handleVoiceRecordingStart = () => {
+    setActiveMode('voice');
+  };
+
+  const handleVoiceRecordingStop = () => {
+    // Processing will be handled by completion callback
+  };
+
+  const handleVoiceRecordingError = (error: string) => {
+    toast({
+      title: "Recording Error",
+      description: error,
+      variant: "destructive",
+    });
   };
 
   // Listen for voice processing completion
@@ -512,85 +612,55 @@ const MobileCapture = () => {
     return (
       <div className="min-h-screen bg-cosmic-void p-4 pb-safe flex flex-col items-center justify-center">
         <div className="max-w-md mx-auto text-center">
-          {/* Voice Visualizer */}
-          <div className="relative mb-8">
-            <motion.div
-              animate={{
-                scale: isRecording ? [1, 1.2, 1] : 1,
-                opacity: isRecording ? [0.7, 1, 0.7] : 1,
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: isRecording ? Infinity : 0,
-                ease: "easeInOut",
-              }}
-              className="w-32 h-32 rounded-full bg-gradient-neural flex items-center justify-center mx-auto"
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 w-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveMode('home')}
+              className="text-neural-100"
             >
-              <Mic className="w-12 h-12 text-cosmic-void" />
-            </motion.div>
-            
-            {isRecording && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full border-2 border-synaptic-300/30"
-              />
-            )}
+              ← Back
+            </Button>
+            <Badge variant="secondary" className="bg-neural-800/50 text-synaptic-300">
+              Voice Recording
+            </Badge>
+            <div className="w-20" />
           </div>
 
-          {/* Status */}
+          {/* Title */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-neural-100 mb-2">
-              {isRecording ? "Listening..." : "Ready to capture"}
+              Capture Your Thoughts
             </h2>
             <p className="text-neural-400">
-              {isRecording 
-                ? "Tap to stop recording" 
-                : "Tap the microphone to start recording your thoughts"
-              }
+              Speak naturally and we'll transcribe and analyze your ideas
             </p>
           </div>
 
-          {/* Controls */}
-          <div className="space-y-4">
-            <Button
-              className={`w-full ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-neural'} text-white font-medium`}
-              size="lg"
-              onClick={handleVoiceCapture}
-            >
-              {isRecording ? 'Stop Recording' : 'Start Recording'}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              onClick={() => setActiveMode('home')}
-              className="w-full text-neural-300"
-            >
-              Cancel
-            </Button>
-          </div>
+          {/* Enhanced Voice Recorder */}
+          <EnhancedVoiceRecorder
+            onRecordingComplete={handleVoiceRecordingComplete}
+            onRecordingStart={handleVoiceRecordingStart}
+            onRecordingStop={handleVoiceRecordingStop}
+            onError={handleVoiceRecordingError}
+            maxDuration={300000} // 5 minutes
+            size="lg"
+            showWaveform={true}
+            autoStop={true}
+            className="mb-8"
+          />
 
-          {/* Recent Captures */}
-          {captures.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-sm font-medium text-neural-300 mb-3">Recent Captures</h3>
-              <div className="space-y-2">
-                {captures.slice(0, 3).map((capture) => (
-                  <Card key={capture.id} className="bg-neural-800/30 border-neural-700 p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-neural-200">
-                        {capture.status === 'completed' ? capture.transcript : 'Processing...'}
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        {Math.round(capture.duration / 1000)}s
-                      </Badge>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Tips */}
+          <div className="bg-neural-900/30 rounded-xl p-4 text-left">
+            <h3 className="text-sm font-medium text-synaptic-300 mb-2">💡 Recording Tips</h3>
+            <ul className="text-xs text-neural-400 space-y-1">
+              <li>• Speak clearly and at normal pace</li>
+              <li>• Find a quiet environment for best results</li>
+              <li>• Share any thoughts, ideas, or observations</li>
+              <li>• We'll automatically analyze and create content suggestions</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
@@ -924,12 +994,11 @@ const MobileCapture = () => {
             className="w-full"
           >
             <Button
-              onClick={handleVoiceCapture}
+              onClick={() => setActiveMode('voice')}
               className="w-full h-16 bg-gradient-neural text-cosmic-void font-semibold text-lg rounded-2xl shadow-neural"
-              disabled={isRecording}
             >
               <Mic className="w-6 h-6 mr-3" />
-              {isRecording ? 'Recording...' : 'Talk to me'}
+              Talk to me
             </Button>
           </motion.div>
 
