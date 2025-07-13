@@ -128,7 +128,7 @@ export const useVoiceCapture = () => {
       const fileName = `voice-memo-${captureId}-${Date.now()}.webm`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('thought-attachments')
-        .upload(`voice-memos/${user.id}/${fileName}`, audioBlob, {
+        .upload(`${user.id}/voice-memos/${fileName}`, audioBlob, {
           contentType: 'audio/webm',
         });
 
@@ -139,9 +139,25 @@ export const useVoiceCapture = () => {
         .from('thought-attachments')
         .getPublicUrl(uploadData.path);
 
-      // Process with AI transcription (mock for now - would integrate with Whisper API)
-      const transcript = await transcribeAudio(audioBlob);
-      const confidence = calculateConfidence(transcript);
+      // Process with AI transcription using Whisper API
+      const audioBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.readAsDataURL(audioBlob);
+      });
+
+      const transcriptionResult = await supabase.functions.invoke('transcribe-voice', {
+        body: { audio: audioBase64 }
+      });
+
+      if (transcriptionResult.error) {
+        throw new Error(`Transcription failed: ${transcriptionResult.error.message}`);
+      }
+
+      const { text: transcript, confidence } = transcriptionResult.data;
 
       // Update capture with results
       setCaptures(prev => 
@@ -260,32 +276,6 @@ export const useVoiceCapture = () => {
   };
 };
 
-// Mock transcription function (would integrate with Whisper API)
-const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Mock responses based on audio duration
-  const duration = audioBlob.size / 1000; // Rough estimate
-  
-  if (duration < 2) {
-    return "Quick thought captured.";
-  } else if (duration < 5) {
-    return "I just had an interesting idea about neural networks and how they might relate to human creativity.";
-  } else {
-    return "I've been thinking about the intersection of AI and human consciousness. There's something fascinating about how neural networks mirror the way our brains form connections between seemingly unrelated concepts. This could be the basis for a new content series exploring the parallels between artificial and biological intelligence.";
-  }
-};
-
-// Calculate transcription confidence
-const calculateConfidence = (transcript: string): number => {
-  // Simple heuristic based on transcript quality
-  if (!transcript || transcript.length < 5) return 0.2;
-  if (transcript.includes("...") || transcript.length < 20) return 0.5;
-  if (transcript.split(' ').length > 10) return 0.9;
-  return 0.7;
-};
-
 // Generate title from transcript
 const generateTitle = (transcript: string): string => {
   // Extract first few words as title
@@ -297,5 +287,5 @@ const generateTitle = (transcript: string): string => {
     title += '...';
   }
   
-  return title;
+  return title || 'Voice Memo';
 };
