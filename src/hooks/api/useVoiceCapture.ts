@@ -13,11 +13,26 @@ export const useVoiceCapture = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [captures, setCaptures] = useState<VoiceCapture[]>([]);
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  // Detect mobile Safari
+  const isMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    (navigator.userAgent.includes('Safari') && /Android/.test(navigator.userAgent));
+
   // Start recording
   const startRecording = useCallback(async () => {
+    // Mobile Safari requires user interaction to start audio
+    if (isMobile && !userHasInteracted) {
+      setUserHasInteracted(true);
+      toast({
+        title: "Tap to start recording",
+        description: "On mobile devices, tap the record button to begin.",
+      });
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -87,7 +102,7 @@ export const useVoiceCapture = () => {
         variant: "destructive",
       });
     }
-  }, []);
+  }, [isMobile, userHasInteracted]);
 
   // Stop recording
   const stopRecording = useCallback(() => {
