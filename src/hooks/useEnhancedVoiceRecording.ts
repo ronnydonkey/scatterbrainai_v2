@@ -68,16 +68,20 @@ export const useEnhancedVoiceRecording = () => {
 
   // Request microphone permission
   const requestPermission = useCallback(async () => {
+    console.log('🎤 Starting microphone permission request...');
     setState(prev => ({ ...prev, stage: 'requesting-permission', error: null }));
 
     try {
       const browserSupport = getBrowserSupport();
+      console.log('🎤 Browser support:', browserSupport);
       
       if (!browserSupport.hasMediaDevices) {
+        console.error('❌ MediaDevices not supported');
         throw new Error('Your browser does not support audio recording');
       }
 
       if (!browserSupport.hasMediaRecorder) {
+        console.error('❌ MediaRecorder not supported');
         throw new Error('MediaRecorder is not supported in your browser');
       }
 
@@ -97,7 +101,11 @@ export const useEnhancedVoiceRecording = () => {
         },
       };
 
+      console.log('🎤 Requesting getUserMedia with constraints:', constraints);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log('✅ Got media stream:', stream);
+      console.log('🎤 Audio tracks:', stream.getAudioTracks());
+      
       streamRef.current = stream;
 
       setState(prev => ({
@@ -107,6 +115,7 @@ export const useEnhancedVoiceRecording = () => {
         error: null,
       }));
 
+      console.log('✅ Permission granted successfully');
       return stream;
     } catch (error: any) {
       let errorMessage = 'Failed to access microphone';
