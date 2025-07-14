@@ -197,8 +197,8 @@ export default function SimplifiedFlow() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-background)' }}>
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen w-full" style={{ background: 'var(--gradient-background)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <AnimatePresence mode="wait">
           {/* Step 1: Thought Capture */}
           {currentStep === 'capture' && (
@@ -210,17 +210,17 @@ export default function SimplifiedFlow() {
               className="max-w-2xl mx-auto"
             >
               {/* Brain Icon */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-6 sm:mb-8">
                 <div 
-                  className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-4 sm:mb-6 flex items-center justify-center"
                   style={{ background: 'var(--gradient-primary)' }}
                 >
-                  <Brain className="w-10 h-10 text-white" />
+                  <Brain className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                 </div>
-                <h1 className="text-4xl font-bold text-white mb-3">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 px-4 leading-tight">
                   What's swirling around in your head?
                 </h1>
-                <p className="text-lg text-white/70">
+                <p className="text-base sm:text-lg text-white/70 px-4 max-w-xl mx-auto">
                   Dump everything here — I'll help you sort it out and turn chaos into clarity.
                 </p>
               </div>
@@ -240,13 +240,14 @@ export default function SimplifiedFlow() {
               </div>
 
               {/* Action Bar */}
-              <div className="flex justify-between items-center mb-8">
-                <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 sm:mb-8">
+                <div className="flex flex-wrap gap-2 sm:gap-4 order-2 sm:order-1">
                   <Button 
                     variant="outline" 
                     onClick={handleVoiceInput}
                     disabled={isRecording}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    size="sm"
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0"
                   >
                     <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'text-red-400 animate-pulse' : ''}`} />
                     {isRecording ? 'Recording...' : 'Voice'}
@@ -254,7 +255,8 @@ export default function SimplifiedFlow() {
                   <Button 
                     variant="outline" 
                     onClick={handleFileUpload}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    size="sm"
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload
@@ -265,11 +267,12 @@ export default function SimplifiedFlow() {
                   onClick={handleCapture}
                   disabled={!capturedThoughts.trim()}
                   size="lg"
-                  className="text-white font-semibold"
+                  className="text-white font-semibold w-full sm:w-auto order-1 sm:order-2 min-w-0"
                   style={{ background: 'var(--gradient-primary)' }}
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Transform My Thoughts
+                  <Sparkles className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="hidden sm:inline">Transform My Thoughts</span>
+                  <span className="sm:hidden">Transform</span>
                 </Button>
               </div>
 
@@ -295,14 +298,14 @@ export default function SimplifiedFlow() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="max-w-2xl mx-auto text-center"
+              className="max-w-2xl mx-auto text-center px-4"
             >
               {/* Neural Network Animation */}
-              <div className="mb-8">
-                <div className="relative w-32 h-32 mx-auto mb-6">
+              <div className="mb-6 sm:mb-8">
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6">
                   {/* Main circle */}
                   <motion.div
-                    className="w-32 h-32 rounded-full flex items-center justify-center relative"
+                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center relative"
                     style={{ background: 'var(--gradient-primary)' }}
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -311,15 +314,15 @@ export default function SimplifiedFlow() {
                     {[...Array(8)].map((_, i) => (
                       <motion.div
                         key={i}
-                        className="absolute w-3 h-3 bg-white rounded-full"
+                        className="absolute w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full"
                         style={{
                           top: '50%',
                           left: '50%',
                           transformOrigin: '0 0',
                         }}
                         animate={{
-                          x: Math.cos((i * Math.PI * 2) / 8) * 60,
-                          y: Math.sin((i * Math.PI * 2) / 8) * 60,
+                          x: Math.cos((i * Math.PI * 2) / 8) * 50,
+                          y: Math.sin((i * Math.PI * 2) / 8) * 50,
                           scale: [0.8, 1.2, 0.8],
                         }}
                         transition={{
@@ -331,16 +334,16 @@ export default function SimplifiedFlow() {
                     ))}
                     
                     {/* Inner brain icon */}
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                      <Brain className="w-6 h-6 text-purple-600" />
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center">
+                      <Brain className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" />
                     </div>
                   </motion.div>
                 </div>
 
-                <h2 className="text-3xl font-bold text-white mb-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 px-4">
                   Organizing your beautiful chaos...
                 </h2>
-                <p className="text-white/70 mb-8">
+                <p className="text-white/70 mb-6 sm:mb-8 px-4 text-sm sm:text-base">
                   We're connecting your ideas, finding patterns, and crafting actionable insights just for you.
                 </p>
               </div>
@@ -382,38 +385,38 @@ export default function SimplifiedFlow() {
               className="max-w-6xl mx-auto"
             >
               {/* Header */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-white" />
+              <div className="text-center mb-6 sm:mb-8 px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-2">Your Clarity Report</h2>
-                <p className="text-white/70 mb-1">From scattered thoughts to structured action</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 leading-tight">Your Clarity Report</h2>
+                <p className="text-white/70 text-sm sm:text-base">From scattered thoughts to structured action</p>
               </div>
 
               {/* Content Grid */}
-              <div className="grid lg:grid-cols-2 gap-8 mb-8">
+              <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 mb-6 sm:mb-8">
                 {/* Key Insights */}
                 <Card 
-                  className="p-6 border-white/10"
+                  className="p-4 sm:p-6 border-white/10"
                   style={{ 
                     background: 'hsla(217.2, 32.6%, 17.5%, 0.5)',
                     backdropFilter: 'blur(16px)'
                   }}
                 >
                   <div className="flex items-center mb-4">
-                    <Brain className="w-6 h-6 text-purple-400 mr-3" />
-                    <h3 className="text-xl font-semibold text-white">Key Insights</h3>
+                    <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 mr-2 sm:mr-3 flex-shrink-0" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-white">Key Insights</h3>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {clarityReport.keyInsights.map((insight, index) => (
                       <div key={index} className="flex items-start space-x-3">
                         <div 
-                          className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white font-bold text-sm"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white font-bold text-xs sm:text-sm"
                           style={{ background: 'var(--gradient-primary)' }}
                         >
                           {index + 1}
                         </div>
-                        <p className="text-white/80">{insight}</p>
+                        <p className="text-white/80 text-sm sm:text-base leading-relaxed">{insight}</p>
                       </div>
                     ))}
                   </div>
@@ -421,21 +424,21 @@ export default function SimplifiedFlow() {
 
                 {/* Action Items */}
                 <Card 
-                  className="p-6 border-white/10"
+                  className="p-4 sm:p-6 border-white/10"
                   style={{ 
                     background: 'hsla(217.2, 32.6%, 17.5%, 0.5)',
                     backdropFilter: 'blur(16px)'
                   }}
                 >
                   <div className="flex items-center mb-4">
-                    <CheckCircle className="w-6 h-6 text-green-400 mr-3" />
-                    <h3 className="text-xl font-semibold text-white">Action Items</h3>
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 mr-2 sm:mr-3 flex-shrink-0" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-white">Action Items</h3>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {clarityReport.actionItems.map((item, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                        <input type="checkbox" className="mt-1 accent-green-400" />
-                        <p className="text-white/80">{item}</p>
+                      <div key={index} className="flex items-start space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                        <input type="checkbox" className="mt-1 accent-green-400 flex-shrink-0" />
+                        <p className="text-white/80 text-sm sm:text-base leading-relaxed">{item}</p>
                       </div>
                     ))}
                   </div>
@@ -444,55 +447,55 @@ export default function SimplifiedFlow() {
 
               {/* Content Ready to Share */}
               <Card 
-                className="p-6 mb-8 border-white/10"
+                className="p-4 sm:p-6 mb-6 sm:mb-8 border-white/10"
                 style={{ 
                   background: 'hsla(217.2, 32.6%, 17.5%, 0.5)',
                   backdropFilter: 'blur(16px)'
                 }}
               >
-                <h3 className="text-xl font-semibold text-white mb-6 text-center">Content Ready to Share</h3>
-                <div className="grid md:grid-cols-3 gap-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 text-center">Content Ready to Share</h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   <div className="text-center">
-                    <Twitter className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-                    <h4 className="font-semibold text-white mb-3">Twitter</h4>
-                    <p className="text-white/70 text-sm mb-4 line-clamp-3">{clarityReport.contentReady.tweet}</p>
+                    <Twitter className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 mx-auto mb-2 sm:mb-3" />
+                    <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">Twitter</h4>
+                    <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">{clarityReport.contentReady.tweet}</p>
                     <Button 
                       onClick={() => copyToClipboard(clarityReport.contentReady.tweet, 'Tweet')}
                       size="sm" 
                       variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
                     >
-                      <Copy className="w-4 h-4 mr-2" />
+                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       Copy
                     </Button>
                   </div>
                   
                   <div className="text-center">
-                    <Linkedin className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-                    <h4 className="font-semibold text-white mb-3">LinkedIn</h4>
-                    <p className="text-white/70 text-sm mb-4 line-clamp-3">{clarityReport.contentReady.linkedin}</p>
+                    <Linkedin className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-2 sm:mb-3" />
+                    <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">LinkedIn</h4>
+                    <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">{clarityReport.contentReady.linkedin}</p>
                     <Button 
                       onClick={() => copyToClipboard(clarityReport.contentReady.linkedin, 'LinkedIn post')}
                       size="sm" 
                       variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
                     >
-                      <Copy className="w-4 h-4 mr-2" />
+                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       Copy
                     </Button>
                   </div>
                   
-                  <div className="text-center">
-                    <Instagram className="w-8 h-8 text-pink-500 mx-auto mb-3" />
-                    <h4 className="font-semibold text-white mb-3">Instagram</h4>
-                    <p className="text-white/70 text-sm mb-4 line-clamp-3">{clarityReport.contentReady.instagramCaption}</p>
+                  <div className="text-center sm:col-span-2 lg:col-span-1">
+                    <Instagram className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 mx-auto mb-2 sm:mb-3" />
+                    <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">Instagram</h4>
+                    <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">{clarityReport.contentReady.instagramCaption}</p>
                     <Button 
                       onClick={() => copyToClipboard(clarityReport.contentReady.instagramCaption, 'Instagram caption')}
                       size="sm" 
                       variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
                     >
-                      <Copy className="w-4 h-4 mr-2" />
+                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       Copy
                     </Button>
                   </div>
@@ -501,26 +504,26 @@ export default function SimplifiedFlow() {
 
               {/* Calendar Suggestions */}
               <Card 
-                className="p-6 mb-8 border-white/10"
+                className="p-4 sm:p-6 mb-6 sm:mb-8 border-white/10"
                 style={{ 
                   background: 'hsla(217.2, 32.6%, 17.5%, 0.5)',
                   backdropFilter: 'blur(16px)'
                 }}
               >
-                <h3 className="text-xl font-semibold text-white mb-6 text-center">Calendar Suggestions</h3>
-                <div className="grid md:grid-cols-3 gap-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 text-center">Calendar Suggestions</h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {clarityReport.calendarSuggestions.map((suggestion, index) => (
-                    <div key={index} className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                      <h4 className="font-semibold text-white mb-2">{suggestion.title}</h4>
-                      <p className="text-white/70 text-sm mb-1">{suggestion.time}</p>
-                      <p className="text-white/60 text-sm mb-3">{suggestion.duration}</p>
+                    <div key={index} className="p-3 sm:p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                      <h4 className="font-semibold text-white mb-2 text-sm sm:text-base">{suggestion.title}</h4>
+                      <p className="text-white/70 text-xs sm:text-sm mb-1">{suggestion.time}</p>
+                      <p className="text-white/60 text-xs sm:text-sm mb-3">{suggestion.duration}</p>
                       <Button 
                         onClick={() => addToCalendar(suggestion)}
                         size="sm" 
                         variant="outline"
-                        className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs sm:text-sm"
                       >
-                        <Calendar className="w-4 h-4 mr-2" />
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Add to Calendar
                       </Button>
                     </div>
@@ -529,24 +532,27 @@ export default function SimplifiedFlow() {
               </Card>
 
               {/* Action Buttons */}
-              <div className="text-center space-y-4">
-                <Button 
-                  onClick={resetFlow}
-                  size="lg"
-                  className="text-white font-semibold mr-4"
-                  style={{ background: 'var(--gradient-primary)' }}
-                >
-                  <Brain className="w-5 h-5 mr-2" />
-                  Analyze More Thoughts
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  <Copy className="w-5 h-5 mr-2" />
-                  Save Report
-                </Button>
+              <div className="text-center space-y-3 sm:space-y-4 px-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+                  <Button 
+                    onClick={resetFlow}
+                    size="lg"
+                    className="text-white font-semibold w-full sm:w-auto"
+                    style={{ background: 'var(--gradient-primary)' }}
+                  >
+                    <Brain className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <span className="hidden sm:inline">Analyze More Thoughts</span>
+                    <span className="sm:hidden">Analyze More</span>
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full sm:w-auto"
+                  >
+                    <Copy className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Save Report
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}
