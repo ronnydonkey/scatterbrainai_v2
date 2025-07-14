@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive, User, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +34,7 @@ interface ProcessingStep {
 }
 
 export default function SimplifiedFlow() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<FlowStep>('capture');
   const [capturedThoughts, setCapturedThoughts] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -342,7 +344,7 @@ export default function SimplifiedFlow() {
           
           <nav className="flex gap-6">
             <button 
-              onClick={() => window.location.href = '/gallery'}
+              onClick={() => navigate('/gallery')}
               className="text-purple-300 hover:text-white transition-colors text-sm font-medium"
             >
               Gallery
@@ -770,11 +772,11 @@ export default function SimplifiedFlow() {
                   </Button>
                   <Button 
                     variant="outline"
-                    onClick={() => window.location.href = '/gallery'}
+                    onClick={() => navigate('/gallery')}
                     className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full sm:flex-1 min-h-[48px] text-sm sm:text-base"
                   >
-                    <Archive className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    View Gallery
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    View All Insights
                   </Button>
                 </div>
               </div>

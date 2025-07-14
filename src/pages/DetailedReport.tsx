@@ -350,7 +350,15 @@ const DetailedReport: React.FC = () => {
                       <div key={platform} className="p-4 bg-white/5 rounded-lg">
                         <h5 className="font-medium mb-2 capitalize">{platform}</h5>
                         <p className="text-sm text-gray-300 mb-2">{content?.content || 'No content available'}</p>
-                        <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-white/20 text-white hover:bg-white/10"
+                          onClick={() => {
+                            navigator.clipboard.writeText(content?.content || '');
+                            // Add toast notification here if you have toast setup
+                          }}
+                        >
                           Copy to Clipboard
                         </Button>
                       </div>
