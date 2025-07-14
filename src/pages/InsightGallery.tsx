@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Brain, ArrowRight, Clock, Star } from 'lucide-react';
+import { Search, Brain, ArrowRight, Star, ArrowLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOfflineInsights } from '@/hooks/api';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, isThisWeek } from 'date-fns';
 
 const InsightGallery: React.FC = () => {
   const { insights, toggleStar } = useOfflineInsights();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'today' | 'starred'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'week' | 'starred'>('all');
 
   // Simple filtering
   const filteredInsights = insights.filter(insight => {
@@ -24,8 +24,8 @@ const InsightGallery: React.FC = () => {
     }
     
     // Status filters
-    if (selectedFilter === 'today') {
-      return isToday(new Date(insight.timestamp));
+    if (selectedFilter === 'week') {
+      return isThisWeek(new Date(insight.timestamp));
     }
     if (selectedFilter === 'starred') {
       return insight.starred;
@@ -50,168 +50,215 @@ const InsightGallery: React.FC = () => {
     const totalActions = insight.response?.actionItems?.length || 0;
     
     return (
-      <Card className="group hover:shadow-md transition-all duration-200 border border-gray-200 hover:border-gray-300">
-        <CardContent className="p-6">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Brain className="w-5 h-5 text-gray-600" />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">{getRelativeTime(insight.timestamp)}</div>
-                <div className="text-sm text-gray-500">{format(new Date(insight.timestamp), 'h:mm a')}</div>
-              </div>
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.2 }}
+        className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/30 rounded-xl p-6 hover:border-purple-500/30 transition-all duration-300 cursor-pointer"
+        onClick={() => handleContinueAnalysis(insight)}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+              <Brain className="w-5 h-5 text-white" />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleStar(insight.id);
-              }}
-              className={`${insight.starred ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              <Star className={`w-5 h-5 ${insight.starred ? 'fill-current' : ''}`} />
-            </Button>
+            <div>
+              <div className="font-medium text-white">{getRelativeTime(insight.timestamp)}</div>
+              <div className="text-sm text-slate-400">{format(new Date(insight.timestamp), 'h:mm a')}</div>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleStar(insight.id);
+            }}
+            className={`${insight.starred ? 'text-yellow-400 hover:text-yellow-300' : 'text-slate-400 hover:text-slate-300'} hover:bg-slate-700/50`}
+          >
+            <Star className={`w-5 h-5 ${insight.starred ? 'fill-current' : ''}`} />
+          </Button>
+        </div>
 
-          {/* Content */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-              {insight.themes[0] || 'Untitled Insight'}
-            </h3>
+        {/* Content */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white line-clamp-2">
+            "{insight.themes[0] || 'Untitled Insight'}"
+          </h3>
 
-            <p className="text-gray-600 leading-relaxed line-clamp-3">
-              {insight.input}
-            </p>
+          <p className="text-slate-300 leading-relaxed line-clamp-3 text-sm">
+            {insight.input}
+          </p>
 
-            {/* Simple progress indicator */}
+          {/* Progress and status indicators */}
+          <div className="flex items-center justify-between">
             {totalActions > 0 && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                <span>{completedActions}/{totalActions} tasks completed</span>
+              <div className="flex items-center gap-2 text-sm text-emerald-400">
+                <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <span>{completedActions}/{totalActions} actions done</span>
               </div>
             )}
-          </div>
-
-          {/* Action */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <Button
-              variant="ghost"
-              onClick={() => handleContinueAnalysis(insight)}
-              className="w-full justify-between text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-            >
+            
+            <div className="flex items-center gap-2 text-sm text-purple-400">
+              <Sparkles className="w-4 h-4" />
               <span>Continue Analysis</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </motion.div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container max-w-4xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Navigation */}
+      <div className="absolute top-6 left-6 z-10">
+        <Button
+          variant="ghost"
+          onClick={() => window.location.href = '/simplified'}
+          className="text-slate-300 hover:text-white hover:bg-slate-800/50 flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Capture
+        </Button>
+      </div>
+
+      <div className="container max-w-6xl mx-auto px-6 py-16">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            Insight Gallery
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center mx-auto mb-4">
+              <Brain className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Your Thought Journey
           </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Your collection of thoughts, insights, and discoveries
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+            Every scattered thought, beautifully organized
           </p>
-        </div>
+        </motion.div>
 
         {/* Search */}
-        <div className="mb-8">
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <motion.div 
+          className="mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 w-6 h-6 text-slate-400" />
             <Input
-              placeholder="Search insights..."
+              placeholder="Search your insights..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 text-base border-gray-200 focus:border-gray-400 bg-white"
+              className="pl-16 h-16 text-lg bg-slate-800/50 backdrop-blur-xl border-slate-700/30 text-white placeholder-slate-400 rounded-2xl focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Simple filters */}
-        <div className="mb-8">
-          <div className="flex justify-center gap-2">
+        <motion.div 
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <div className="flex justify-center gap-3">
             {[
               { value: 'all', label: 'All' },
-              { value: 'today', label: 'Today' },
+              { value: 'week', label: 'This Week' },
               { value: 'starred', label: 'Starred' }
             ].map(filter => (
               <Button
                 key={filter.value}
-                variant={selectedFilter === filter.value ? 'default' : 'outline'}
-                size="sm"
+                variant={selectedFilter === filter.value ? 'default' : 'ghost'}
+                size="lg"
                 onClick={() => setSelectedFilter(filter.value as any)}
-                className="rounded-full"
+                className={`rounded-full px-8 transition-all duration-300 ${
+                  selectedFilter === filter.value 
+                    ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:from-purple-600 hover:to-blue-700' 
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                }`}
               >
                 {filter.label}
               </Button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Results */}
         {filteredInsights.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
-              <Brain className="w-8 h-8 text-gray-400" />
+          <motion.div 
+            className="text-center py-20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className="w-20 h-20 rounded-2xl bg-slate-800/50 backdrop-blur-xl flex items-center justify-center mx-auto mb-8">
+              <Brain className="w-10 h-10 text-slate-400" />
             </div>
             
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            <h3 className="text-2xl font-semibold text-white mb-4">
               {searchTerm || selectedFilter !== 'all' 
                 ? 'No insights found' 
-                : 'Your insight journey starts here'
+                : 'Ready to capture your first thoughts?'
               }
             </h3>
             
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            <p className="text-slate-300 mb-10 max-w-md mx-auto text-lg">
               {searchTerm || selectedFilter !== 'all'
                 ? 'Try adjusting your search or filters.'
-                : 'Share your thoughts and ideas to create your first insight.'
+                : 'Your insights will appear here as you explore and analyze your thoughts.'
               }
             </p>
             
             {searchTerm || selectedFilter !== 'all' ? (
               <Button
                 variant="outline"
+                size="lg"
                 onClick={() => {
                   setSearchTerm('');
                   setSelectedFilter('all');
                 }}
+                className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-full px-8"
               >
                 Clear filters
               </Button>
             ) : (
               <Button
                 onClick={() => window.location.href = '/simplified'}
-                className="bg-gray-900 hover:bg-gray-800 text-white"
+                size="lg"
+                className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-full px-8 py-4"
               >
-                <Brain className="w-4 h-4 mr-2" />
-                Start Your First Analysis
+                <Brain className="w-5 h-5 mr-2" />
+                Start Thinking
               </Button>
             )}
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredInsights.map(insight => (
+          <motion.div 
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            {filteredInsights.map((insight, index) => (
               <motion.div
                 key={insight.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <InsightCard insight={insight} />
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
