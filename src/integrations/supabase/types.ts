@@ -236,6 +236,44 @@ export type Database = {
           },
         ]
       }
+      detailed_reports: {
+        Row: {
+          created_at: string
+          id: string
+          insight_id: string
+          organization_id: string
+          report_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insight_id: string
+          organization_id: string
+          report_data: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insight_id?: string
+          organization_id?: string
+          report_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detailed_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       niche_templates: {
         Row: {
           content_types: Json

@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.4';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
@@ -15,7 +16,55 @@ serve(async (req) => {
   }
 
   try {
+    // Get auth token and create Supabase client
+    const authHeader = req.headers.get('Authorization')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error('Unauthorized');
+    }
+
     const { insightId, originalInput, basicInsights, generateResources, includeAffiliateLinks } = await req.json();
+
+    console.log('Checking for existing detailed report for insight:', insightId);
+
+    // Check if report already exists
+    const { data: existingReport, error: fetchError } = await supabase
+      .from('detailed_reports')
+      .select('report_data')
+      .eq('insight_id', insightId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+      console.error('Error checking for existing report:', fetchError);
+    }
+
+    if (existingReport) {
+      console.log('Found existing report, returning cached version');
+      return new Response(JSON.stringify({ success: true, report: existingReport.report_data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('No existing report found, generating new one');
+
+    // Get user's organization
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('organization_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!profile?.organization_id) {
+      throw new Error('User organization not found');
+    }
 
     console.log('Generating detailed report for insight:', insightId);
 
@@ -147,7 +196,22 @@ serve(async (req) => {
       contentSuggestions: detailedAnalysis.contentSuggestions
     };
 
-    console.log('Report generated successfully');
+    console.log('Report generated successfully, storing in database');
+
+    // Store the report in the database
+    const { error: insertError } = await supabase
+      .from('detailed_reports')
+      .insert({
+        insight_id: insightId,
+        user_id: user.id,
+        organization_id: profile.organization_id,
+        report_data: report
+      });
+
+    if (insertError) {
+      console.error('Failed to store report:', insertError);
+      // Still return the report even if storage fails
+    }
 
     return new Response(JSON.stringify({ success: true, report }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
