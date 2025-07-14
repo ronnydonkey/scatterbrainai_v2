@@ -12,6 +12,7 @@ import GeneratorPage from "./pages/GeneratorPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import SimplifiedFlow from "./pages/SimplifiedFlow";
+import InsightGallery from "./pages/InsightGallery";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="trending" element={<TrendingPage />} />
               <Route path="generator" element={<GeneratorPage />} />
               <Route path="library" element={<GeneratorPage />} />
+              <Route path="gallery" element={<InsightGallery />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="planning" element={<AnalyticsPage />} />
               <Route path="settings" element={<SettingsPage />} />

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw } from 'lucide-react';
+import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -197,6 +197,17 @@ export default function SimplifiedFlow() {
       };
       
       setClarityReport(mockResponse);
+      
+      // Save insight to gallery
+      try {
+        await saveInsight(
+          capturedThoughts,
+          mockResponse,
+          ['Productivity', 'Creative Process', 'Content Strategy']
+        );
+      } catch (error) {
+        console.error('Failed to save insight:', error);
+      }
     } catch (error) {
       toast.error('Failed to process thoughts. Please try again.');
       return;
@@ -657,10 +668,11 @@ export default function SimplifiedFlow() {
                   </Button>
                   <Button 
                     variant="outline"
+                    onClick={() => window.location.href = '/gallery'}
                     className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full sm:flex-1 min-h-[48px] text-sm sm:text-base"
                   >
-                    <Copy className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Save Report
+                    <Archive className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    View Gallery
                   </Button>
                 </div>
               </div>

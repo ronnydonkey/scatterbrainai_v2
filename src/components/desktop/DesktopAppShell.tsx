@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Sparkles,
   Library,
+  Archive,
   BarChart3,
   MessageSquare,
   Command,
@@ -72,6 +73,14 @@ const navigationItems = [
     icon: Library,
     path: '/library',
     description: 'Content Management',
+    category: 'intelligence'
+  },
+  {
+    id: 'gallery',
+    label: 'Insight Gallery',
+    icon: Archive,
+    path: '/gallery',
+    description: 'Thought Museum',
     category: 'intelligence'
   },
   {
