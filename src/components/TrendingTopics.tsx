@@ -6,6 +6,11 @@ import { Brain, Cpu, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TrendingTopicCard } from './TrendingTopicCard';
+import { SimpleNeuralLoading } from '@/components/ui/simple-neural-loading';
+import { NeuralBorder } from '@/components/ui/neural-border';
+import { BrainIcon } from '@/components/ui/brain-icon';
+import { NeuralNetworkIcon } from '@/components/ui/neural-network-icon';
+import { ThoughtCluster } from '@/components/ui/thought-cluster';
 
 interface TrendingTopic {
   id: string;
@@ -81,7 +86,7 @@ export const TrendingTopics: React.FC<TrendingTopicsProps> = ({
     return (
       <div className="space-y-6">
         <div className="flex justify-center">
-          <NeuralLoading size="md" text="Analyzing trending neural patterns..." />
+          <SimpleNeuralLoading size="md" text="Analyzing trending neural patterns..." />
         </div>
         <div className="space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (

@@ -36,6 +36,14 @@ import {
 } from 'lucide-react';
 import { Brain, Cpu, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { 
+  SimpleNeuralConnections, 
+  NeuralBorder, 
+  BrainIcon, 
+  SimpleNeuralLoading, 
+  SynapseIcon, 
+  NeuralNetworkIcon 
+} from '@/components/ui';
 
 interface ContentPerformance {
   id: string;
@@ -243,7 +251,7 @@ export const PerformanceAnalytics = () => {
   if (loading) {
     return (
       <div className="relative">
-        <NeuralConnections className="opacity-20" density="medium" />
+        <SimpleNeuralConnections className="opacity-20" />
         <NeuralBorder>
           <Card className="border-0">
             <CardHeader>
@@ -254,7 +262,7 @@ export const PerformanceAnalytics = () => {
             </CardHeader>
             <CardContent>
               <div className="flex justify-center mb-6">
-                <NeuralLoading size="lg" text="Analyzing neural performance patterns..." />
+                <SimpleNeuralLoading size="lg" text="Analyzing neural performance patterns..." />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
@@ -273,7 +281,7 @@ export const PerformanceAnalytics = () => {
   return (
     <div className="space-y-6 relative">
       {/* Neural background connections */}
-      <NeuralConnections className="opacity-30" density="low" />
+      <SimpleNeuralConnections className="opacity-30" />
       
       {/* Header & Controls */}
       <NeuralBorder>
@@ -433,7 +441,7 @@ export const PerformanceAnalytics = () => {
         </NeuralBorder>
 
         {/* Platform Performance */}
-        <NeuralBorder>
+          <NeuralBorder>
           <Card className="border-0 bg-cosmic-surface/20">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">

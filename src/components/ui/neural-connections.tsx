@@ -71,15 +71,14 @@ export function NeuralConnections({ connections, pulseSpeed = 1 }: NeuralConnect
         {connections.map((connection, i) => {
           const points = [connection.from, connection.to];
           const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          const material = new THREE.LineBasicMaterial({ 
+            color: connection.active ? "#8B5CF6" : "#4C1D95",
+            opacity: connection.strength * 0.6 + 0.2,
+            transparent: true
+          });
           
           return (
-            <line key={i} geometry={geometry}>
-              <lineBasicMaterial 
-                color={connection.active ? "#8B5CF6" : "#4C1D95"} 
-                opacity={connection.strength * 0.6 + 0.2}
-                transparent
-              />
-            </line>
+            <primitive key={i} object={new THREE.Line(geometry, material)} />
           );
         })}
       </group>

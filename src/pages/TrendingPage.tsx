@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTrending } from '@/hooks/api';
+import { 
+  SimpleNeuralConnections, 
+  SimpleNeuralLoading, 
+  NeuralBorder, 
+  BrainIcon, 
+  ThoughtCluster 
+} from '@/components/ui';
 
 const TrendingPage = () => {
   const { data: trends, isLoading } = useTrending({ 
@@ -16,7 +23,7 @@ const TrendingPage = () => {
   return (
     <div className="p-4 space-y-6 relative">
       {/* Neural background connections */}
-      <NeuralConnections className="opacity-30" density="low" />
+      <SimpleNeuralConnections className="opacity-30" />
       
       {/* Header */}
       <motion.div
@@ -46,7 +53,7 @@ const TrendingPage = () => {
         {isLoading ? (
           // Neural loading state
           <div className="flex flex-col items-center py-8 space-y-6">
-            <NeuralLoading size="lg" text="Analyzing neural patterns..." />
+            <SimpleNeuralLoading size="lg" text="Analyzing neural patterns..." />
             {[...Array(3)].map((_, i) => (
               <NeuralBorder key={i} className="w-full">
                 <Card className="bg-cosmic-surface/30 border-0">
@@ -161,7 +168,7 @@ const TrendingPage = () => {
             </motion.div>
           ))
         ) : (
-          <NeuralBorder>
+            <NeuralBorder>
             <Card className="bg-cosmic-surface/30 border-0">
               <CardContent className="p-8 text-center">
                 <div className="flex items-center justify-center mb-4">
