@@ -2,15 +2,9 @@ import { Suspense, useState, useRef, useMemo, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
   OrbitControls, 
-  Environment, 
-  PerspectiveCamera,
-  Html,
-  Stars
+  Html
 } from '@react-three/drei';
 import * as THREE from 'three';
-import { NeuralNode, BrainLobe } from '@/components/ui/neural-icons';
-import { NeuralConnections } from '@/components/ui/neural-connections';
-import { NeuralLoading } from '@/components/ui/neural-loading';
 
 interface ThoughtNode {
   id: string;
@@ -181,64 +175,25 @@ function NeuralScene({
     { position: new THREE.Vector3(0, 1, -3), size: 3.5, color: '#DC2626', name: 'Emotional' }
   ], []);
 
+  console.log('NeuralScene render - filteredThoughts:', filteredThoughts.length);
+
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.3} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#8B5CF6" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3B82F6" />
-      <spotLight
-        position={[0, 20, 0]}
-        angle={Math.PI / 6}
-        penumbra={1}
-        intensity={1}
-        color="#FFFFFF"
-      />
-
-      {/* Environment */}
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+      {/* Basic lighting only */}
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1} />
       
-      {/* Brain lobes (background context) */}
-      {viewMode === '3d-brain' && brainLobes.map((lobe, i) => (
-        <BrainLobe
-          key={i}
-          position={lobe.position}
-          size={lobe.size}
-          color={lobe.color}
-          opacity={0.1}
-        />
-      ))}
-
-      {/* Neural connections */}
-      <NeuralConnections 
-        connections={connections}
-        pulseSpeed={1.5}
-      />
-
-      {/* Thought nodes */}
-      {filteredThoughts.map((thought) => (
-        <NeuralNode
-          key={thought.id}
-          node={thought}
-          isSelected={selectedNode === thought.id}
-          isHovered={hoveredNode === thought.id}
-          onClick={handleNodeClick}
-          onHover={handleNodeHover}
-        />
-      ))}
+      {/* Simple test mesh to verify Canvas works */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="orange" />
+      </mesh>
 
       {/* Camera controls */}
       <OrbitControls
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
-        zoomSpeed={1.5}
-        panSpeed={1}
-        rotateSpeed={0.5}
-        minDistance={5}
-        maxDistance={50}
-        minPolarAngle={0}
-        maxPolarAngle={Math.PI}
       />
     </>
   );
@@ -247,6 +202,8 @@ function NeuralScene({
 export default function NeuralVisualization(props: NeuralVisualizationProps) {
   const sampleThoughts = useMemo(() => generateSampleThoughts(), []);
   const thoughts = props.thoughts || sampleThoughts;
+
+  console.log('NeuralVisualization render - thoughts count:', thoughts.length);
 
   return (
     <div className="w-full h-full relative">
@@ -258,8 +215,14 @@ export default function NeuralVisualization(props: NeuralVisualizationProps) {
           alpha: true,
           powerPreference: "high-performance"
         }}
+        onCreated={() => console.log('Canvas created successfully')}
+        onError={(error) => console.error('Canvas error:', error)}
       >
-        <Suspense fallback={<NeuralLoading />}>
+        <Suspense fallback={
+          <Html center>
+            <div style={{ color: 'white' }}>Loading Neural Network...</div>
+          </Html>
+        }>
           <NeuralScene {...props} thoughts={thoughts} />
         </Suspense>
       </Canvas>
