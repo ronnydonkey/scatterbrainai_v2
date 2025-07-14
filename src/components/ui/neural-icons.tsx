@@ -138,13 +138,11 @@ export function NeuralNode({
 
 // Ring component for selection indicator
 function Ring({ args, rotation, children }: any) {
-  const geometry = useMemo(() => {
-    const [innerRadius, outerRadius, segments] = args;
-    return new THREE.RingGeometry(innerRadius, outerRadius, segments);
-  }, [args]);
+  const [innerRadius, outerRadius, segments] = args;
 
   return (
-    <mesh geometry={geometry} rotation={rotation}>
+    <mesh rotation={rotation}>
+      <ringGeometry args={[innerRadius, outerRadius, segments]} />
       {children}
     </mesh>
   );

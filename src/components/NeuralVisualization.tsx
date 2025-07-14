@@ -193,7 +193,6 @@ function NeuralScene({
         penumbra={1}
         intensity={1}
         color="#FFFFFF"
-        target-position={[0, 0, 0]}
       />
 
       {/* Environment */}
