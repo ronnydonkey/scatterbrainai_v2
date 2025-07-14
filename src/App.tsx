@@ -46,6 +46,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/simplified" element={<SimplifiedFlow />} />
+            <Route path="/gallery" element={<InsightGallery />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/" element={<DesktopAppShell />}>
@@ -55,7 +56,6 @@ const App = () => (
               <Route path="trending" element={<TrendingPage />} />
               <Route path="generator" element={<GeneratorPage />} />
               <Route path="library" element={<GeneratorPage />} />
-              <Route path="gallery" element={<InsightGallery />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="planning" element={<AnalyticsPage />} />
               <Route path="settings" element={<SettingsPage />} />
