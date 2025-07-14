@@ -11,6 +11,7 @@ import TrendingPage from "./pages/TrendingPage";
 import GeneratorPage from "./pages/GeneratorPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
+import SimplifiedFlow from "./pages/SimplifiedFlow";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
@@ -43,6 +44,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/simplified" element={<SimplifiedFlow />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/" element={<DesktopAppShell />}>
