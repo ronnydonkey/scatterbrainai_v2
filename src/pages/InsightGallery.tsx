@@ -442,36 +442,58 @@ const InsightGallery: React.FC = () => {
 
         {/* Gallery */}
         {filteredInsights.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <Brain className="w-12 h-12 text-primary" />
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="relative mb-8">
+              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center">
+                <Brain className="w-16 h-16 text-primary" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-accent rounded-full opacity-60 animate-pulse"></div>
+              <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-primary rounded-full opacity-40 animate-pulse delay-300"></div>
+              <div className="absolute top-2 -left-3 w-3 h-3 bg-accent/60 rounded-full opacity-50 animate-pulse delay-700"></div>
             </div>
-            <h3 className="text-2xl font-semibold text-foreground mb-3">
-              {searchTerm ? 'No matching insights found' : 'Your insight gallery awaits'}
+            
+            <h3 className="text-3xl font-bold text-foreground mb-4">
+              {searchTerm || selectedFilter !== 'all' 
+                ? 'No insights found' 
+                : 'Your insight journey starts here'
+              }
             </h3>
-            <p className="text-muted-foreground mb-8 max-w-md text-center">
-              {searchTerm 
-                ? 'Try adjusting your search terms or filters to find what you\'re looking for.' 
-                : 'Start capturing your thoughts and ideas to build your personal collection of insights.'
+            
+            <p className="text-muted-foreground text-lg mb-10 max-w-2xl text-center leading-relaxed">
+              {searchTerm || selectedFilter !== 'all'
+                ? 'Try adjusting your search terms or filters to discover the insights you\'re looking for.'
+                : 'Every breakthrough begins with a single thought. Share your ideas, questions, or observations and watch as AI transforms them into actionable insights.'
               }
             </p>
-            <div className="flex gap-3">
-              {searchTerm ? (
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              {searchTerm || selectedFilter !== 'all' ? (
                 <Button
                   variant="outline"
-                  onClick={() => setSearchTerm('')}
-                  className="flex items-center gap-2"
+                  size="lg"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedFilter('all');
+                  }}
+                  className="px-8 py-3 rounded-xl"
                 >
-                  Clear search
+                  Clear all filters
                 </Button>
               ) : (
-                <Button
-                  onClick={() => window.location.href = '/simplified'}
-                  className="flex items-center gap-2"
-                >
-                  <Brain className="w-4 h-4" />
-                  Capture Your First Thought
-                </Button>
+                <>
+                  <Button
+                    onClick={() => window.location.href = '/simplified'}
+                    size="lg"
+                    className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+                  >
+                    <Brain className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                    Start Your First Analysis
+                  </Button>
+                  
+                  <p className="text-sm text-muted-foreground text-center sm:text-left">
+                    Share a thought, ask a question, or explore any idea
+                  </p>
+                </>
               )}
             </div>
           </div>
