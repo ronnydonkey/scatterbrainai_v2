@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive } from 'lucide-react';
+import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -255,6 +255,36 @@ export default function SimplifiedFlow() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden flex flex-col" style={{ background: 'var(--gradient-background)' }}>
+      {/* Subtle Navigation Header - Only show in capture mode */}
+      {currentStep === 'capture' && (
+        <motion.header 
+          className="absolute top-6 left-6 right-6 flex justify-between items-center z-10"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <div className="flex items-center gap-2">
+            <Brain className="w-6 h-6 text-purple-400" />
+            <span className="text-white font-semibold text-lg">Scatterbrain</span>
+          </div>
+          
+          <nav className="flex gap-6">
+            <button 
+              onClick={() => window.location.href = '/gallery'}
+              className="text-purple-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Gallery
+            </button>
+            <button 
+              onClick={() => {/* Add settings navigation later */}}
+              className="text-purple-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Profile
+            </button>
+          </nav>
+        </motion.header>
+      )}
+
       <div className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 lg:py-12">
         <AnimatePresence mode="wait">
           {/* Step 1: Thought Capture */}
@@ -264,7 +294,7 @@ export default function SimplifiedFlow() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="w-full max-w-3xl mx-auto"
+              className="w-full max-w-3xl mx-auto pt-16"
             >
               {/* Brain Icon */}
               <div className="text-center mb-4 sm:mb-6 md:mb-8">
