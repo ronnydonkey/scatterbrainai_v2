@@ -286,6 +286,13 @@ export default function SimplifiedFlow() {
                       trackInputMethod('text');
                     }
                   }}
+                  onKeyDown={(e) => {
+                    // Handle Enter key to trigger transform
+                    if (e.key === 'Enter' && !e.shiftKey && capturedThoughts.trim()) {
+                      e.preventDefault();
+                      handleCapture();
+                    }
+                  }}
                   onBlur={() => {
                     // Track thought length when user finishes typing
                     if (capturedThoughts.length > 0) {
@@ -298,6 +305,9 @@ export default function SimplifiedFlow() {
                     backdropFilter: 'blur(16px)'
                   }}
                 />
+                <p className="text-xs text-white/50 mt-2 text-center">
+                  Press Enter to transform • Shift+Enter for new line
+                </p>
               </div>
 
               {/* Action Bar */}
@@ -325,12 +335,20 @@ export default function SimplifiedFlow() {
                 <Button 
                   onClick={handleCapture}
                   disabled={!capturedThoughts.trim()}
-                  className="text-white font-semibold w-full min-h-[48px] sm:min-h-[52px] text-sm sm:text-base md:text-lg rounded-xl"
-                  style={{ background: 'var(--gradient-primary)' }}
+                  className="text-white font-bold w-full min-h-[52px] sm:min-h-[56px] text-base sm:text-lg md:text-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  style={{ 
+                    background: capturedThoughts.trim() 
+                      ? 'var(--gradient-primary)' 
+                      : 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%)',
+                    boxShadow: capturedThoughts.trim() 
+                      ? '0 8px 32px rgba(139, 92, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
+                      : 'none'
+                  }}
                 >
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-3 flex-shrink-0" />
                   <span className="hidden sm:inline">Transform My Thoughts</span>
                   <span className="sm:hidden">Transform</span>
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
                 </Button>
               </div>
 
