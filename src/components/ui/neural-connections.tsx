@@ -70,43 +70,56 @@ export function NeuralConnections({ connections, pulseSpeed = 1 }: NeuralConnect
       <group ref={linesRef}>
         {connections.map((connection, i) => {
           const points = [connection.from, connection.to];
-          const geometry = new THREE.BufferGeometry().setFromPoints(points);
-          const material = new THREE.LineBasicMaterial({ 
-            color: connection.active ? "#8B5CF6" : "#4C1D95",
-            opacity: connection.strength * 0.6 + 0.2,
-            transparent: true
-          });
           
           return (
-            <primitive key={i} object={new THREE.Line(geometry, material)} />
+            <line key={i}>
+              <bufferGeometry>
+                <bufferAttribute
+                  attach="attributes-position"
+                  count={points.length}
+                  array={new Float32Array([
+                    connection.from.x, connection.from.y, connection.from.z,
+                    connection.to.x, connection.to.y, connection.to.z
+                  ])}
+                  itemSize={3}
+                />
+              </bufferGeometry>
+              <lineBasicMaterial 
+                color={connection.active ? "#8B5CF6" : "#4C1D95"}
+                opacity={connection.strength * 0.6 + 0.2}
+                transparent
+              />
+            </line>
           );
         })}
       </group>
       
       {/* Pulse Particles */}
-      <points ref={pulsesRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={connections.length}
-            array={pulseParticles.positions}
-            itemSize={3}
+      {connections.length > 0 && (
+        <points ref={pulsesRef}>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              count={connections.length}
+              array={pulseParticles.positions}
+              itemSize={3}
+            />
+            <bufferAttribute
+              attach="attributes-color"
+              count={connections.length}
+              array={pulseParticles.colors}
+              itemSize={3}
+            />
+          </bufferGeometry>
+          <pointsMaterial
+            size={0.05}
+            vertexColors
+            transparent
+            opacity={0.8}
+            sizeAttenuation
           />
-          <bufferAttribute
-            attach="attributes-color"
-            count={connections.length}
-            array={pulseParticles.colors}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          size={0.05}
-          vertexColors
-          transparent
-          opacity={0.8}
-          sizeAttenuation
-        />
-      </points>
+        </points>
+      )}
     </group>
   );
 }
