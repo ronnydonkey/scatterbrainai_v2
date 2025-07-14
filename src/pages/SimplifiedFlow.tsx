@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { usePersonalization } from '@/hooks/usePersonalization';
 
 type FlowStep = 'capture' | 'processing' | 'insights';
 
@@ -38,6 +39,22 @@ export default function SimplifiedFlow() {
   const [isRecording, setIsRecording] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Personalization system
+  const {
+    userPatterns,
+    isReturningUser,
+    trackSessionStart,
+    trackInputMethod,
+    trackThoughtLength,
+    trackActionUsage,
+    trackSocialCopy,
+    getTimeContext,
+    getPersonalizedPlaceholder,
+    getEstimatedProcessingTime,
+    getPrioritizedSocialPlatforms,
+    isLikelyToUse
+  } = usePersonalization();
+
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     { id: 1, text: "Capturing your thoughts...", completed: false, current: false },
     { id: 2, text: "Connecting ideas...", completed: false, current: false },
@@ -46,11 +63,19 @@ export default function SimplifiedFlow() {
     { id: 5, text: "Crafting action items...", completed: false, current: false },
   ]);
 
+  // Track session start when component mounts
+  useEffect(() => {
+    trackSessionStart();
+  }, [trackSessionStart]);
+
   const handleVoiceInput = async () => {
     if (!('webkitSpeechRecognition' in window)) {
       toast.error('Voice recognition not supported in your browser');
       return;
     }
+
+    // Track voice input preference
+    trackInputMethod('voice');
 
     setIsRecording(true);
     const recognition = new (window as any).webkitSpeechRecognition();
@@ -184,12 +209,20 @@ export default function SimplifiedFlow() {
     try {
       await navigator.clipboard.writeText(text);
       toast.success(`${type} copied to clipboard!`);
+      
+      // Track social platform usage for personalization
+      if (type === 'Tweet') trackSocialCopy('twitter');
+      else if (type === 'LinkedIn post') trackSocialCopy('linkedin');
+      else if (type === 'Instagram caption') trackSocialCopy('instagram');
     } catch (error) {
       toast.error('Failed to copy to clipboard');
     }
   };
 
   const addToCalendar = (suggestion: any) => {
+    // Track calendar usage for personalization
+    trackActionUsage('calendar');
+    
     const title = encodeURIComponent(suggestion.title);
     const details = encodeURIComponent(`Duration: ${suggestion.duration}`);
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
@@ -218,19 +251,34 @@ export default function SimplifiedFlow() {
                   <Brain className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 px-4 leading-tight">
-                  What's swirling around in your head?
+                  {isReturningUser ? `Welcome back! ${getTimeContext().suggestion}` : "What's swirling around in your head?"}
                 </h1>
                 <p className="text-base sm:text-lg text-white/70 px-4 max-w-xl mx-auto">
-                  Dump everything here — I'll help you sort it out and turn chaos into clarity.
+                  {isReturningUser 
+                    ? "Ready to transform more scattered thoughts into clear action?" 
+                    : "Dump everything here — I'll help you sort it out and turn chaos into clarity."
+                  }
                 </p>
               </div>
 
               {/* Input Area */}
               <div className="mb-8">
                 <Textarea
-                  placeholder="Your scattered thoughts, random ideas, todo items, creative sparks... anything goes! I'll connect the dots and show you what matters most."
+                  placeholder={getPersonalizedPlaceholder()}
                   value={capturedThoughts}
-                  onChange={(e) => setCapturedThoughts(e.target.value)}
+                  onChange={(e) => {
+                    setCapturedThoughts(e.target.value);
+                    // Track text input preference
+                    if (e.target.value.length > 10 && userPatterns.preferredInput !== 'text') {
+                      trackInputMethod('text');
+                    }
+                  }}
+                  onBlur={() => {
+                    // Track thought length when user finishes typing
+                    if (capturedThoughts.length > 0) {
+                      trackThoughtLength(capturedThoughts.length);
+                    }
+                  }}
                   className="h-40 rounded-2xl border-purple-500/20 focus:ring-purple-500 text-white placeholder:text-white/50"
                   style={{ 
                     background: 'hsla(217.2, 32.6%, 17.5%, 0.5)',
@@ -436,8 +484,16 @@ export default function SimplifiedFlow() {
                   </div>
                   <div className="space-y-2 sm:space-y-3">
                     {clarityReport.actionItems.map((item, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                        <input type="checkbox" className="mt-1 accent-green-400 flex-shrink-0" />
+                      <div 
+                        key={index} 
+                        className="flex items-start space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                        onClick={() => trackActionUsage('todos')}
+                      >
+                        <input 
+                          type="checkbox" 
+                          className="mt-1 accent-green-400 flex-shrink-0"
+                          onChange={() => trackActionUsage('todos')}
+                        />
                         <p className="text-white/80 text-sm sm:text-base leading-relaxed">{item}</p>
                       </div>
                     ))}
@@ -453,52 +509,80 @@ export default function SimplifiedFlow() {
                   backdropFilter: 'blur(16px)'
                 }}
               >
-                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 text-center">Content Ready to Share</h3>
+                <div className="flex items-center justify-center mb-4 sm:mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white">Content Ready to Share</h3>
+                  {isReturningUser && (
+                    <span className="ml-2 text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                      Personalized
+                    </span>
+                  )}
+                </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center">
-                    <Twitter className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 mx-auto mb-2 sm:mb-3" />
-                    <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">Twitter</h4>
-                    <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">{clarityReport.contentReady.tweet}</p>
-                    <Button 
-                      onClick={() => copyToClipboard(clarityReport.contentReady.tweet, 'Tweet')}
-                      size="sm" 
-                      variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
-                    >
-                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      Copy
-                    </Button>
-                  </div>
-                  
-                  <div className="text-center">
-                    <Linkedin className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-2 sm:mb-3" />
-                    <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">LinkedIn</h4>
-                    <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">{clarityReport.contentReady.linkedin}</p>
-                    <Button 
-                      onClick={() => copyToClipboard(clarityReport.contentReady.linkedin, 'LinkedIn post')}
-                      size="sm" 
-                      variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
-                    >
-                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      Copy
-                    </Button>
-                  </div>
-                  
-                  <div className="text-center sm:col-span-2 lg:col-span-1">
-                    <Instagram className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500 mx-auto mb-2 sm:mb-3" />
-                    <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">Instagram</h4>
-                    <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">{clarityReport.contentReady.instagramCaption}</p>
-                    <Button 
-                      onClick={() => copyToClipboard(clarityReport.contentReady.instagramCaption, 'Instagram caption')}
-                      size="sm" 
-                      variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
-                    >
-                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      Copy
-                    </Button>
-                  </div>
+                  {getPrioritizedSocialPlatforms().map((platform, index) => {
+                    const content = platform.name === 'twitter' 
+                      ? clarityReport.contentReady.tweet
+                      : platform.name === 'linkedin'
+                      ? clarityReport.contentReady.linkedin
+                      : clarityReport.contentReady.instagramCaption;
+                    
+                    const IconComponent = platform.name === 'twitter' 
+                      ? Twitter 
+                      : platform.name === 'linkedin' 
+                      ? Linkedin 
+                      : Instagram;
+                    
+                    const iconColor = platform.name === 'twitter' 
+                      ? 'text-blue-400' 
+                      : platform.name === 'linkedin' 
+                      ? 'text-blue-600' 
+                      : 'text-pink-500';
+                    
+                    const displayName = platform.name === 'twitter' 
+                      ? 'Twitter' 
+                      : platform.name === 'linkedin' 
+                      ? 'LinkedIn' 
+                      : 'Instagram';
+                    
+                    const copyType = platform.name === 'twitter' 
+                      ? 'Tweet' 
+                      : platform.name === 'linkedin' 
+                      ? 'LinkedIn post' 
+                      : 'Instagram caption';
+                    
+                    return (
+                      <div 
+                        key={platform.name} 
+                        className={`text-center ${index === 0 && isReturningUser ? 'order-first ring-2 ring-purple-500/50' : ''}`}
+                      >
+                        <div className="relative">
+                          <IconComponent className={`w-6 h-6 sm:w-8 sm:h-8 ${iconColor} mx-auto mb-2 sm:mb-3`} />
+                          {index === 0 && isReturningUser && platform.usage > 1 && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs">★</span>
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">
+                          {displayName}
+                          {index === 0 && isReturningUser && platform.usage > 1 && (
+                            <span className="text-xs text-purple-300 ml-1">(Most Used)</span>
+                          )}
+                        </h4>
+                        <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3.6rem] sm:min-h-[4.2rem]">
+                          {content}
+                        </p>
+                        <Button 
+                          onClick={() => copyToClipboard(content, copyType)}
+                          size="sm" 
+                          variant="outline"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full text-xs sm:text-sm"
+                        >
+                          <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          Copy
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
 
