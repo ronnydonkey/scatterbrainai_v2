@@ -133,7 +133,8 @@
     background: var(--cosmic-gradient);
     min-height: 100vh;
     overflow-x: hidden;
-    min-width: 1280px; /* Desktop-first minimum width */
+    width: 100%;
+    max-width: 100vw;
   }
   
   /* === NEURAL GRID BACKGROUND === */
@@ -299,6 +300,26 @@
   .touch-manipulation {
     touch-action: manipulation;
   }
+  
+  /* Viewport fixes */
+  html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  body {
+    overflow-x: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  /* Container constraints */
+  .container-safe {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
   /* Mobile safe areas */
   .pb-safe {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
@@ -306,6 +327,25 @@
   
   .pt-safe {
     padding-top: calc(1rem + env(safe-area-inset-top));
+  }
+  
+  /* Responsive text scaling */
+  @media (max-width: 375px) {
+    html {
+      font-size: 14px;
+    }
+  }
+  
+  @media (min-width: 376px) and (max-width: 768px) {
+    html {
+      font-size: 15px;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    html {
+      font-size: 16px;
+    }
   }
   
   /* Neural canvas optimizations */
