@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { usePersonalization } from '@/hooks/usePersonalization';
+import { useSynthesizeStream, generateSessionId, detectUrgency, useOfflineInsights } from '@/hooks/api';
 
 type FlowStep = 'capture' | 'processing' | 'insights';
 
@@ -55,6 +56,16 @@ export default function SimplifiedFlow() {
     isLikelyToUse
   } = usePersonalization();
 
+  const { 
+    synthesizeWithStream, 
+    isStreaming, 
+    currentInsight,
+    accumulatedInsights,
+    clearInsights 
+  } = useSynthesizeStream();
+
+  const { saveInsight, trackAction } = useOfflineInsights();
+
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     { id: 1, text: "Capturing your thoughts...", completed: false, current: false },
     { id: 2, text: "Connecting ideas...", completed: false, current: false },
@@ -65,8 +76,10 @@ export default function SimplifiedFlow() {
 
   // Track session start when component mounts
   useEffect(() => {
-    trackSessionStart();
-  }, [trackSessionStart]);
+    if (userPatterns.sessionCount === 0) {
+      trackSessionStart();
+    }
+  }, []);
 
   const handleVoiceInput = async () => {
     if (!('webkitSpeechRecognition' in window)) {

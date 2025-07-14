@@ -39,6 +39,21 @@ export {
   useVoiceCapture,
 } from './useVoiceCapture';
 
+// Enhanced Synthesis API
+export {
+  useSynthesizeStream,
+  generateSessionId,
+  detectUrgency,
+  type SynthesizeRequest,
+  type StreamedInsight,
+  type SynthesizeResponse,
+} from './useSynthesizeStream';
+
+// Offline Insights Management
+export {
+  useOfflineInsights,
+} from './useOfflineInsights';
+
 // Re-export types
 export type {
   Thought,

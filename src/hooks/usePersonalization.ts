@@ -60,22 +60,29 @@ export const usePersonalization = () => {
 
   // Save patterns to localStorage
   const savePatterns = useCallback((newPatterns: Partial<UserPatterns>) => {
-    const updated = { ...userPatterns, ...newPatterns };
-    setUserPatterns(updated);
-    localStorage.setItem('scatterbrain_patterns', JSON.stringify(updated));
-  }, [userPatterns]);
+    setUserPatterns(current => {
+      const updated = { ...current, ...newPatterns };
+      localStorage.setItem('scatterbrain_patterns', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   // Track session start
   const trackSessionStart = useCallback(() => {
     const now = Date.now();
     const currentHour = new Date().getHours();
     
-    savePatterns({
-      sessionCount: userPatterns.sessionCount + 1,
-      lastSeen: now,
-      activeHours: [...new Set([...userPatterns.activeHours, currentHour])].slice(-10) // Keep last 10 active hours
+    setUserPatterns(current => {
+      const updated = {
+        ...current,
+        sessionCount: current.sessionCount + 1,
+        lastSeen: now,
+        activeHours: [...new Set([...current.activeHours, currentHour])].slice(-10)
+      };
+      localStorage.setItem('scatterbrain_patterns', JSON.stringify(updated));
+      return updated;
     });
-  }, [userPatterns, savePatterns]);
+  }, []);
 
   // Track input method preference
   const trackInputMethod = useCallback((method: 'text' | 'voice') => {
@@ -84,41 +91,51 @@ export const usePersonalization = () => {
 
   // Track thought length for personalization
   const trackThoughtLength = useCallback((length: number) => {
-    const currentAvg = userPatterns.averageThoughtLength;
-    const sessionCount = userPatterns.sessionCount;
-    const newAvg = sessionCount > 0 ? (currentAvg + length) / 2 : length;
-    
-    savePatterns({ averageThoughtLength: newAvg });
-  }, [userPatterns, savePatterns]);
+    setUserPatterns(current => {
+      const newAvg = current.sessionCount > 0 ? (current.averageThoughtLength + length) / 2 : length;
+      const updated = { ...current, averageThoughtLength: newAvg };
+      localStorage.setItem('scatterbrain_patterns', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   // Track action preferences
   const trackActionUsage = useCallback((action: 'calendar' | 'social' | 'todos') => {
-    const current = userPatterns.actionPreferences[action];
-    const updated = Math.min(current + 0.1, 1); // Gradually increase preference
-    
-    savePatterns({
-      actionPreferences: {
-        ...userPatterns.actionPreferences,
-        [action]: updated
-      }
+    setUserPatterns(current => {
+      const updatedValue = Math.min(current.actionPreferences[action] + 0.1, 1);
+      const updated = {
+        ...current,
+        actionPreferences: {
+          ...current.actionPreferences,
+          [action]: updatedValue
+        }
+      };
+      localStorage.setItem('scatterbrain_patterns', JSON.stringify(updated));
+      return updated;
     });
-  }, [userPatterns, savePatterns]);
+  }, []);
 
   // Track social platform usage
   const trackSocialCopy = useCallback((platform: 'twitter' | 'linkedin' | 'instagram') => {
-    const current = userPatterns.socialPlatformUsage[platform];
-    const updated = Math.min(current + 1, 10); // Track up to 10 uses
-    
-    savePatterns({
-      socialPlatformUsage: {
-        ...userPatterns.socialPlatformUsage,
-        [platform]: updated
-      }
+    setUserPatterns(current => {
+      const updatedUsage = Math.min(current.socialPlatformUsage[platform] + 1, 10);
+      const socialPreference = Math.min(current.actionPreferences.social + 0.1, 1);
+      
+      const updated = {
+        ...current,
+        socialPlatformUsage: {
+          ...current.socialPlatformUsage,
+          [platform]: updatedUsage
+        },
+        actionPreferences: {
+          ...current.actionPreferences,
+          social: socialPreference
+        }
+      };
+      localStorage.setItem('scatterbrain_patterns', JSON.stringify(updated));
+      return updated;
     });
-    
-    // Also track general social usage
-    trackActionUsage('social');
-  }, [userPatterns, savePatterns, trackActionUsage]);
+  }, []);
 
   // Get time-based context
   const getTimeContext = useCallback(() => {
