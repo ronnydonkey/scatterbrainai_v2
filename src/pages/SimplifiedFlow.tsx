@@ -154,6 +154,35 @@ export default function SimplifiedFlow() {
     }
   };
 
+  const generateTempId = () => `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  const getUserPreferences = () => ({
+    preferredInput: userPatterns.preferredInput,
+    timeContext: getTimeContext(),
+    urgencyLevel: detectUrgency(capturedThoughts),
+    socialPlatforms: getPrioritizedSocialPlatforms()
+  });
+
+  const storeInsightInGallery = (insights: any) => {
+    const existingInsights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+    const newInsight = {
+      id: insights.id || generateTempId(),
+      timestamp: new Date().toISOString(),
+      originalInput: capturedThoughts,
+      insights: insights,
+      starred: false,
+      actionsCompleted: 0,
+      totalActions: insights.actionItems?.length || 0
+    };
+    
+    existingInsights.unshift(newInsight); // Add to beginning
+    localStorage.setItem('scatterbrain_insights', JSON.stringify(existingInsights));
+  };
+
+  const showErrorMessage = (message: string) => {
+    toast.error(message);
+  };
+
   const handleCapture = async () => {
     if (!capturedThoughts.trim()) return;
     
@@ -166,50 +195,75 @@ export default function SimplifiedFlow() {
       completed: false,
       current: false
     })));
-    
-    // Start processing animation
-    await simulateProcessingSteps();
-    
-    // Simulate API call to backend
+
     try {
-      // Mock API response for now - replace with actual API call
-      const mockResponse = {
-        keyInsights: [
-          "Your thoughts show 3 main creative themes connecting productivity and innovation",
-          "Strong pattern of morning clarity with afternoon ideation bursts",
-          "Recurring focus on content strategy and audience engagement optimization"
-        ],
-        actionItems: [
-          "Schedule dedicated creative brainstorming session for tomorrow 9 AM",
-          "Research competitor content strategies and document findings",
-          "Draft and outline 3 LinkedIn posts based on key insights"
-        ],
-        contentReady: {
-          tweet: "Just had another scattered-brain-to-structured-action moment! 🧠✨ Sometimes the best ideas come from embracing the chaos and finding the hidden patterns. #ProductivityHacks #CreativeProcess",
-          linkedin: "The Power of Scattered Thinking: Why Your 'Chaotic' Mind Might Be Your Biggest Asset\n\nToday I realized something profound about how creative minds work...\n\n[Full post content with insights from your thoughts]",
-          instagramCaption: "Brain dump ➜ Beautiful clarity ✨\n\nSometimes the most scattered thoughts lead to the most brilliant insights. Trust the process! 🧠💫\n\n#MindfulProductivity #CreativeProcess #BrainDump"
+      // Animate through processing steps
+      const processingInterval = setInterval(() => {
+        setProcessingSteps(prev => {
+          const nextStepIndex = prev.findIndex(step => !step.completed && !step.current);
+          if (nextStepIndex >= 0) {
+            const newSteps = [...prev];
+            if (nextStepIndex > 0) {
+              newSteps[nextStepIndex - 1].current = false;
+              newSteps[nextStepIndex - 1].completed = true;
+            }
+            newSteps[nextStepIndex].current = true;
+            return newSteps;
+          }
+          return prev;
+        });
+      }, 1200);
+
+      // Real API call to your backend
+      const response = await fetch('/api/synthesize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        calendarSuggestions: [
-          { title: "Creative Brainstorming Session", time: "Tomorrow 9:00 AM", duration: "90 minutes" },
-          { title: "Content Strategy Research", time: "Tomorrow 2:00 PM", duration: "60 minutes" },
-          { title: "LinkedIn Content Creation", time: "Friday 10:00 AM", duration: "45 minutes" }
-        ]
-      };
+        body: JSON.stringify({
+          input: capturedThoughts,
+          userId: generateTempId(), // Replace with actual user ID when auth is implemented
+          timestamp: new Date().toISOString(),
+          sessionId: generateSessionId(),
+          preferences: getUserPreferences()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const insights = await response.json();
       
-      setClarityReport(mockResponse);
+      // Store in localStorage for gallery
+      storeInsightInGallery(insights);
+      
+      // Clear processing animation
+      clearInterval(processingInterval);
+      setProcessingSteps(prev => prev.map(step => ({
+        ...step,
+        completed: true,
+        current: false
+      })));
+      
+      setClarityReport(insights);
       
       // Save insight to gallery
       try {
         await saveInsight(
           capturedThoughts,
-          mockResponse,
-          ['Productivity', 'Creative Process', 'Content Strategy']
+          insights,
+          insights.tags || ['Productivity', 'Creative Process']
         );
       } catch (error) {
         console.error('Failed to save insight:', error);
       }
+
     } catch (error) {
-      toast.error('Failed to process thoughts. Please try again.');
+      console.error('Analysis failed:', error);
+      setIsProcessing(false);
+      setCurrentStep('capture'); // Back to input
+      showErrorMessage('Something went wrong. Please try again.');
       return;
     }
     
