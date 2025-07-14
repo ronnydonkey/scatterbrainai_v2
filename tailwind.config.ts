@@ -22,7 +22,9 @@ export default {
 				md: '768px',
 				lg: '1024px',
 				xl: '1280px',
-				'2xl': '1400px'
+				'2xl': '1400px',
+				'desktop': '1280px', // Professional desktop minimum
+				'ultra': '1920px'    // Ultra-wide support
 			}
 		},
 		extend: {

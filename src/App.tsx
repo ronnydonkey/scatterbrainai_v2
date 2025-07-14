@@ -4,8 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import AppShell from "./components/AppShell";
-import Constellation from "./pages/Constellation";
+import DesktopAppShell from "./components/desktop/DesktopAppShell";
+import NeuralCommandCenter from "./pages/desktop/NeuralCommandCenter";
+import ThoughtInspector from "./pages/desktop/ThoughtInspector";
 import TrendingPage from "./pages/TrendingPage";
 import GeneratorPage from "./pages/GeneratorPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -44,11 +45,15 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/billing" element={<Billing />} />
-            <Route path="/" element={<AppShell />}>
-              <Route index element={<Constellation />} />
+            <Route path="/" element={<DesktopAppShell />}>
+              <Route index element={<NeuralCommandCenter />} />
+              <Route path="inspector" element={<ThoughtInspector />} />
+              <Route path="dashboard" element={<AnalyticsPage />} />
               <Route path="trending" element={<TrendingPage />} />
               <Route path="generator" element={<GeneratorPage />} />
+              <Route path="library" element={<GeneratorPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="planning" element={<AnalyticsPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -133,6 +133,7 @@
     background: var(--cosmic-gradient);
     min-height: 100vh;
     overflow-x: hidden;
+    min-width: 1280px; /* Desktop-first minimum width */
   }
   
   /* === NEURAL GRID BACKGROUND === */
