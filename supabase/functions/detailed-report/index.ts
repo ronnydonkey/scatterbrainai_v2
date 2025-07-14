@@ -52,8 +52,8 @@ serve(async (req) => {
                 "resources": ["resource1", "resource2"]
               },
               "resources": {
-                "articles": [{"title": "Article Title", "url": "https://example.com"}],
-                "tools": [{"name": "Tool Name", "description": "Tool description", "url": "https://example.com"}]
+                "articles": [{"title": "Realistic article title that could exist"}],
+                "tools": [{"name": "Real tool name", "description": "Tool description"}]
               },
               "contentSuggestions": {
                 "socialPosts": {
@@ -61,7 +61,9 @@ serve(async (req) => {
                   "linkedin": {"content": "LinkedIn post content"}
                 }
               }
-            }`
+            }
+            
+            IMPORTANT: For articles and tools, only suggest REAL titles and names that actually exist. Do not create fake URLs. The frontend will handle search suggestions.`
           },
           {
             role: 'user',

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, Download, Target, Search, CheckSquare, BookOpen, Smartphone } from 'lucide-react';
+import { ArrowLeft, Share2, Download, Target, Search, CheckSquare, BookOpen, Smartphone, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const DetailedReport: React.FC = () => {
   const { insightId } = useParams();
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     if (insightId) {
@@ -64,22 +66,27 @@ const DetailedReport: React.FC = () => {
 
   const downloadReport = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('generate-pdf', {
-        body: { report }
-      });
-
-      if (error) throw error;
-
-      // Create download link
-      const blob = new Blob([data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `scatterbrain-report-${report?.id}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      toast.success('PDF download feature coming soon!');
+      // TODO: Implement PDF generation
     } catch (error) {
       console.error('PDF generation failed:', error);
+      toast.error('PDF download failed. Please try again.');
+    }
+  };
+
+  const copyToClipboard = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedStates(prev => ({ ...prev, [key]: true }));
+      toast.success('Copied to clipboard!');
+      
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [key]: false }));
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      toast.error('Failed to copy to clipboard');
     }
   };
 
@@ -294,14 +301,12 @@ const DetailedReport: React.FC = () => {
                   <ul className="space-y-2">
                     {report.resources.articles.map((article, index) => (
                       <li key={index}>
-                        <a 
-                          href={article.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-300 hover:text-blue-200 text-sm underline"
-                        >
+                        <span className="text-blue-300 text-sm">
                           {article.title}
-                        </a>
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Search for: "{article.title.replace(/[^\w\s]/gi, '')}" on Google or your preferred search engine
+                        </p>
                       </li>
                     ))}
                   </ul>
@@ -313,15 +318,13 @@ const DetailedReport: React.FC = () => {
                   <ul className="space-y-2">
                     {report.resources.tools.map((tool, index) => (
                       <li key={index}>
-                        <a 
-                          href={tool.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-purple-300 hover:text-purple-200 text-sm underline"
-                        >
+                        <span className="text-purple-300 text-sm font-medium">
                           {tool.name}
-                        </a>
+                        </span>
                         <p className="text-xs text-gray-400">{tool.description}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Search for: "{tool.name}" to find this tool
+                        </p>
                       </li>
                     ))}
                   </ul>
@@ -346,23 +349,35 @@ const DetailedReport: React.FC = () => {
                 <div>
                   <h4 className="font-semibold mb-3">Social Media Posts</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(report.contentSuggestions.socialPosts).map(([platform, content]: [string, any]) => (
-                      <div key={platform} className="p-4 bg-white/5 rounded-lg">
-                        <h5 className="font-medium mb-2 capitalize">{platform}</h5>
-                        <p className="text-sm text-gray-300 mb-2">{content?.content || 'No content available'}</p>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="border-white/20 text-white hover:bg-white/10"
-                          onClick={() => {
-                            navigator.clipboard.writeText(content?.content || '');
-                            // Add toast notification here if you have toast setup
-                          }}
-                        >
-                          Copy to Clipboard
-                        </Button>
-                      </div>
-                    ))}
+                    {Object.entries(report.contentSuggestions.socialPosts).map(([platform, content]: [string, any]) => {
+                      const copyKey = `content-${platform}`;
+                      return (
+                        <div key={platform} className="p-4 bg-white/5 rounded-lg">
+                          <h5 className="font-medium mb-2 capitalize">{platform}</h5>
+                          <p className="text-sm text-gray-300 mb-3">{content?.content || 'No content available'}</p>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className={`border-white/20 text-white hover:bg-white/10 transition-all duration-200 ${
+                              copiedStates[copyKey] ? 'bg-green-600/20 border-green-400' : ''
+                            }`}
+                            onClick={() => copyToClipboard(content?.content || '', copyKey)}
+                          >
+                            {copiedStates[copyKey] ? (
+                              <>
+                                <Check className="w-3 h-3 mr-1" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 mr-1" />
+                                Copy to Clipboard
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
