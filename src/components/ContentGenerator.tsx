@@ -6,10 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Sparkles, RefreshCw, Send, Archive, Twitter, Instagram, Copy, Check, Brain, TrendingUp, MessageSquare, Plus } from 'lucide-react';
-import { BrainIcon, NeuralNetworkIcon, SynapseIcon, ThoughtCluster } from '@/components/ui/neural-icons';
-import { NeuralLoading, ProcessingNeural } from '@/components/ui/neural-loading';
-import { NeuralBorder, NeuralConnections } from '@/components/ui/neural-connections';
+import { Loader2, RefreshCw, Send, Archive, Twitter, Instagram, Copy, Check, TrendingUp, MessageSquare, Plus, Brain, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface ContentSuggestion {
@@ -425,9 +422,8 @@ export const ContentGenerator = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8 relative">
-        <NeuralConnections className="opacity-20" density="low" />
-        <NeuralLoading size="lg" text="Initializing neural content pathways..." />
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -438,35 +434,30 @@ export const ContentGenerator = () => {
   ) || [];
 
   return (
-    <div className="space-y-6 relative">
-      {/* Neural background connections */}
-      <NeuralConnections className="opacity-20" density="medium" />
-      
+    <div className="space-y-6">
       {/* Header with Thought Selection */}
-      <NeuralBorder>
-        <Card className="border-0">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <CardTitle className="flex items-center space-x-3">
-                  <BrainIcon size={24} />
-                  <span>Neural Content Synthesis</span>
-                  <ThoughtCluster thoughts={5} className="w-6 h-6" />
-                </CardTitle>
-                <CardDescription>
-                  Generate synaptic content based on your neural thoughts and trending patterns
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+               <CardTitle className="flex items-center space-x-3">
+                 <Brain size={24} />
+                 <span>Neural Content Synthesis</span>
+               </CardTitle>
+               <CardDescription>
+                 Generate synaptic content based on your neural thoughts and trending patterns
+               </CardDescription>
+             </div>
+           </div>
+         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Thought Selection */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium flex items-center space-x-2">
-              <SynapseIcon size={16} />
-              <span>Select Neural Pathway</span>
-            </h4>
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium flex items-center space-x-2">
+                <Brain size={16} />
+                <span>Select Neural Pathway</span>
+              </h4>
             <Select value={selectedThought || ''} onValueChange={setSelectedThought}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose a thought to generate content for..." />
@@ -498,10 +489,10 @@ export const ContentGenerator = () => {
                 className="bg-gradient-to-r from-cosmic-accent to-cosmic-glow hover:shadow-lg hover:shadow-cosmic-accent/20 transition-all duration-300"
               >
                 {generating ? (
-                  <ProcessingNeural className="text-white" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
                   <>
-                    <BrainIcon size={16} className="mr-2" />
+                    <Brain size={16} className="mr-2" />
                     Synthesize Neural Content
                   </>
                 )}
@@ -571,7 +562,6 @@ export const ContentGenerator = () => {
           )}
         </CardContent>
       </Card>
-      </NeuralBorder>
 
       {/* Content Filter and Bulk Actions */}
       {selectedThoughtData && filteredSuggestions.length > 0 && (

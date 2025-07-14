@@ -34,9 +34,7 @@ import {
   PieChart as PieChartIcon,
   RefreshCw
 } from 'lucide-react';
-import { BrainIcon, NeuralNetworkIcon, SynapseIcon } from '@/components/ui/neural-icons';
-import { NeuralLoading, ProcessingNeural } from '@/components/ui/neural-loading';
-import { NeuralBorder, NeuralConnections } from '@/components/ui/neural-connections';
+import { Brain, Cpu, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface ContentPerformance {

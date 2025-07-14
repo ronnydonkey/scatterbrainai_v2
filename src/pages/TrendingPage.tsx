@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, TrendingUp, Clock, RefreshCw } from 'lucide-react';
-import { BrainIcon, ThoughtCluster } from '@/components/ui/neural-icons';
-import { NeuralConnections } from '@/components/ui/neural-connections';
-import { NeuralLoading } from '@/components/ui/neural-loading';
-import { NeuralBorder } from '@/components/ui/neural-connections';
+import { Brain, Cpu, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
