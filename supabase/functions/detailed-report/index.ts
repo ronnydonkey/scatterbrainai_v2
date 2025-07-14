@@ -52,8 +52,8 @@ serve(async (req) => {
                 "resources": ["resource1", "resource2"]
               },
               "resources": {
-                "articles": [{"title": "Realistic article title that could exist"}],
-                "tools": [{"name": "Real tool name", "description": "Tool description"}]
+                "articles": [{"title": "Article title", "url": "https://example.com", "description": "Brief description"}],
+                "tools": [{"name": "Tool name", "url": "https://example.com", "description": "Tool description"}]
               },
               "contentSuggestions": {
                 "socialPosts": {
@@ -63,7 +63,23 @@ serve(async (req) => {
               }
             }
             
-            IMPORTANT: For articles and tools, only suggest REAL titles and names that actually exist. Do not create fake URLs. The frontend will handle search suggestions.`
+            IMPORTANT: Provide real, working URLs for articles and tools. Use these verified links:
+            
+            Articles:
+            - "When Do You Feel Most Creative? Why Ideas Bloom at Bedtime": https://www.psychologytoday.com/us/blog/automatic-you/202309/when-do-you-feel-most-creative-why-ideas-bloom-at-bedtime
+            - "How to Capture Your Ideas and Accomplish More": https://evernote.com/blog/capture-ideas-accomplish-more
+            - "Collaboration Evolution: From CCing to Project Management Tools": https://www.proofhub.com/articles/evolution-of-collaboration-from-email-to-collaborative-workspaces
+            - "That moment when you're nodding off is a sweet spot for creativity": https://news.mit.edu/2023/sleep-sweet-spot-dreams-creativity-0515
+            - "We are at our most creative just before we fall asleep, scientists say": https://www.weforum.org/stories/2022/01/creativity-hotspot-just-before-sleep/
+            
+            Tools:
+            - "Otter.ai": https://get.otter.ai/
+            - "Google Speech-to-Text API": https://cloud.google.com/speech-to-text/docs
+            - "UserVoice": https://www.uservoice.com/
+            - "Zapier": https://zapier.com/blog/collaboration-apps/
+            - "Slack": https://slack.com/blog/collaboration/team-collaboration-tools
+            
+            Choose relevant articles and tools from these verified options based on the content topic.`
           },
           {
             role: 'user',

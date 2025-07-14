@@ -301,12 +301,17 @@ const DetailedReport: React.FC = () => {
                   <ul className="space-y-2">
                     {report.resources.articles.map((article, index) => (
                       <li key={index}>
-                        <span className="text-blue-300 text-sm">
+                        <a 
+                          href={article.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-300 hover:text-blue-200 underline text-sm font-medium"
+                        >
                           {article.title}
-                        </span>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Search for: "{article.title.replace(/[^\w\s]/gi, '')}" on Google or your preferred search engine
-                        </p>
+                        </a>
+                        {article.description && (
+                          <p className="text-xs text-gray-400 mt-1">{article.description}</p>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -318,13 +323,15 @@ const DetailedReport: React.FC = () => {
                   <ul className="space-y-2">
                     {report.resources.tools.map((tool, index) => (
                       <li key={index}>
-                        <span className="text-purple-300 text-sm font-medium">
+                        <a 
+                          href={tool.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-purple-300 hover:text-purple-200 underline text-sm font-medium"
+                        >
                           {tool.name}
-                        </span>
-                        <p className="text-xs text-gray-400">{tool.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Search for: "{tool.name}" to find this tool
-                        </p>
+                        </a>
+                        <p className="text-xs text-gray-400 mt-1">{tool.description}</p>
                       </li>
                     ))}
                   </ul>
