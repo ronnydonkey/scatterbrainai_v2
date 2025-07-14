@@ -13,6 +13,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import SimplifiedFlow from "./pages/SimplifiedFlow";
 import InsightGallery from "./pages/InsightGallery";
+import DetailedReport from "./pages/DetailedReport";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/simplified" element={<SimplifiedFlow />} />
             <Route path="/gallery" element={<InsightGallery />} />
+            <Route path="/report/:insightId" element={<DetailedReport />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/" element={<DesktopAppShell />}>
