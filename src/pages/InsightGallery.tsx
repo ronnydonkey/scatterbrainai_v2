@@ -116,7 +116,7 @@ const InsightGallery: React.FC = () => {
       
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-white mb-2">
-          {insight.insights?.keyThemes?.[0]?.theme || 'Untitled Insight'}
+          {insight.title || insight.insights?.keyThemes?.[0]?.theme || 'Untitled Insight'}
         </h3>
         <p className="text-gray-300 text-sm mb-4 line-clamp-3">
           {insight.originalInput || 'No content available'}

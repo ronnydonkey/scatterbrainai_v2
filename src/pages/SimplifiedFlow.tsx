@@ -167,14 +167,21 @@ export default function SimplifiedFlow() {
 
   const storeInsightInGallery = (insights: any) => {
     const existingInsights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+    
+    // Auto-generate meaningful title from the top theme
+    const autoTitle = insights.insights?.keyThemes?.[0]?.theme || 
+                     insights.keyThemes?.[0]?.theme ||
+                     `Thoughts on ${new Date().toLocaleDateString()}`;
+    
     const newInsight = {
       id: insights.id || generateTempId(),
       timestamp: new Date().toISOString(),
+      title: autoTitle, // Auto-generated meaningful title
       originalInput: capturedThoughts,
-      insights: insights,
+      insights: insights.insights || insights, // Handle both nested and flat structures
       starred: false,
       actionsCompleted: 0,
-      totalActions: insights.actionItems?.length || 0
+      totalActions: (insights.insights?.actionItems || insights.actionItems)?.length || 0
     };
     
     existingInsights.unshift(newInsight); // Add to beginning
