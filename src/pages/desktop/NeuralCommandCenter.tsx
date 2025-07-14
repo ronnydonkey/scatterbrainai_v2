@@ -12,6 +12,7 @@ import {
   PlayCircle,
   PauseCircle
 } from 'lucide-react';
+import NeuralVisualization from '@/components/NeuralVisualization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -196,16 +197,13 @@ export default function NeuralCommandCenter() {
 
               <TabsContent value="overview" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* 3D Brain Visualization Placeholder */}
-                  <div className="neural-card p-8 text-center bg-gradient-to-br from-primary/5 to-accent/5">
-                    <Brain className="h-24 w-24 mx-auto text-primary/50 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">3D Neural Visualization</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Interactive 3D brain model showing real-time neural activity and connections
-                    </p>
-                    <Button className="neural-glow">
-                      Launch 3D View
-                    </Button>
+                  {/* 3D Neural Visualization */}
+                  <div className="neural-card p-2 bg-gradient-to-br from-primary/5 to-accent/5 h-[500px]">
+                    <NeuralVisualization
+                      viewMode="3d-brain"
+                      onNodeSelect={(node) => console.log('Selected node:', node)}
+                      onNodeHover={(node) => console.log('Hovered node:', node)}
+                    />
                   </div>
 
                   {/* Control Panel */}

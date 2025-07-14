@@ -307,4 +307,11 @@
   .pt-safe {
     padding-top: calc(1rem + env(safe-area-inset-top));
   }
+  
+  /* Neural canvas optimizations */
+  .neural-canvas {
+    background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.05) 0%, rgba(30, 41, 59, 0.8) 70%);
+    border-radius: 12px;
+    overflow: hidden;
+  }
 }
