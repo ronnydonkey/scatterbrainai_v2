@@ -103,64 +103,75 @@ const InsightGallery: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className={`neural-card cursor-pointer transition-all duration-300 ${
-          isExpanded ? 'col-span-full' : ''
+        className={`group bg-card hover:bg-accent/5 border border-border hover:border-primary/20 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg ${
+          isExpanded ? 'col-span-full ring-2 ring-primary/20' : ''
         }`}
         onClick={() => setSelectedInsight(isExpanded ? null : insight.id)}
       >
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2 text-sm text-cosmic-muted">
-            <Brain className="w-4 h-4" />
-            <span>{getRelativeTime(insight.timestamp)}</span>
-            <span className="text-cosmic-muted/60">•</span>
-            <span>{format(new Date(insight.timestamp), 'h:mm a')}</span>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Brain className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <div className="font-medium text-foreground">{getRelativeTime(insight.timestamp)}</div>
+                <div className="text-xs">{format(new Date(insight.timestamp), 'h:mm a')}</div>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleStar(insight.id);
-              }}
-              className={`p-1 ${insight.starred ? 'text-stardust-gold' : 'text-cosmic-muted'}`}
-            >
-              <Star className={`w-4 h-4 ${insight.starred ? 'fill-current' : ''}`} />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleStar(insight.id);
+            }}
+            className={`${insight.starred ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Star className={`w-5 h-5 ${insight.starred ? 'fill-current' : ''}`} />
+          </Button>
         </div>
 
-        {/* Main Theme */}
-        <h3 className="text-lg font-semibold text-cosmic-light mb-2 line-clamp-2">
-          {insight.themes[0] || 'Untitled Insight'}
-        </h3>
+        {/* Main Content */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+            {insight.themes[0] || 'Untitled Insight'}
+          </h3>
 
-        {/* Preview */}
-        <p className="text-cosmic-muted text-sm mb-4 line-clamp-3">
-          {insight.input}
-        </p>
+          <p className="text-muted-foreground leading-relaxed line-clamp-3">
+            {insight.input}
+          </p>
 
-        {/* Status badges */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {insight.themes.slice(0, 3).map((theme, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {theme}
-            </Badge>
-          ))}
-        </div>
+          {/* Theme Tags */}
+          <div className="flex flex-wrap gap-2">
+            {insight.themes.slice(0, 3).map((theme, index) => (
+              <Badge key={index} variant="outline" className="text-xs px-2 py-1">
+                {theme}
+              </Badge>
+            ))}
+            {insight.themes.length > 3 && (
+              <Badge variant="outline" className="text-xs px-2 py-1 text-muted-foreground">
+                +{insight.themes.length - 3} more
+              </Badge>
+            )}
+          </div>
 
-        {/* Stats */}
-        <div className="flex items-center justify-between text-xs text-cosmic-muted mb-4">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              ✅ {completedActions}/{totalActions} actions
-            </span>
-            <span className="flex items-center gap-1">
-              📱 {sharedContent} shared
-            </span>
-            <span className="flex items-center gap-1">
-              📅 {insight.userActions.calendarEvents.length} scheduled
-            </span>
+          {/* Progress Indicators */}
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+              <span>{completedActions}/{totalActions} tasks</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <span>{sharedContent} shared</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+              <span>{insight.userActions.calendarEvents.length} scheduled</span>
+            </div>
           </div>
         </div>
 
@@ -171,53 +182,69 @@ const InsightGallery: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="border-t border-cosmic-accent/20 pt-4 mt-4"
+              className="border-t border-border pt-6 mt-6 space-y-6"
             >
-              {/* Full insights */}
+              {/* Key Insights */}
               {insight.response?.keyInsights && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-cosmic-light mb-3">Key Insights</h4>
-                  <ul className="space-y-2">
-                    {insight.response.keyInsights.map((keyInsight: string, index: number) => (
-                      <li key={index} className="text-sm text-cosmic-muted flex items-start gap-2">
-                        <span className="text-cosmic-accent mt-1">•</span>
-                        {keyInsight}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Action items */}
-              {insight.response?.actionItems && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-cosmic-light mb-3">Action Items</h4>
-                  <ul className="space-y-2">
-                    {insight.response.actionItems.map((action: string, index: number) => (
-                      <li key={index} className="text-sm text-cosmic-muted flex items-start gap-2">
-                        <span className={`mt-1 ${
-                          insight.userActions.completedTasks.includes(index) 
-                            ? 'text-emerald-400' 
-                            : 'text-cosmic-accent'
-                        }`}>
-                          {insight.userActions.completedTasks.includes(index) ? '✅' : '◯'}
-                        </span>
-                        {action}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Content suggestions */}
-              {insight.response?.contentReady && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-cosmic-light mb-3">Generated Content</h4>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    Key Insights
+                  </h4>
                   <div className="space-y-3">
+                    {insight.response.keyInsights.map((keyInsight: string, index: number) => (
+                      <div key={index} className="bg-accent/5 rounded-lg p-4 border-l-4 border-primary">
+                        <p className="text-sm text-foreground leading-relaxed">{keyInsight}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Items */}
+              {insight.response?.actionItems && (
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    Action Items ({completedActions}/{totalActions} completed)
+                  </h4>
+                  <div className="space-y-2">
+                    {insight.response.actionItems.map((action: string, index: number) => (
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/5 transition-colors">
+                        <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          insight.userActions.completedTasks.includes(index) 
+                            ? 'bg-emerald-500 border-emerald-500 text-white' 
+                            : 'border-muted-foreground'
+                        }`}>
+                          {insight.userActions.completedTasks.includes(index) && (
+                            <span className="text-xs">✓</span>
+                          )}
+                        </div>
+                        <p className={`text-sm leading-relaxed ${
+                          insight.userActions.completedTasks.includes(index) 
+                            ? 'text-muted-foreground line-through' 
+                            : 'text-foreground'
+                        }`}>
+                          {action}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Generated Content */}
+              {insight.response?.contentReady && (
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    Generated Content
+                  </h4>
+                  <div className="grid gap-4 md:grid-cols-2">
                     {Object.entries(insight.response.contentReady).map(([platform, content]: [string, any]) => (
-                      <div key={platform} className="bg-cosmic-surface rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-cosmic-light capitalize">{platform}</span>
+                      <div key={platform} className="bg-card border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h5 className="font-medium text-foreground capitalize">{platform}</h5>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -225,28 +252,28 @@ const InsightGallery: React.FC = () => {
                               e.stopPropagation();
                               copyToClipboard(content, `${platform} content`);
                             }}
-                            className="p-1 text-cosmic-muted hover:text-cosmic-light"
+                            className="h-8 w-8 p-0"
                           >
-                            <Copy className="w-3 h-3" />
+                            <Copy className="w-4 h-4" />
                           </Button>
                         </div>
-                        <p className="text-xs text-cosmic-muted line-clamp-3">{content}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{content}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-cosmic-accent/20">
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleContinueAnalysis(insight);
                   }}
-                  className="bg-cosmic-purple hover:bg-cosmic-purple-dark text-white"
+                  className="flex items-center gap-2"
                 >
-                  <ArrowRight className="w-4 h-4 mr-2" />
+                  <ArrowRight className="w-4 h-4" />
                   Continue Analysis
                 </Button>
                 <Button
@@ -255,9 +282,9 @@ const InsightGallery: React.FC = () => {
                     e.stopPropagation();
                     copyToClipboard(insight.input, 'Original thought');
                   }}
-                  className="border-cosmic-accent/30 text-cosmic-light hover:bg-cosmic-accent/10"
+                  className="flex items-center gap-2"
                 >
-                  <Copy className="w-4 h-4 mr-2" />
+                  <Copy className="w-4 h-4" />
                   Copy Original
                 </Button>
                 <Button
@@ -267,9 +294,9 @@ const InsightGallery: React.FC = () => {
                     deleteInsight(insight.id);
                     toast.success('Insight deleted');
                   }}
-                  className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                  className="flex items-center gap-2 text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
+                  <Trash2 className="w-4 h-4" />
                   Delete
                 </Button>
               </div>
@@ -279,11 +306,10 @@ const InsightGallery: React.FC = () => {
 
         {/* Quick actions footer */}
         {!isExpanded && (
-          <div className="flex items-center justify-between pt-3 border-t border-cosmic-accent/20">
-            <Button variant="ghost" size="sm" className="text-cosmic-muted hover:text-cosmic-light">
-              <ExternalLink className="w-3 h-3 mr-1" />
-              View Full
-            </Button>
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
+            <span className="text-xs text-muted-foreground">
+              Click to expand
+            </span>
             <Button
               variant="ghost"
               size="sm"
@@ -291,10 +317,10 @@ const InsightGallery: React.FC = () => {
                 e.stopPropagation();
                 handleContinueAnalysis(insight);
               }}
-              className="text-cosmic-purple hover:text-cosmic-purple-light"
+              className="text-primary hover:text-primary/80 font-medium"
             >
-              Continue
-              <ArrowRight className="w-3 h-3 ml-1" />
+              Continue Analysis
+              <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         )}
@@ -314,114 +340,140 @@ const InsightGallery: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen w-full" style={{ background: 'var(--cosmic-gradient)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-background">
+      <div className="container max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-cosmic-light mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
             Insight Gallery
           </h1>
-          <p className="text-cosmic-muted">
-            Your personal museum of thoughts - organized, beautiful, and inspiring
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Your collection of thoughts, insights, and discoveries – beautifully organized and ready to inspire your next breakthrough
           </p>
         </div>
 
-        {/* Controls */}
-        <div className="mb-8 space-y-4">
-          {/* Search and View Toggle */}
-          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cosmic-muted" />
-              <Input
-                placeholder="Search insights, themes, or content..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-cosmic-surface border-cosmic-accent/30 text-cosmic-light placeholder:text-cosmic-muted"
-              />
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="px-3"
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="px-3"
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Filter Chips */}
-          <div className="flex flex-wrap gap-2">
-            {filterOptions.map(option => (
-              <Button
-                key={option.value}
-                variant={selectedFilter === option.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedFilter(option.value)}
-                className={`${
-                  selectedFilter === option.value 
-                    ? 'bg-cosmic-purple text-white' 
-                    : 'border-cosmic-accent/30 text-cosmic-light hover:bg-cosmic-accent/10'
-                }`}
-              >
-                {option.label}
-                {option.count > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-cosmic-accent/20">
-                    {option.count}
-                  </span>
-                )}
-              </Button>
-            ))}
-          </div>
-
-          {/* Sort Options */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-cosmic-muted">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-cosmic-surface border border-cosmic-accent/30 rounded-md px-3 py-1 text-sm text-cosmic-light"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="starred">Starred First</option>
-              <option value="actions">Most Actions</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Results Count */}
+        {/* Search Bar */}
         <div className="mb-6">
-          <p className="text-cosmic-muted">
-            {filteredInsights.length} {filteredInsights.length === 1 ? 'insight' : 'insights'} found
-          </p>
+          <div className="relative max-w-xl mx-auto">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Search your insights..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 h-12 text-base border-2 bg-card/50 backdrop-blur-sm focus:bg-card transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Filter and View Controls */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            {/* Filter Pills */}
+            <div className="flex flex-wrap gap-2">
+              {filterOptions.map(option => (
+                <Button
+                  key={option.value}
+                  variant={selectedFilter === option.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedFilter(option.value)}
+                  className="h-9 px-4 rounded-full"
+                >
+                  {option.label}
+                  {option.count > 0 && (
+                    <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">
+                      {option.count}
+                    </Badge>
+                  )}
+                </Button>
+              ))}
+            </div>
+
+            {/* View and Sort Controls */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="h-8 px-3"
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="h-8 px-3"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="h-9 px-3 rounded-md border bg-background text-sm font-medium"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="starred">Starred First</option>
+                <option value="actions">Most Active</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Info */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {filteredInsights.length} of {insights.length} insights
+          </div>
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchTerm('')}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Clear search
+            </Button>
+          )}
         </div>
 
         {/* Gallery */}
         {filteredInsights.length === 0 ? (
-          <div className="text-center py-12">
-            <Brain className="w-16 h-16 text-cosmic-muted mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-cosmic-light mb-2">No insights found</h3>
-            <p className="text-cosmic-muted mb-6">
-              {searchTerm ? 'Try adjusting your search or filters' : 'Start capturing thoughts to build your insight gallery'}
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+              <Brain className="w-12 h-12 text-primary" />
+            </div>
+            <h3 className="text-2xl font-semibold text-foreground mb-3">
+              {searchTerm ? 'No matching insights found' : 'Your insight gallery awaits'}
+            </h3>
+            <p className="text-muted-foreground mb-8 max-w-md text-center">
+              {searchTerm 
+                ? 'Try adjusting your search terms or filters to find what you\'re looking for.' 
+                : 'Start capturing your thoughts and ideas to build your personal collection of insights.'
+              }
             </p>
-            <Button
-              onClick={() => window.location.href = '/simplified'}
-              className="bg-cosmic-purple hover:bg-cosmic-purple-dark text-white"
-            >
-              <Brain className="w-4 h-4 mr-2" />
-              Capture First Thought
-            </Button>
+            <div className="flex gap-3">
+              {searchTerm ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setSearchTerm('')}
+                  className="flex items-center gap-2"
+                >
+                  Clear search
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => window.location.href = '/simplified'}
+                  className="flex items-center gap-2"
+                >
+                  <Brain className="w-4 h-4" />
+                  Capture Your First Thought
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <div className={`grid gap-6 ${
