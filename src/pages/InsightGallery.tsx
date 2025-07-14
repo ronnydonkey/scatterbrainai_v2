@@ -1,517 +1,216 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Calendar, Star, Archive, Grid, List, SortAsc, SortDesc, Brain, ArrowRight, ExternalLink, Copy, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Brain, ArrowRight, Clock, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import { useOfflineInsights } from '@/hooks/api';
-import { format, isToday, isYesterday, isThisWeek, isThisMonth } from 'date-fns';
-import { toast } from 'sonner';
-
-type ViewMode = 'grid' | 'list';
-type SortOption = 'newest' | 'oldest' | 'starred' | 'actions';
-type FilterOption = 'all' | 'today' | 'week' | 'month' | 'starred' | 'unfinished';
+import { format, isToday, isYesterday } from 'date-fns';
 
 const InsightGallery: React.FC = () => {
-  const { insights, toggleStar, deleteInsight } = useOfflineInsights();
+  const { insights, toggleStar } = useOfflineInsights();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'today' | 'starred'>('all');
 
-  // Filter and sort insights
-  const filteredInsights = useMemo(() => {
-    let filtered = insights.filter(insight => {
-      // Search filter
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          insight.input.toLowerCase().includes(searchLower) ||
-          insight.themes.some(theme => theme.toLowerCase().includes(searchLower)) ||
-          insight.searchTerms.some(term => term.toLowerCase().includes(searchLower))
-        );
-      }
-      return true;
-    }).filter(insight => {
-      // Date and status filters
-      const insightDate = new Date(insight.timestamp);
-      switch (selectedFilter) {
-        case 'today':
-          return isToday(insightDate);
-        case 'week':
-          return isThisWeek(insightDate);
-        case 'month':
-          return isThisMonth(insightDate);
-        case 'starred':
-          return insight.starred;
-        case 'unfinished':
-          return insight.userActions.completedTasks.length < (insight.response?.actionItems?.length || 0);
-        default:
-          return !insight.archived;
-      }
-    });
-
-    // Sort insights
-    return filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'oldest':
-          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-        case 'starred':
-          return (b.starred ? 1 : 0) - (a.starred ? 1 : 0);
-        case 'actions':
-          return (b.userActions.completedTasks.length + b.userActions.sharedContent.length) - 
-                 (a.userActions.completedTasks.length + a.userActions.sharedContent.length);
-        default: // newest
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-      }
-    });
-  }, [insights, searchTerm, selectedFilter, sortBy]);
+  // Simple filtering
+  const filteredInsights = insights.filter(insight => {
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        insight.input.toLowerCase().includes(searchLower) ||
+        insight.themes.some(theme => theme.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    // Status filters
+    if (selectedFilter === 'today') {
+      return isToday(new Date(insight.timestamp));
+    }
+    if (selectedFilter === 'starred') {
+      return insight.starred;
+    }
+    
+    return !insight.archived;
+  }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const getRelativeTime = (timestamp: string) => {
     const date = new Date(timestamp);
     if (isToday(date)) return 'Today';
     if (isYesterday(date)) return 'Yesterday';
-    if (isThisWeek(date)) return format(date, 'EEEE');
     return format(date, 'MMM d');
   };
 
-  const copyToClipboard = async (text: string, type: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success(`${type} copied to clipboard!`);
-    } catch (error) {
-      toast.error('Failed to copy to clipboard');
-    }
-  };
-
   const handleContinueAnalysis = (insight: any) => {
-    // Navigate back to simplified flow with the insight as context
     window.location.href = `/simplified?continue=${insight.id}`;
   };
 
-  const InsightCard: React.FC<{ insight: any; isExpanded: boolean }> = ({ insight, isExpanded }) => {
+  const InsightCard: React.FC<{ insight: any }> = ({ insight }) => {
     const completedActions = insight.userActions.completedTasks.length;
     const totalActions = insight.response?.actionItems?.length || 0;
-    const sharedContent = insight.userActions.sharedContent.length;
     
     return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className={`group bg-card hover:bg-accent/5 border border-border hover:border-primary/20 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg ${
-          isExpanded ? 'col-span-full ring-2 ring-primary/20' : ''
-        }`}
-        onClick={() => setSelectedInsight(isExpanded ? null : insight.id)}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Brain className="w-4 h-4 text-primary" />
+      <Card className="group hover:shadow-md transition-all duration-200 border border-gray-200 hover:border-gray-300">
+        <CardContent className="p-6">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Brain className="w-5 h-5 text-gray-600" />
               </div>
               <div>
-                <div className="font-medium text-foreground">{getRelativeTime(insight.timestamp)}</div>
-                <div className="text-xs">{format(new Date(insight.timestamp), 'h:mm a')}</div>
+                <div className="font-medium text-gray-900">{getRelativeTime(insight.timestamp)}</div>
+                <div className="text-sm text-gray-500">{format(new Date(insight.timestamp), 'h:mm a')}</div>
               </div>
             </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleStar(insight.id);
-            }}
-            className={`${insight.starred ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <Star className={`w-5 h-5 ${insight.starred ? 'fill-current' : ''}`} />
-          </Button>
-        </div>
-
-        {/* Main Content */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-            {insight.themes[0] || 'Untitled Insight'}
-          </h3>
-
-          <p className="text-muted-foreground leading-relaxed line-clamp-3">
-            {insight.input}
-          </p>
-
-          {/* Theme Tags */}
-          <div className="flex flex-wrap gap-2">
-            {insight.themes.slice(0, 3).map((theme, index) => (
-              <Badge key={index} variant="outline" className="text-xs px-2 py-1">
-                {theme}
-              </Badge>
-            ))}
-            {insight.themes.length > 3 && (
-              <Badge variant="outline" className="text-xs px-2 py-1 text-muted-foreground">
-                +{insight.themes.length - 3} more
-              </Badge>
-            )}
-          </div>
-
-          {/* Progress Indicators */}
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              <span>{completedActions}/{totalActions} tasks</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span>{sharedContent} shared</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-              <span>{insight.userActions.calendarEvents.length} scheduled</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Expanded content */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="border-t border-border pt-6 mt-6 space-y-6"
-            >
-              {/* Key Insights */}
-              {insight.response?.keyInsights && (
-                <div>
-                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                    Key Insights
-                  </h4>
-                  <div className="space-y-3">
-                    {insight.response.keyInsights.map((keyInsight: string, index: number) => (
-                      <div key={index} className="bg-accent/5 rounded-lg p-4 border-l-4 border-primary">
-                        <p className="text-sm text-foreground leading-relaxed">{keyInsight}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Items */}
-              {insight.response?.actionItems && (
-                <div>
-                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    Action Items ({completedActions}/{totalActions} completed)
-                  </h4>
-                  <div className="space-y-2">
-                    {insight.response.actionItems.map((action: string, index: number) => (
-                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/5 transition-colors">
-                        <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          insight.userActions.completedTasks.includes(index) 
-                            ? 'bg-emerald-500 border-emerald-500 text-white' 
-                            : 'border-muted-foreground'
-                        }`}>
-                          {insight.userActions.completedTasks.includes(index) && (
-                            <span className="text-xs">✓</span>
-                          )}
-                        </div>
-                        <p className={`text-sm leading-relaxed ${
-                          insight.userActions.completedTasks.includes(index) 
-                            ? 'text-muted-foreground line-through' 
-                            : 'text-foreground'
-                        }`}>
-                          {action}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Generated Content */}
-              {insight.response?.contentReady && (
-                <div>
-                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    Generated Content
-                  </h4>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {Object.entries(insight.response.contentReady).map(([platform, content]: [string, any]) => (
-                      <div key={platform} className="bg-card border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h5 className="font-medium text-foreground capitalize">{platform}</h5>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyToClipboard(content, `${platform} content`);
-                            }}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{content}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleContinueAnalysis(insight);
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                  Continue Analysis
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    copyToClipboard(insight.input, 'Original thought');
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Copy className="w-4 h-4" />
-                  Copy Original
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteInsight(insight.id);
-                    toast.success('Insight deleted');
-                  }}
-                  className="flex items-center gap-2 text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Quick actions footer */}
-        {!isExpanded && (
-          <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
-            <span className="text-xs text-muted-foreground">
-              Click to expand
-            </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                handleContinueAnalysis(insight);
+                toggleStar(insight.id);
               }}
-              className="text-primary hover:text-primary/80 font-medium"
+              className={`${insight.starred ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              Continue Analysis
-              <ArrowRight className="w-4 h-4 ml-1" />
+              <Star className={`w-5 h-5 ${insight.starred ? 'fill-current' : ''}`} />
             </Button>
           </div>
-        )}
-      </motion.div>
+
+          {/* Content */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+              {insight.themes[0] || 'Untitled Insight'}
+            </h3>
+
+            <p className="text-gray-600 leading-relaxed line-clamp-3">
+              {insight.input}
+            </p>
+
+            {/* Simple progress indicator */}
+            {totalActions > 0 && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span>{completedActions}/{totalActions} tasks completed</span>
+              </div>
+            )}
+          </div>
+
+          {/* Action */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <Button
+              variant="ghost"
+              onClick={() => handleContinueAnalysis(insight)}
+              className="w-full justify-between text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            >
+              <span>Continue Analysis</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   };
 
-  const filterOptions = [
-    { value: 'all' as FilterOption, label: 'All Insights', count: insights.filter(i => !i.archived).length },
-    { value: 'today' as FilterOption, label: 'Today', count: insights.filter(i => isToday(new Date(i.timestamp))).length },
-    { value: 'week' as FilterOption, label: 'This Week', count: insights.filter(i => isThisWeek(new Date(i.timestamp))).length },
-    { value: 'month' as FilterOption, label: 'This Month', count: insights.filter(i => isThisMonth(new Date(i.timestamp))).length },
-    { value: 'starred' as FilterOption, label: 'Starred', count: insights.filter(i => i.starred).length },
-    { value: 'unfinished' as FilterOption, label: 'Unfinished', count: insights.filter(i => 
-      i.userActions.completedTasks.length < (i.response?.actionItems?.length || 0)
-    ).length },
-  ];
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-white">
+      <div className="container max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
             Insight Gallery
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Your collection of thoughts, insights, and discoveries – beautifully organized and ready to inspire your next breakthrough
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Your collection of thoughts, insights, and discoveries
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-xl mx-auto">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        {/* Search */}
+        <div className="mb-8">
+          <div className="relative max-w-md mx-auto">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
-              placeholder="Search your insights..."
+              placeholder="Search insights..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 text-base border-2 bg-card/50 backdrop-blur-sm focus:bg-card transition-colors"
+              className="pl-12 h-12 text-base border-gray-200 focus:border-gray-400 bg-white"
             />
           </div>
         </div>
 
-        {/* Filter and View Controls */}
+        {/* Simple filters */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            {/* Filter Pills */}
-            <div className="flex flex-wrap gap-2">
-              {filterOptions.map(option => (
-                <Button
-                  key={option.value}
-                  variant={selectedFilter === option.value ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedFilter(option.value)}
-                  className="h-9 px-4 rounded-full"
-                >
-                  {option.label}
-                  {option.count > 0 && (
-                    <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">
-                      {option.count}
-                    </Badge>
-                  )}
-                </Button>
-              ))}
-            </div>
-
-            {/* View and Sort Controls */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="h-8 px-3"
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="h-8 px-3"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-9 px-3 rounded-md border bg-background text-sm font-medium"
+          <div className="flex justify-center gap-2">
+            {[
+              { value: 'all', label: 'All' },
+              { value: 'today', label: 'Today' },
+              { value: 'starred', label: 'Starred' }
+            ].map(filter => (
+              <Button
+                key={filter.value}
+                variant={selectedFilter === filter.value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedFilter(filter.value as any)}
+                className="rounded-full"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="starred">Starred First</option>
-                <option value="actions">Most Active</option>
-              </select>
-            </div>
+                {filter.label}
+              </Button>
+            ))}
           </div>
         </div>
 
-        {/* Results Info */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {filteredInsights.length} of {insights.length} insights
-          </div>
-          {searchTerm && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSearchTerm('')}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Clear search
-            </Button>
-          )}
-        </div>
-
-        {/* Gallery */}
+        {/* Results */}
         {filteredInsights.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="relative mb-8">
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center">
-                <Brain className="w-16 h-16 text-primary" />
-              </div>
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-accent rounded-full opacity-60 animate-pulse"></div>
-              <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-primary rounded-full opacity-40 animate-pulse delay-300"></div>
-              <div className="absolute top-2 -left-3 w-3 h-3 bg-accent/60 rounded-full opacity-50 animate-pulse delay-700"></div>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+              <Brain className="w-8 h-8 text-gray-400" />
             </div>
             
-            <h3 className="text-3xl font-bold text-foreground mb-4">
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">
               {searchTerm || selectedFilter !== 'all' 
                 ? 'No insights found' 
                 : 'Your insight journey starts here'
               }
             </h3>
             
-            <p className="text-muted-foreground text-lg mb-10 max-w-2xl text-center leading-relaxed">
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
               {searchTerm || selectedFilter !== 'all'
-                ? 'Try adjusting your search terms or filters to discover the insights you\'re looking for.'
-                : 'Every breakthrough begins with a single thought. Share your ideas, questions, or observations and watch as AI transforms them into actionable insights.'
+                ? 'Try adjusting your search or filters.'
+                : 'Share your thoughts and ideas to create your first insight.'
               }
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              {searchTerm || selectedFilter !== 'all' ? (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedFilter('all');
-                  }}
-                  className="px-8 py-3 rounded-xl"
-                >
-                  Clear all filters
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={() => window.location.href = '/simplified'}
-                    size="lg"
-                    className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
-                  >
-                    <Brain className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                    Start Your First Analysis
-                  </Button>
-                  
-                  <p className="text-sm text-muted-foreground text-center sm:text-left">
-                    Share a thought, ask a question, or explore any idea
-                  </p>
-                </>
-              )}
-            </div>
+            {searchTerm || selectedFilter !== 'all' ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedFilter('all');
+                }}
+              >
+                Clear filters
+              </Button>
+            ) : (
+              <Button
+                onClick={() => window.location.href = '/simplified'}
+                className="bg-gray-900 hover:bg-gray-800 text-white"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                Start Your First Analysis
+              </Button>
+            )}
           </div>
         ) : (
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-              : 'grid-cols-1'
-          }`}>
-            <AnimatePresence>
-              {filteredInsights.map(insight => (
-                <InsightCard
-                  key={insight.id}
-                  insight={insight}
-                  isExpanded={selectedInsight === insight.id}
-                />
-              ))}
-            </AnimatePresence>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredInsights.map(insight => (
+              <motion.div
+                key={insight.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <InsightCard insight={insight} />
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
