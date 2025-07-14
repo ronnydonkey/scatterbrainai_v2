@@ -215,10 +215,11 @@ export default function SimplifiedFlow() {
       }, 1200);
 
       // Real API call to your backend
-      const response = await fetch('/api/synthesize', {
+      const response = await fetch('https://mnfuwjrfaeiodexezedh.supabase.co/functions/v1/synthesize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZnV3anJmYWVpb2RleGV6ZWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwODgyNjUsImV4cCI6MjA2NzY2NDI2NX0.fPhps5QOy_0wXsZqLzpVviHizUalFpBiHrHZztx_pqk`,
         },
         body: JSON.stringify({
           input: capturedThoughts,
@@ -233,10 +234,26 @@ export default function SimplifiedFlow() {
         throw new Error(`API Error: ${response.status}`);
       }
 
-      const insights = await response.json();
+      const apiResponse = await response.json();
       
-      // Store in localStorage for gallery
-      storeInsightInGallery(insights);
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.error || 'Analysis failed');
+      }
+      // Transform API response to match UI expectations
+      const insights = {
+        keyInsights: apiResponse.insights.keyThemes.map((theme: any) => theme.theme),
+        actionItems: apiResponse.insights.actionItems.map((item: any) => item.task),
+        contentReady: {
+          tweet: apiResponse.insights.contentSuggestions.twitter.content,
+          linkedin: apiResponse.insights.contentSuggestions.linkedin.content,
+          instagramCaption: apiResponse.insights.contentSuggestions.instagram.content,
+        },
+        calendarSuggestions: apiResponse.insights.calendarBlocks.map((block: any) => ({
+          title: block.title,
+          time: block.suggestedTimes[0] || 'tomorrow',
+          duration: `${block.duration} minutes`,
+        })),
+      };
       
       // Clear processing animation
       clearInterval(processingInterval);
@@ -245,7 +262,8 @@ export default function SimplifiedFlow() {
         completed: true,
         current: false
       })));
-      
+      // Store the full API response in localStorage for gallery
+      storeInsightInGallery(apiResponse);
       setClarityReport(insights);
       
       // Save insight to gallery
@@ -253,7 +271,7 @@ export default function SimplifiedFlow() {
         await saveInsight(
           capturedThoughts,
           insights,
-          insights.tags || ['Productivity', 'Creative Process']
+          apiResponse.metadata?.topics || ['Productivity', 'Creative Process']
         );
       } catch (error) {
         console.error('Failed to save insight:', error);
