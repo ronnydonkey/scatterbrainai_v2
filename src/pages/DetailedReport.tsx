@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ContentMultiplier } from '@/components/ContentMultiplier';
 
 const DetailedReport: React.FC = () => {
   const { insightId } = useParams();
@@ -391,6 +392,22 @@ const DetailedReport: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Content Multiplication Engine */}
+        <ContentMultiplier 
+          originalInsight={{
+            originalInput: (() => {
+              const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+              const baseInsight = insights.find(i => i.id === insightId);
+              return baseInsight?.originalInput || '';
+            })(),
+            id: insightId || ''
+          }}
+          onGenerate={(content) => {
+            console.log('Generated content suite:', content);
+            toast.success('Content suite generated successfully!');
+          }}
+        />
 
         {/* Footer */}
         <div className="text-center py-8 border-t border-white/20">
