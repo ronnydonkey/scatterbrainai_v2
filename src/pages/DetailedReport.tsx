@@ -70,27 +70,71 @@ const DetailedReport: React.FC = () => {
   };
 
   const shareReport = async () => {
-    if (navigator.share) {
-      // Native sharing on mobile
-      await navigator.share({
+    try {
+      const shareData = {
         title: 'My Scatterbrain Insight Report',
-        text: report?.summary?.keyFindings?.[0] || 'Check out my insight report',
+        text: `Check out my insight analysis: ${report?.summary?.keyFindings?.[0] || 'Detailed analysis of my thoughts and action plan.'}`,
         url: window.location.href
-      });
-    } else {
-      // Copy link to clipboard
-      await navigator.clipboard.writeText(window.location.href);
-      // You can add a toast notification here
+      };
+
+      if (navigator.share) {
+        // Native sharing on mobile
+        await navigator.share(shareData);
+        toast.success('Report shared successfully!');
+      } else {
+        // Copy link to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Report link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Failed to share report:', error);
+      toast.error('Failed to share report. Please try again.');
     }
   };
 
   const downloadReport = async () => {
     try {
-      toast.success('PDF download feature coming soon!');
-      // TODO: Implement PDF generation
+      setLoading(true);
+      
+      // Get the base insight for context
+      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+      const baseInsight = insights.find(i => i.id === insightId);
+      
+      if (!baseInsight || !report) {
+        toast.error('Report data not available for download');
+        return;
+      }
+
+      // Call the PDF generation edge function
+      const { data, error } = await supabase.functions.invoke('generate-pdf-report', {
+        body: {
+          insightId,
+          reportData: report,
+          originalInput: baseInsight.originalInput,
+          timestamp: baseInsight.timestamp
+        }
+      });
+
+      if (error) throw error;
+
+      // Create blob and download
+      const pdfBlob = new Blob([new Uint8Array(data.pdfBuffer)], { type: 'application/pdf' });
+      const url = URL.createObjectURL(pdfBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `scatterbrain-report-${insightId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      toast.success('Report downloaded successfully!');
     } catch (error) {
       console.error('PDF generation failed:', error);
-      toast.error('PDF download failed. Please try again.');
+      toast.error('Failed to generate PDF. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
