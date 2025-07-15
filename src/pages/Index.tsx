@@ -13,7 +13,6 @@ import { PerformanceAnalytics } from '@/components/PerformanceAnalytics';
 import { ThoughtCapture } from '@/components/ThoughtCapture';
 import ClaudeResearch from '@/components/ClaudeResearch';
 import SubscriptionTier from '@/components/SubscriptionTier';
-import UserAccountDropdown from '@/components/UserAccountDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -119,17 +118,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Bot className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold">ScatterBrain AI</h1>
-          </div>
-          <UserAccountDropdown organization={organization} />
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
