@@ -240,20 +240,41 @@ Brand Voice: ${brandVoice}
 }`;
 
     case 'linkedin_article':
-      return basePrompt + `Create a LinkedIn article for thought leadership. Return JSON with this structure:
+      return basePrompt + `Create a comprehensive LinkedIn thought leadership article (1000-1500 words). This should be a full, engaging article with multiple sections, real insights, and actionable takeaways. Return JSON with this structure:
 {
-  "title": "Professional headline",
-  "subtitle": "Thought leadership hook",
+  "title": "Compelling professional headline that hooks readers",
+  "subtitle": "Thought-provoking subtitle that adds context",
   "content": {
-    "introduction": "Professional opening...",
-    "mainBody": "Detailed insights...",
-    "conclusion": "Professional call to action..."
+    "hook": "Opening paragraph that grabs attention with a story, statistic, or provocative question...",
+    "introduction": "2-3 paragraphs introducing the problem/opportunity and your unique perspective...",
+    "mainSections": [
+      {
+        "heading": "The Hidden Challenge Most Leaders Miss",
+        "content": "Detailed section with specific examples, data, or case studies...",
+        "keyPoints": ["Specific insight 1", "Specific insight 2"]
+      },
+      {
+        "heading": "What I Learned From [Specific Experience]",
+        "content": "Personal story or lesson with universal application...",
+        "keyPoints": ["Actionable takeaway 1", "Actionable takeaway 2"]
+      },
+      {
+        "heading": "3 Strategies That Actually Work",
+        "content": "Practical, implementable advice with examples...",
+        "keyPoints": ["Strategy 1 with explanation", "Strategy 2 with explanation", "Strategy 3 with explanation"]
+      }
+    ],
+    "personalStory": "Include a relevant personal anecdote that illustrates the main point...",
+    "conclusion": "Strong conclusion that reinforces key messages and includes a thought-provoking call to action...",
+    "callToAction": "Engaging question or invitation for discussion in comments"
   },
-  "wordCount": 1000,
+  "wordCount": 1200,
+  "readingTime": "4-5 min",
   "professionalTone": true,
-  "engagementScore": 0.85,
+  "engagementScore": 0.9,
+  "keyTakeaways": ["Main insight 1", "Main insight 2", "Main insight 3"],
   "formatting": {
-    "plainText": "Clean, professional plain text suitable for LinkedIn"
+    "plainText": "Complete, well-structured article in plain text format with natural paragraph breaks, no markdown formatting. Should read like a polished LinkedIn article with engaging storytelling, specific examples, and actionable insights."
   }
 }`;
 

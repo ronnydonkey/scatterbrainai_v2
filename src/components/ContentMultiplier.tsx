@@ -290,7 +290,23 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
       case 'newsletter':
         return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
       case 'linkedin_article':
-        return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
+        if (content.formatting?.plainText) {
+          return content.formatting.plainText;
+        }
+        // Build from structured content
+        let article = '';
+        if (content.content?.hook) article += content.content.hook + '\n\n';
+        if (content.content?.introduction) article += content.content.introduction + '\n\n';
+        if (content.content?.mainSections) {
+          content.content.mainSections.forEach((section: any) => {
+            if (section.heading) article += section.heading + '\n\n';
+            if (section.content) article += section.content + '\n\n';
+          });
+        }
+        if (content.content?.personalStory) article += content.content.personalStory + '\n\n';
+        if (content.content?.conclusion) article += content.content.conclusion + '\n\n';
+        if (content.content?.callToAction) article += content.content.callToAction;
+        return article || JSON.stringify(content, null, 2);
       default:
         return content.content || JSON.stringify(content, null, 2);
     }
