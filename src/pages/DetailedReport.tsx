@@ -23,6 +23,24 @@ const DetailedReport: React.FC = () => {
 
   const generateDetailedReport = async (id: string) => {
     try {
+      setLoading(true);
+      
+      // First, check if a detailed report already exists
+      const { data: existingReport, error: fetchError } = await supabase
+        .from('detailed_reports')
+        .select('report_data')
+        .eq('insight_id', id)
+        .single();
+
+      if (existingReport && !fetchError) {
+        console.log('Loading existing detailed report from database');
+        setReport(existingReport.report_data);
+        setLoading(false);
+        return;
+      }
+
+      console.log('No existing report found, generating new one');
+      
       // Get base insight from storage
       const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
       const baseInsight = insights.find(i => i.id === id);
@@ -47,6 +65,7 @@ const DetailedReport: React.FC = () => {
     } catch (error) {
       console.error('Failed to generate detailed report:', error);
       setLoading(false);
+      toast.error('Failed to load report. Please try again.');
     }
   };
 
@@ -96,7 +115,7 @@ const DetailedReport: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Generating detailed report...</p>
+          <p>Loading report...</p>
         </div>
       </div>
     );
