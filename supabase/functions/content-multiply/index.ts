@@ -193,9 +193,7 @@ Brand Voice: ${brandVoice}
   "seoKeywords": ["keyword1", "keyword2"],
   "engagementScore": 0.85,
   "formatting": {
-    "markdown": "Full markdown content...",
-    "html": "HTML version...",
-    "plainText": "Plain text version..."
+    "plainText": "Clean, readable plain text version without any markdown or formatting codes..."
   }
 }`;
 
@@ -237,8 +235,7 @@ Brand Voice: ${brandVoice}
   "wordCount": 800,
   "engagementScore": 0.8,
   "formatting": {
-    "html": "HTML email version",
-    "plainText": "Plain text version"
+    "plainText": "Clean, readable plain text version suitable for email"
   }
 }`;
 
@@ -256,7 +253,7 @@ Brand Voice: ${brandVoice}
   "professionalTone": true,
   "engagementScore": 0.85,
   "formatting": {
-    "markdown": "LinkedIn formatted content"
+    "plainText": "Clean, professional plain text suitable for LinkedIn"
   }
 }`;
 

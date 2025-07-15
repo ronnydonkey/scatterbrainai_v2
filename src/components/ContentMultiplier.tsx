@@ -282,13 +282,15 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
   const getContentText = (content: any, type: string) => {
     switch (type) {
       case 'blog_post':
-        return content.formatting?.markdown || content.content || JSON.stringify(content, null, 2);
+        return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
       case 'twitter_thread':
         return content.tweets?.map((tweet: any, i: number) => 
           `${i + 1}/${content.totalTweets || content.tweets.length} ${tweet.content}`
         ).join('\n\n') || JSON.stringify(content, null, 2);
       case 'newsletter':
-        return content.formatting?.html || content.content || JSON.stringify(content, null, 2);
+        return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
+      case 'linkedin_article':
+        return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
       default:
         return content.content || JSON.stringify(content, null, 2);
     }
@@ -332,15 +334,6 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
           {copied === 'Content' ? 'Copied!' : 'Copy Content'}
         </Button>
         
-        {content.formatting?.html && (
-          <Button
-            onClick={() => copyToClipboard(content.formatting.html, 'HTML')}
-            variant="outline"
-          >
-            {copied === 'HTML' ? <Check className="w-4 h-4 mr-2" /> : <Code className="w-4 h-4 mr-2" />}
-            {copied === 'HTML' ? 'Copied!' : 'Copy HTML'}
-          </Button>
-        )}
         
         <Button
           onClick={() => onSchedule(content)}
