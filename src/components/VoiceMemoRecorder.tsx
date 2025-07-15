@@ -1,12 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Square, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { EnhancedVoiceRecorder } from '@/components/EnhancedVoiceRecorder';
+import { useEnhancedVoiceRecording, type AudioProcessingResult } from '@/hooks/useEnhancedVoiceRecording';
 import { useVoiceTranscription } from '@/hooks/api/useVoiceTranscription';
 import { cn } from '@/lib/utils';
-import type { AudioProcessingResult } from '@/hooks/useEnhancedVoiceRecording';
 
 interface VoiceMemoRecorderProps {
   onTranscriptionComplete?: (text: string) => void;
@@ -27,85 +26,96 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
   maxDuration = 300000, // 5 minutes
   placeholder = "Record your thoughts..."
 }) => {
-  const [stage, setStage] = useState<'idle' | 'recording' | 'processing' | 'completed' | 'error'>('idle');
-  const [recordedAudio, setRecordedAudio] = useState<AudioProcessingResult | null>(null);
   const [transcriptionText, setTranscriptionText] = useState<string>('');
-
+  
+  // Use the voice recording hook directly
+  const {
+    state,
+    startRecording,
+    stopRecording,
+    reset,
+    formatDuration,
+  } = useEnhancedVoiceRecording();
+  
   const { transcribeAudio, isTranscribing } = useVoiceTranscription();
 
-  const handleRecordingStart = useCallback(() => {
-    setStage('recording');
-    setRecordedAudio(null);
-    setTranscriptionText('');
-    onRecordingStart?.();
-  }, [onRecordingStart]);
-
-  const handleRecordingStop = useCallback(() => {
-    setStage('processing');
-    onRecordingStop?.();
-  }, [onRecordingStop]);
-
-  const handleRecordingComplete = useCallback(async (result: AudioProcessingResult) => {
-    setRecordedAudio(result);
-    setStage('processing');
-
+  // Handle recording start
+  const handleStartRecording = useCallback(async () => {
     try {
-      // Transcribe the recorded audio
-      const transcriptionResult = await transcribeAudio(result.audioBlob);
+      await startRecording();
+      onRecordingStart?.();
+    } catch (error: any) {
+      onError?.(error.message || 'Failed to start recording');
+    }
+  }, [startRecording, onRecordingStart, onError]);
+
+  // Handle recording stop and transcription
+  const handleStopRecording = useCallback(async () => {
+    try {
+      const result = await stopRecording();
+      onRecordingStop?.();
       
-      if (transcriptionResult?.text) {
-        setTranscriptionText(transcriptionResult.text);
-        setStage('completed');
-        onTranscriptionComplete?.(transcriptionResult.text);
-      } else {
-        throw new Error('No transcription received');
+      if (result?.audioBlob) {
+        // Transcribe the recorded audio
+        const transcriptionResult = await transcribeAudio(result.audioBlob);
+        
+        if (transcriptionResult?.text) {
+          setTranscriptionText(transcriptionResult.text);
+          onTranscriptionComplete?.(transcriptionResult.text);
+        } else {
+          throw new Error('No transcription received');
+        }
       }
     } catch (error: any) {
-      setStage('error');
-      onError?.(error.message || 'Failed to transcribe audio');
+      onError?.(error.message || 'Failed to process recording');
     }
-  }, [transcribeAudio, onTranscriptionComplete, onError]);
+  }, [stopRecording, onRecordingStop, transcribeAudio, onTranscriptionComplete, onError]);
 
-  const handleError = useCallback((error: string) => {
-    setStage('error');
-    onError?.(error);
-  }, [onError]);
+  // Handle button click
+  const handleButtonClick = useCallback(() => {
+    if (state.isRecording) {
+      handleStopRecording();
+    } else {
+      handleStartRecording();
+    }
+  }, [state.isRecording, handleStartRecording, handleStopRecording]);
 
-  const resetRecorder = useCallback(() => {
-    setStage('idle');
-    setRecordedAudio(null);
+  // Reset handler
+  const handleReset = useCallback(() => {
+    reset();
     setTranscriptionText('');
-  }, []);
+  }, [reset]);
 
-  const getStatusMessage = () => {
-    switch (stage) {
-      case 'idle':
-        return placeholder;
-      case 'recording':
-        return 'Recording... Speak clearly';
-      case 'processing':
-        return 'Transcribing your voice...';
-      case 'completed':
-        return 'Transcription complete!';
-      case 'error':
-        return 'Something went wrong. Try again.';
-      default:
-        return placeholder;
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (stage) {
-      case 'recording':
-        return 'text-red-400';
-      case 'processing':
-        return 'text-blue-400';
-      case 'completed':
-        return 'text-green-400';
-      case 'error':
-        return 'text-red-400';
-      default:
-        return 'text-muted-foreground';
+  // Get button content based on state
+  const getButtonContent = () => {
+    if (state.isRecording) {
+      return (
+        <>
+          <Square className="w-4 h-4 mr-2 fill-current" />
+          Stop Recording
+        </>
+      );
+    } else if (state.stage === 'processing' || isTranscribing) {
+      return (
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          Processing...
+        </>
+      );
+    } else if (state.stage === 'completed' && transcriptionText) {
+      return (
+        <>
+          <CheckCircle className="w-4 h-4 mr-2" />
+          Record Again
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Mic className="w-4 h-4 mr-2" />
+          Record Voice Memo
+        </>
+      );
     }
   };
 
@@ -115,69 +125,36 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
       <div className="flex flex-col items-center space-y-4">
         <Button 
           variant="outline" 
-          onClick={() => {
-            if (stage === 'idle' || stage === 'error') {
-              handleRecordingStart();
-            } else if (stage === 'recording') {
-              handleRecordingStop();
-            }
-          }}
-          disabled={stage === 'processing' || isTranscribing}
+          onClick={handleButtonClick}
+          disabled={state.stage === 'processing' || isTranscribing || state.stage === 'requesting-permission'}
           className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-6 text-sm sm:text-base"
         >
-          {stage === 'recording' ? (
-            <>
-              <Square className="w-4 h-4 mr-2 fill-current" />
-              Stop Recording
-            </>
-          ) : stage === 'processing' || isTranscribing ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : stage === 'completed' ? (
-            <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Record Again
-            </>
-          ) : (
-            <>
-              <Mic className="w-4 h-4 mr-2" />
-              Record Voice Memo
-            </>
-          )}
+          {getButtonContent()}
         </Button>
 
-        {/* Hidden Enhanced Voice Recorder for actual recording functionality */}
-        <div className="hidden">
-          <EnhancedVoiceRecorder
-            onRecordingStart={handleRecordingStart}
-            onRecordingStop={handleRecordingStop}
-            onRecordingComplete={handleRecordingComplete}
-            onError={handleError}
-            maxDuration={maxDuration}
-            size="lg"
-            showWaveform={false}
-            autoStop={true}
-          />
-        </div>
+        {/* Recording duration */}
+        {state.isRecording && (
+          <Badge variant="secondary" className="text-xs animate-pulse">
+            {formatDuration(state.duration)}
+          </Badge>
+        )}
 
-        {/* Status Message - only show when not idle */}
-        {stage !== 'idle' && (
+        {/* Status Messages */}
+        {state.isRecording && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <p className={cn("text-sm font-medium", getStatusColor())}>
-              {getStatusMessage()}
+            <p className="text-sm font-medium text-red-400">
+              Recording... Speak clearly
             </p>
           </motion.div>
         )}
 
         {/* Processing Indicator */}
         <AnimatePresence>
-          {(stage === 'processing' || isTranscribing) && (
+          {(state.stage === 'processing' || isTranscribing) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -194,7 +171,7 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
 
         {/* Completion Indicator */}
         <AnimatePresence>
-          {stage === 'completed' && (
+          {state.stage === 'completed' && transcriptionText && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -211,7 +188,7 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
 
         {/* Error Indicator */}
         <AnimatePresence>
-          {stage === 'error' && (
+          {state.stage === 'error' && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -221,13 +198,13 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 text-red-500" />
                 <span className="text-sm text-red-600">
-                  Transcription failed
+                  {state.error || 'Recording failed'}
                 </span>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={resetRecorder}
+                onClick={handleReset}
                 className="text-xs"
               >
                 Try Again
@@ -235,18 +212,11 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Audio Duration */}
-        {recordedAudio && (
-          <Badge variant="secondary" className="text-xs">
-            {(recordedAudio.duration / 1000).toFixed(1)}s recorded
-          </Badge>
-        )}
       </div>
 
       {/* Transcription Preview */}
       <AnimatePresence>
-        {transcriptionText && stage === 'completed' && (
+        {transcriptionText && state.stage === 'completed' && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
