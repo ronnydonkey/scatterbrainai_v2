@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Star, Clock, Search, Filter, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import UserAccountDropdown from '@/components/UserAccountDropdown';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
@@ -156,6 +157,7 @@ const InsightGallery: React.FC = () => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Capture
         </Button>
+        <UserAccountDropdown />
       </div>
 
       <div className="container max-w-6xl mx-auto px-6 py-8">
