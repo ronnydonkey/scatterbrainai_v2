@@ -111,18 +111,56 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Voice Recorder */}
+      {/* Voice Recorder Button - matching upload button style */}
       <div className="flex flex-col items-center space-y-4">
-        <EnhancedVoiceRecorder
-          onRecordingStart={handleRecordingStart}
-          onRecordingStop={handleRecordingStop}
-          onRecordingComplete={handleRecordingComplete}
-          onError={handleError}
-          maxDuration={maxDuration}
-          size="lg"
-          showWaveform={true}
-          autoStop={true}
-        />
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            if (stage === 'idle' || stage === 'error') {
+              handleRecordingStart();
+            } else if (stage === 'recording') {
+              handleRecordingStop();
+            }
+          }}
+          disabled={stage === 'processing' || isTranscribing}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-6 text-sm sm:text-base"
+        >
+          {stage === 'recording' ? (
+            <>
+              <Square className="w-4 h-4 mr-2 fill-current" />
+              Stop Recording
+            </>
+          ) : stage === 'processing' || isTranscribing ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : stage === 'completed' ? (
+            <>
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Record Again
+            </>
+          ) : (
+            <>
+              <Mic className="w-4 h-4 mr-2" />
+              Record Voice Memo
+            </>
+          )}
+        </Button>
+
+        {/* Hidden Enhanced Voice Recorder for actual recording functionality */}
+        <div className="hidden">
+          <EnhancedVoiceRecorder
+            onRecordingStart={handleRecordingStart}
+            onRecordingStop={handleRecordingStop}
+            onRecordingComplete={handleRecordingComplete}
+            onError={handleError}
+            maxDuration={maxDuration}
+            size="lg"
+            showWaveform={false}
+            autoStop={true}
+          />
+        </div>
 
         {/* Status Message */}
         <motion.div
