@@ -22,6 +22,29 @@ interface SynthesizeRequest {
   };
 }
 
+interface DetectedTopic {
+  topic: string;
+  confidence: number;
+}
+
+interface SmartSources {
+  communities: string[];
+  websites: string[];
+  contentFocus: string[];
+  reasoning: string;
+}
+
+interface UserLearningProfile {
+  userId: string;
+  totalInsights: number;
+  topicFrequency: Record<string, number>;
+  preferredSources: Record<string, any>;
+  engagementData: any[];
+  adaptationLevel: number;
+  createdAt: string;
+  lastUpdated?: string;
+}
+
 interface ActionItem {
   id: string;
   task: string;
@@ -76,6 +99,14 @@ interface SynthesizeResponse {
     sentiment: string;
     complexity: string;
     topics: string[];
+  };
+  // New adaptive intelligence fields
+  detectedTopics: DetectedTopic[];
+  smartSources: SmartSources;
+  userProfile: {
+    adaptationLevel: number;
+    topInterests: string[];
+    totalInsights: number;
   };
 }
 
@@ -183,6 +214,158 @@ function generateActionId(index: number): string {
   return `action_${Date.now()}_${index}`;
 }
 
+// Topic Detection Function
+function detectTopics(input: string): DetectedTopic[] {
+  const topicPatterns = {
+    business: ['startup', 'revenue', 'customer', 'business', 'marketing', 'sales', 'product', 'growth', 'strategy', 'founder', 'entrepreneur', 'saas', 'metrics'],
+    technology: ['code', 'programming', 'software', 'app', 'development', 'ai', 'tech', 'api', 'database', 'frontend', 'backend', 'framework'],
+    creative: ['design', 'art', 'creative', 'content', 'video', 'photography', 'writing', 'brand', 'aesthetic', 'portfolio', 'inspiration'],
+    health: ['fitness', 'health', 'workout', 'nutrition', 'wellness', 'mental health', 'diet', 'exercise', 'sleep', 'meditation'],
+    finance: ['money', 'investment', 'crypto', 'stocks', 'budget', 'savings', 'trading', 'portfolio', 'wealth', 'income'],
+    education: ['learning', 'study', 'course', 'skill', 'knowledge', 'tutorial', 'practice', 'certification', 'book', 'research'],
+    lifestyle: ['travel', 'food', 'cooking', 'hobby', 'personal', 'family', 'relationships', 'goals', 'productivity', 'habits'],
+    gaming: ['game', 'gaming', 'esports', 'streaming', 'twitch', 'console', 'pc gaming', 'mobile games', 'indie games']
+  };
+
+  const words = input.toLowerCase().split(/\s+/);
+  const scores: Record<string, number> = {};
+  
+  Object.entries(topicPatterns).forEach(([topic, keywords]) => {
+    scores[topic] = keywords.filter(keyword => 
+      words.some(word => word.includes(keyword) || keyword.includes(word))
+    ).length;
+  });
+
+  return Object.entries(scores)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 3)
+    .map(([topic, score]) => ({ 
+      topic, 
+      confidence: score > 0 ? Math.min(score / Math.max(words.length * 0.1, 1), 1) : 0 
+    }))
+    .filter(t => t.confidence > 0);
+}
+
+// Smart Research Sources
+function getSmartSources(detectedTopics: DetectedTopic[], userProfile?: UserLearningProfile): SmartSources {
+  const sourceMaps: Record<string, Omit<SmartSources, 'reasoning'>> = {
+    business: {
+      communities: ['r/entrepreneur', 'r/startups', 'r/SaaS', 'IndieHackers'],
+      websites: ['ycombinator.com', 'producthunt.com', 'techcrunch.com'],
+      contentFocus: ['case studies', 'growth strategies', 'market analysis', 'founder stories']
+    },
+    technology: {
+      communities: ['r/programming', 'r/webdev', 'HackerNews', 'r/MachineLearning'],
+      websites: ['stackoverflow.com', 'github.com/trending', 'dev.to'],
+      contentFocus: ['tutorials', 'technical guides', 'tool comparisons', 'best practices']
+    },
+    creative: {
+      communities: ['r/design', 'r/creativity', 'Behance', 'Dribbble'],
+      websites: ['awwwards.com', 'creativebloq.com', 'designinspiration.com'],
+      contentFocus: ['portfolios', 'design trends', 'creative process', 'inspiration']
+    },
+    health: {
+      communities: ['r/fitness', 'r/nutrition', 'r/GetMotivated'],
+      websites: ['healthline.com', 'mayoclinic.org', 'nutrition.gov'],
+      contentFocus: ['evidence-based advice', 'workout plans', 'nutrition guides']
+    },
+    finance: {
+      communities: ['r/investing', 'r/personalfinance', 'r/SecurityAnalysis'],
+      websites: ['investopedia.com', 'morningstar.com', 'sec.gov'],
+      contentFocus: ['market analysis', 'investment strategies', 'financial education']
+    },
+    education: {
+      communities: ['r/learnprogramming', 'r/studytips', 'r/GetStudying'],
+      websites: ['coursera.org', 'khanacademy.org', 'edx.org'],
+      contentFocus: ['learning paths', 'study techniques', 'skill development']
+    },
+    lifestyle: {
+      communities: ['r/productivity', 'r/selfimprovement', 'r/getmotivated'],
+      websites: ['zenhabits.net', 'lifehacker.com', 'tinybuddha.com'],
+      contentFocus: ['habit formation', 'personal growth', 'life optimization']
+    },
+    gaming: {
+      communities: ['r/gaming', 'r/gamedev', 'r/indiegaming'],
+      websites: ['gamasutra.com', 'polygon.com', 'kotaku.com'],
+      contentFocus: ['game reviews', 'industry news', 'development insights']
+    }
+  };
+
+  const primaryTopic = detectedTopics[0]?.topic || 'business';
+  const sources = sourceMaps[primaryTopic] || sourceMaps.business;
+  
+  // If user has preferences, blend with defaults
+  if (userProfile?.preferredSources?.[primaryTopic]) {
+    const userSources = userProfile.preferredSources[primaryTopic];
+    return {
+      communities: [...(userSources.communities || []), ...sources.communities].slice(0, 6),
+      websites: [...(userSources.websites || []), ...sources.websites].slice(0, 6),
+      contentFocus: sources.contentFocus,
+      reasoning: `Blending your preferences with ${primaryTopic} recommendations`
+    };
+  }
+  
+  return {
+    ...sources,
+    reasoning: `Smart defaults for ${primaryTopic} topics`
+  };
+}
+
+// User Profile Management
+function getUserProfile(userId: string): UserLearningProfile | null {
+  // In a real implementation, this would fetch from a database
+  // For now, we'll return a default profile structure
+  if (!userId) return null;
+  
+  return {
+    userId,
+    totalInsights: 1,
+    topicFrequency: {},
+    preferredSources: {},
+    engagementData: [],
+    adaptationLevel: 0.05,
+    createdAt: new Date().toISOString()
+  };
+}
+
+function updateUserProfile(userId: string, interaction: { input: string; detectedTopics: DetectedTopic[]; timestamp: string }): UserLearningProfile {
+  const profile = getUserProfile(userId) || {
+    userId,
+    totalInsights: 0,
+    topicFrequency: {},
+    preferredSources: {},
+    engagementData: [],
+    adaptationLevel: 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  // Update topic frequency
+  interaction.detectedTopics.forEach(({ topic, confidence }) => {
+    profile.topicFrequency[topic] = (profile.topicFrequency[topic] || 0) + confidence;
+  });
+  
+  profile.totalInsights += 1;
+  profile.adaptationLevel = Math.min(profile.totalInsights / 20, 1); // Fully adapted after 20 insights
+  profile.lastUpdated = new Date().toISOString();
+  
+  // In a real implementation, this would save to database
+  
+  return profile;
+}
+
+function calculateAdaptationLevel(userProfile: UserLearningProfile | null): number {
+  return userProfile?.adaptationLevel || 0;
+}
+
+function getTopInterests(userProfile: UserLearningProfile | null): string[] {
+  if (!userProfile?.topicFrequency) return [];
+  
+  return Object.entries(userProfile.topicFrequency)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 3)
+    .map(([topic]) => topic);
+}
+
 function calculateEngagementPrediction(content: string, platform: string): number {
   // Simple heuristic for engagement prediction
   const hasHashtags = content.includes('#');
@@ -241,8 +424,27 @@ serve(async (req) => {
 
     console.log(`Processing thought for user ${userId || 'anonymous'}: ${input.substring(0, 100)}...`);
 
-    // Analyze with AI
+    // Step 1: Detect topics from user input
+    const detectedTopics = detectTopics(input);
+    console.log(`Detected topics:`, detectedTopics);
+    
+    // Step 2: Get user's learning profile (if exists)
+    const userProfile = getUserProfile(userId || '');
+    
+    // Step 3: Select smart research sources
+    const smartSources = getSmartSources(detectedTopics, userProfile);
+
+    // Step 4: Analyze with AI
     const aiInsights = await analyzeWithOpenAI(input);
+    
+    // Step 5: Update user profile with this interaction
+    if (userId) {
+      updateUserProfile(userId, { 
+        input, 
+        detectedTopics, 
+        timestamp: new Date().toISOString() 
+      });
+    }
     
     // Process and enhance the AI response
     const insightId = generateInsightId();
@@ -302,6 +504,14 @@ serve(async (req) => {
         complexity: aiInsights.metadata?.complexity || 'medium',
         topics: aiInsights.metadata?.topics || [],
       },
+      // New adaptive intelligence data
+      detectedTopics: detectedTopics,
+      smartSources: smartSources,
+      userProfile: {
+        adaptationLevel: calculateAdaptationLevel(userProfile),
+        topInterests: getTopInterests(userProfile),
+        totalInsights: userProfile?.totalInsights || 1
+      }
     };
 
     console.log(`Successfully processed insight ${insightId} in ${processingTime}s`);

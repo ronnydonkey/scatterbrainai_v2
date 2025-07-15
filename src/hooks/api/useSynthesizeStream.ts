@@ -33,6 +33,18 @@ export interface StreamedInsight {
   timestamp: number;
 }
 
+export interface DetectedTopic {
+  topic: string;
+  confidence: number;
+}
+
+export interface SmartSources {
+  communities: string[];
+  websites: string[];
+  contentFocus: string[];
+  reasoning: string;
+}
+
 export interface SynthesizeResponse {
   success: boolean;
   processingId: string;
@@ -75,6 +87,14 @@ export interface SynthesizeResponse {
       confidenceScore: number;
       nextRecommendedAnalysis?: string;
     };
+  };
+  // New adaptive intelligence fields
+  detectedTopics?: DetectedTopic[];
+  smartSources?: SmartSources;
+  userProfile?: {
+    adaptationLevel: number;
+    topInterests: string[];
+    totalInsights: number;
   };
 }
 
@@ -148,79 +168,91 @@ export const useSynthesizeStream = () => {
     }
 
     try {
-      const response = await fetch('/api/synthesize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error: functionError } = await supabase.functions.invoke('synthesize', {
+        body: {
+          input: request.input,
+          userId: request.userId,
+          timestamp: new Date().toISOString(),
+          sessionId: request.sessionId,
+          preferences: request.preferences
         },
-        body: JSON.stringify({
-          ...request,
-          streamResponse: true,
-        }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      if (functionError) {
+        throw new Error(`Function Error: ${functionError.message}`);
       }
 
-      if (!response.body) {
-        throw new Error('Response body is empty');
+      if (!data) {
+        throw new Error('No response data received');
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let finalResponse: SynthesizeResponse | null = null;
-      const insights: StreamedInsight[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.trim() === '') continue;
-          
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const insight: StreamedInsight = {
-                type: data.type,
-                data: data.data,
-                timestamp: Date.now(),
-              };
-
-              insights.push(insight);
-              setCurrentInsight(insight);
-              setAccumulatedInsights(prev => [...prev, insight]);
-              onInsight(insight);
-
-              if (insight.type === 'complete') {
-                finalResponse = insight.data as SynthesizeResponse;
-              }
-            } catch (parseError) {
-              console.warn('Failed to parse streaming data:', parseError);
-            }
+      // Since this is a direct function response, treat it as the final response
+      const finalResponse: SynthesizeResponse = {
+        success: data.success,
+        processingId: data.id || 'unknown',
+        insights: {
+          keyThemes: data.insights?.keyThemes?.map((theme: any) => ({
+            theme: theme.theme,
+            confidence: theme.confidence,
+            connections: theme.relatedConcepts || [],
+            actionable: true
+          })) || [],
+          actionItems: data.insights?.actionItems?.map((action: any) => ({
+            task: action.task,
+            priority: action.priority,
+            estimatedDuration: action.estimatedDuration,
+            bestTiming: action.suggestedTime
+          })) || [],
+          contentSuggestions: data.insights?.contentSuggestions || {},
+          communityConnections: [],
+          metadata: {
+            processingTime: data.processingTime || 0,
+            tokensUsed: 0,
+            confidenceScore: 0.8
           }
-        }
-      }
+        },
+        detectedTopics: data.detectedTopics,
+        smartSources: data.smartSources,
+        userProfile: data.userProfile
+      };
+
+      // Simulate streaming insights for UX
+      const progressInsight: StreamedInsight = {
+        type: 'progress',
+        data: { message: 'Analyzing your thought...', progress: 50 },
+        timestamp: Date.now()
+      };
+      
+      setCurrentInsight(progressInsight);
+      setAccumulatedInsights([progressInsight]);
+      onInsight(progressInsight);
+
+      // Small delay for UX
+      await delay(500);
+
+      const completeInsight: StreamedInsight = {
+        type: 'complete',
+        data: finalResponse,
+        timestamp: Date.now()
+      };
+
+      setCurrentInsight(completeInsight);
+      setAccumulatedInsights(prev => [...prev, completeInsight]);
+      onInsight(completeInsight);
 
       setIsStreaming(false);
 
-      if (finalResponse) {
-        // Cache successful response
-        responseCache.set(cacheKey, finalResponse);
-        
-        toast({
-          title: "Synthesis complete! ✨",
-          description: `Generated ${finalResponse.insights.keyThemes.length} key insights`,
-        });
-        
-        return finalResponse;
-      }
-
-      throw new Error('No complete response received');
+      // Cache successful response
+      responseCache.set(cacheKey, finalResponse);
+      
+      toast({
+        title: "Synthesis complete! ✨",
+        description: `Generated insights with ${data.detectedTopics?.length || 0} detected topics`,
+      });
+      
+      return finalResponse;
 
     } catch (error: any) {
       console.error('Synthesis error:', error);

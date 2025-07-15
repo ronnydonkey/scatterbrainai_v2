@@ -10,6 +10,9 @@ import { usePersonalization } from '@/hooks/usePersonalization';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSynthesizeStream, generateSessionId, detectUrgency, useOfflineInsights } from '@/hooks/api';
 import { VoiceMemoRecorder } from '@/components/VoiceMemoRecorder';
+import { AdaptationIndicator } from '@/components/AdaptationIndicator';
+import { SmartSourcesDisplay } from '@/components/SmartSourcesDisplay';
+import { useAdaptiveIntelligence } from '@/hooks/useAdaptiveIntelligence';
 
 type FlowStep = 'capture' | 'processing' | 'insights';
 
@@ -70,6 +73,14 @@ export default function SimplifiedFlow() {
 
   const { saveInsight, trackAction } = useOfflineInsights();
   const { firstName } = useUserProfile();
+  const { handleSourceClick, handleContentCopy } = useAdaptiveIntelligence();
+
+  // State for adaptive intelligence data
+  const [adaptiveData, setAdaptiveData] = useState<{
+    detectedTopics?: any[];
+    smartSources?: any;
+    userProfile?: any;
+  }>({});
 
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     { id: 1, text: "Capturing your thoughts...", completed: false, current: false },
@@ -219,31 +230,41 @@ export default function SimplifiedFlow() {
         });
       }, 1200);
 
-      // Real API call to your backend
-      const response = await fetch('https://mnfuwjrfaeiodexezedh.supabase.co/functions/v1/synthesize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZnV3anJmYWVpb2RleGV6ZWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwODgyNjUsImV4cCI6MjA2NzY2NDI2NX0.fPhps5QOy_0wXsZqLzpVviHizUalFpBiHrHZztx_pqk`,
+      // Use the new synthesis hook with adaptive intelligence
+      const apiResponse = await synthesizeWithStream({
+        input: capturedThoughts,
+        userId: generateTempId(),
+        sessionId: generateSessionId(),
+        preferences: getUserPreferences(),
+        context: {
+          timeOfDay: new Date().getHours(),
+          inputMethod: 'text',
+          urgencyLevel: detectUrgency(capturedThoughts)
         },
-        body: JSON.stringify({
-          input: capturedThoughts,
-          userId: generateTempId(), // Replace with actual user ID when auth is implemented
-          timestamp: new Date().toISOString(),
-          sessionId: generateSessionId(),
-          preferences: getUserPreferences()
-        })
+        outputPreferences: {
+          insightDepth: 'detailed',
+          actionFormat: 'todos-first',
+          contentPlatforms: ['twitter', 'linkedin', 'instagram'],
+          calendarIntegration: false
+        },
+        features: {
+          communityInsights: true,
+          trendAnalysis: true,
+          contentGeneration: true,
+          calendarSync: false
+        }
       });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const apiResponse = await response.json();
       
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.error || 'Analysis failed');
+      if (!apiResponse) {
+        throw new Error('Analysis failed');
       }
+
+      // Store adaptive intelligence data
+      setAdaptiveData({
+        detectedTopics: apiResponse.detectedTopics,
+        smartSources: apiResponse.smartSources,
+        userProfile: apiResponse.userProfile
+      });
       // Transform API response to match UI expectations
       const insights = {
         keyInsights: apiResponse.insights.keyThemes.map((theme: any) => theme.theme),
@@ -253,10 +274,10 @@ export default function SimplifiedFlow() {
           linkedin: apiResponse.insights.contentSuggestions.linkedin.content,
           instagramCaption: apiResponse.insights.contentSuggestions.instagram.content,
         },
-        calendarSuggestions: apiResponse.insights.calendarBlocks.map((block: any) => ({
-          title: block.title,
-          time: block.suggestedTimes[0] || 'tomorrow',
-          duration: `${block.duration} minutes`,
+        calendarSuggestions: (apiResponse.insights?.actionItems?.slice(0, 3) || []).map((item: any) => ({
+          title: item.task || 'Focus Time',
+          time: item.bestTiming || 'tomorrow',
+          duration: item.estimatedDuration || '60 minutes',
         })),
       };
       
@@ -276,7 +297,7 @@ export default function SimplifiedFlow() {
         await saveInsight(
           capturedThoughts,
           insights,
-          apiResponse.metadata?.topics || ['Productivity', 'Creative Process']
+          adaptiveData.detectedTopics?.map(t => t.topic) || ['Productivity', 'Creative Process']
         );
       } catch (error) {
         console.error('Failed to save insight:', error);
@@ -582,6 +603,19 @@ export default function SimplifiedFlow() {
               exit={{ opacity: 0, y: -20 }}
               className="w-full max-w-7xl mx-auto"
             >
+              {/* Adaptive Intelligence Indicators */}
+              <AdaptationIndicator 
+                userProfile={adaptiveData.userProfile}
+                detectedTopics={adaptiveData.detectedTopics}
+              />
+              
+              {adaptiveData.smartSources && (
+                <SmartSourcesDisplay 
+                  smartSources={adaptiveData.smartSources}
+                  onSourceClick={(source, sourceType) => handleSourceClick(source, sourceType, adaptiveData.detectedTopics)}
+                />
+              )}
+
               {/* Header */}
               <div className="text-center mb-4 sm:mb-6 md:mb-8 px-3 sm:px-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 md:mb-4">
