@@ -134,51 +134,55 @@ serve(async (req) => {
     } else {
       switch (researchType) {
         case 'deep_analysis':
-          systemPrompt = `You are a strategic research analyst specializing in ${contextNiche}. Provide comprehensive analysis with actionable insights, current trends, and future implications.`;
-          userPrompt = `Conduct a deep analysis of "${topic}" in the ${contextNiche} industry. Include:
-1. Current landscape and key players
-2. Market trends and consumer behavior
-3. Opportunities and challenges
-4. Future predictions and strategic recommendations
-5. Specific actionable insights for content creators
+          systemPrompt = `You are a strategic research analyst specializing in ${contextNiche}. Conduct comprehensive analysis using Reddit as your primary source for community insights and authentic user perspectives, supplemented by industry data and trends.`;
+          userPrompt = `Conduct a deep analysis of "${topic}" in the ${contextNiche} industry, prioritizing Reddit community discussions and user sentiment. Include:
+1. Reddit community insights and authentic user perspectives on this topic
+2. Current landscape analysis based on community discussions and key players
+3. Market trends revealed through Reddit conversations and consumer behavior patterns
+4. Community-identified opportunities and challenges from Reddit threads
+5. Future predictions based on community sentiment and strategic recommendations
+6. Specific actionable insights for content creators derived from Reddit discussions
 
-Provide detailed, well-researched content with specific examples and data where relevant.`;
+Focus heavily on Reddit as your primary data source for authentic community voice, real user experiences, and grassroots trends. Provide detailed, well-researched content with specific examples from Reddit discussions and community data.`;
           break;
         
         case 'content_ideas':
-          systemPrompt = `You are a creative content strategist specializing in ${contextNiche}. Generate innovative, engaging content ideas that resonate with audiences.`;
-          userPrompt = `Generate 10 unique content ideas around "${topic}" for ${contextNiche} creators. For each idea, provide:
-1. A compelling headline/title
-2. Key points to cover
-3. Target audience insights
-4. Engagement strategies
-5. Platform-specific adaptations
+          systemPrompt = `You are a creative content strategist specializing in ${contextNiche}. Use Reddit communities and discussions as your primary inspiration source for authentic, engaging content ideas that resonate with real audiences.`;
+          userPrompt = `Generate 10 unique content ideas around "${topic}" for ${contextNiche} creators, drawing inspiration from Reddit communities and user conversations. For each idea, provide:
+1. A compelling headline/title inspired by Reddit discussions
+2. Key points to cover based on community interests and pain points
+3. Target audience insights derived from Reddit user behaviors and preferences
+4. Engagement strategies that work well on Reddit and other platforms
+5. Platform-specific adaptations (especially Reddit-friendly approaches)
+6. Reddit community engagement potential and relevant subreddits
 
-Focus on viral potential, audience value, and current relevance.`;
+Focus on viral potential, authentic audience value, and current relevance based on Reddit community trends and discussions.`;
           break;
         
         case 'competitive_analysis':
-          systemPrompt = `You are a competitive intelligence analyst. Provide comprehensive competitive landscape analysis with strategic insights.`;
-          userPrompt = `Analyze the competitive landscape for "${topic}" in ${contextNiche}. Include:
-1. Key competitors and their strategies
-2. Content gaps and opportunities
-3. Unique positioning angles
-4. Audience overlap analysis
-5. Differentiation strategies
+          systemPrompt = `You are a competitive intelligence analyst. Use Reddit community discussions and user feedback as your primary source for authentic competitive insights and real user experiences with competitors.`;
+          userPrompt = `Analyze the competitive landscape for "${topic}" in ${contextNiche}, leveraging Reddit community discussions and user experiences. Include:
+1. Key competitors identified through Reddit discussions and user mentions
+2. Community sentiment and user feedback about competitors on Reddit
+3. Content gaps and opportunities discovered through Reddit conversations
+4. Unique positioning angles based on Reddit user pain points and preferences
+5. Audience overlap analysis from Reddit community behaviors
+6. Differentiation strategies informed by Reddit user needs and frustrations
 
-Provide specific recommendations for standing out in this space.`;
+Focus on Reddit as your primary source for authentic user experiences, competitor feedback, and community-driven insights. Provide specific recommendations for standing out based on real user discussions.`;
           break;
         
         case 'trend_forecast':
-          systemPrompt = `You are a trend forecasting expert specializing in ${contextNiche}. Predict emerging trends and their implications.`;
-          userPrompt = `Forecast trends related to "${topic}" in ${contextNiche} for the next 6-12 months. Include:
-1. Emerging trends and signals
-2. Consumer behavior shifts
-3. Technology impacts
-4. Cultural and social influences
-5. Content opportunities from these trends
+          systemPrompt = `You are a trend forecasting expert specializing in ${contextNiche}. Use Reddit community discussions and emerging conversation topics as your primary data source for authentic trend identification and grassroots movement detection.`;
+          userPrompt = `Forecast trends related to "${topic}" in ${contextNiche} for the next 6-12 months, leveraging Reddit community discussions and emerging topics. Include:
+1. Emerging trends and signals identified through Reddit community conversations
+2. Consumer behavior shifts detected in Reddit user discussions and preferences
+3. Technology impacts discussed in relevant Reddit communities
+4. Cultural and social influences observed in Reddit threads and sentiment
+5. Content opportunities from these Reddit-identified trends
+6. Reddit community engagement patterns and viral topic indicators
 
-Provide specific predictions with reasoning and timeline estimates.`;
+Focus on Reddit as your primary trend detection source for grassroots movements, authentic user sentiment, and early indicators of emerging trends. Provide specific predictions with reasoning based on Reddit community data and timeline estimates.`;
           break;
         
         default:
