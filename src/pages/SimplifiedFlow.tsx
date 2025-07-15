@@ -416,35 +416,28 @@ export default function SimplifiedFlow() {
                     backdropFilter: 'blur(16px)'
                   }}
                 />
-                <p className="text-xs text-white/50 mt-2 text-center">
-                  Press Enter to transform • Shift+Enter for new line
-                </p>
               </div>
 
-              {/* Action Bar */}
-              <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
-                {/* Voice Memo Recorder */}
-                <div className="flex justify-center">
+              {/* Simplified Action Button */}
+              <div className="flex flex-col gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleFileUpload}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-6 text-sm sm:text-base"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload File
+                  </Button>
+                  
                   <VoiceMemoRecorder
                     onTranscriptionComplete={handleVoiceTranscription}
                     onRecordingStart={handleVoiceRecordingStart}
                     onRecordingStop={handleVoiceRecordingStop}
                     onError={handleVoiceError}
                     maxDuration={300000} // 5 minutes
-                    placeholder="Record your voice memo..."
-                    className="w-full max-w-md"
+                    placeholder="Record voice memo"
                   />
-                </div>
-                
-                <div className="flex flex-wrap gap-2 sm:gap-3 justify-center sm:justify-start">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleFileUpload}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-3 sm:px-4 text-sm sm:text-base"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                  </Button>
                 </div>
                 
                 <Button 
@@ -455,7 +448,7 @@ export default function SimplifiedFlow() {
                     background: capturedThoughts.trim() 
                       ? 'var(--gradient-primary)' 
                       : 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%)',
-                    boxShadow: capturedThoughts.trim() 
+                    boxShadow: capturedThoughts.trim()
                       ? '0 8px 32px rgba(139, 92, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
                       : 'none'
                   }}
