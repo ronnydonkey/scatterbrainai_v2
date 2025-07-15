@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive, User, ArrowLeft } from 'lucide-react';
+import { Brain, FileText, Mic, Upload, ArrowRight, CheckCircle, Sparkles, Check, Loader2, Twitter, Linkedin, Instagram, Calendar, Copy, RotateCcw, Archive, User, ArrowLeft, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -801,11 +801,27 @@ export default function SimplifiedFlow() {
 
               {/* Action Buttons */}
               <div className="text-center space-y-3 sm:space-y-4 px-3 sm:px-4">
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center max-w-md mx-auto">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center max-w-lg mx-auto">
                   <Button 
-                    onClick={resetFlow}
+                    onClick={() => {
+                      // Navigate to detailed report
+                      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+                      const latestInsight = insights[0];
+                      if (latestInsight) {
+                        navigate(`/report/${latestInsight.id}`);
+                      }
+                    }}
                     className="text-white font-semibold w-full sm:flex-1 min-h-[48px] text-sm sm:text-base"
                     style={{ background: 'var(--gradient-primary)' }}
+                  >
+                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <span className="hidden sm:inline">View Detailed Report</span>
+                    <span className="sm:hidden">Detailed Report</span>
+                  </Button>
+                  <Button 
+                    onClick={resetFlow}
+                    variant="outline"
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full sm:flex-1 min-h-[48px] text-sm sm:text-base"
                   >
                     <Brain className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     <span className="hidden sm:inline">Analyze More Thoughts</span>
@@ -817,7 +833,8 @@ export default function SimplifiedFlow() {
                     className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full sm:flex-1 min-h-[48px] text-sm sm:text-base"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    View All Insights
+                    <span className="hidden sm:inline">View All Insights</span>
+                    <span className="sm:hidden">Gallery</span>
                   </Button>
                 </div>
               </div>

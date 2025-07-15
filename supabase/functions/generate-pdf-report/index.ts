@@ -19,40 +19,16 @@ serve(async (req) => {
     // Create HTML content for the PDF
     const htmlContent = generateReportHTML(reportData, originalInput, timestamp, insightId);
     
-    // Use Puppeteer to generate PDF from HTML
-    const pdfResponse = await fetch('https://api.htmlcsstoimage.com/v1/image', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('HTML_CSS_TO_IMAGE_API_KEY')}`,
-      },
-      body: JSON.stringify({
-        html: htmlContent,
-        css: getReportCSS(),
-        format: 'pdf',
-        width: 800,
-        height: 1200,
-        device_scale: 2,
-        render_when_ready: true,
-      }),
-    });
-
-    if (!pdfResponse.ok) {
-      // Fallback: generate a simple text-based PDF using basic HTML
-      const simplePdf = await generateSimplePDF(reportData, originalInput, timestamp, insightId);
-      return new Response(
-        JSON.stringify({ pdfBuffer: Array.from(new TextEncoder().encode(simplePdf)) }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
-    }
-
-    const pdfBuffer = await pdfResponse.arrayBuffer();
+    // Generate simple text report as PDF fallback
+    const textReport = generateTextReport(reportData, originalInput, timestamp, insightId);
+    const textBytes = new TextEncoder().encode(textReport);
     
     return new Response(
-      JSON.stringify({ pdfBuffer: Array.from(new Uint8Array(pdfBuffer)) }),
+      JSON.stringify({ 
+        pdfBuffer: Array.from(textBytes),
+        contentType: 'text/plain',
+        filename: `scatterbrain-report-${insightId}.txt`
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -120,28 +96,14 @@ function generateReportHTML(reportData: any, originalInput: string, timestamp: s
           </div>
         </section>
 
-        <section class="executive-summary">
-          <h2>Executive Summary</h2>
-          <div class="metrics">
-            <div class="metric">
-              <span class="metric-value">${reportData.summary?.confidence || 'N/A'}</span>
-              <span class="metric-label">Confidence Level</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">${reportData.summary?.timeToImplement || 'N/A'}</span>
-              <span class="metric-label">Time to Implement</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">${reportData.summary?.impactLevel || 'N/A'}</span>
-              <span class="metric-label">Impact Level</span>
-            </div>
-          </div>
-          ${reportData.summary?.keyFindings?.map((finding: string) => `
-            <div class="finding">
-              <p>${finding}</p>
-            </div>
-          `).join('') || ''}
-        </section>
+         <section class="executive-summary">
+           <h2>Executive Summary</h2>
+           ${reportData.summary?.keyFindings?.map((finding: string) => `
+             <div class="finding">
+               <p>${finding}</p>
+             </div>
+           `).join('') || ''}
+         </section>
 
         <section class="analysis">
           <h2>Deep Dive Analysis</h2>
@@ -456,9 +418,6 @@ ${'='.repeat(80)}
 
 EXECUTIVE SUMMARY
 ${'-'.repeat(20)}
-Confidence Level: ${reportData.summary?.confidence || 'N/A'}
-Time to Implement: ${reportData.summary?.timeToImplement || 'N/A'}
-Impact Level: ${reportData.summary?.impactLevel || 'N/A'}
 
 Key Findings:
 `;

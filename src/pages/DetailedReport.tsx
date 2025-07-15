@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, Download, Target, Search, CheckSquare, BookOpen, Smartphone, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Share2, Download, Target, Search, CheckSquare, BookOpen, Smartphone, Copy, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -118,12 +118,16 @@ const DetailedReport: React.FC = () => {
       if (error) throw error;
 
       // Create blob and download
-      const pdfBlob = new Blob([new Uint8Array(data.pdfBuffer)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(pdfBlob);
+      const fileType = data.contentType === 'text/plain' ? 'text/plain' : 'application/pdf';
+      const fileExtension = data.contentType === 'text/plain' ? 'txt' : 'pdf';
+      const fileName = data.filename || `scatterbrain-report-${insightId}.${fileExtension}`;
+      
+      const reportBlob = new Blob([new Uint8Array(data.pdfBuffer)], { type: fileType });
+      const url = URL.createObjectURL(reportBlob);
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `scatterbrain-report-${insightId}.pdf`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -237,7 +241,58 @@ const DetailedReport: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Deep Dive Analysis */}
+        {/* Content Ready to Share - Now 2nd */}
+        <Card className="mb-8 bg-white/10 border-white/20 text-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Smartphone className="w-5 h-5" />
+              Content Ready to Share
+            </CardTitle>
+            <p className="text-gray-300">Social posts, emails, presentations</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {report.contentSuggestions?.socialPosts && (
+                <div>
+                  <h4 className="font-semibold mb-3">Social Media Posts</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(report.contentSuggestions.socialPosts).map(([platform, content]: [string, any]) => {
+                      const copyKey = `content-${platform}`;
+                      return (
+                        <div key={platform} className="p-4 bg-white/5 rounded-lg">
+                          <h5 className="font-medium mb-2 capitalize">{platform}</h5>
+                          <p className="text-sm text-gray-300 mb-3">{content?.content || 'No content available'}</p>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className={`border-white/20 text-white hover:bg-white/10 transition-all duration-200 ${
+                              copiedStates[copyKey] ? 'bg-green-600/20 border-green-400' : ''
+                            }`}
+                            onClick={() => copyToClipboard(content?.content || '', copyKey)}
+                          >
+                            {copiedStates[copyKey] ? (
+                              <>
+                                <Check className="w-3 h-3 mr-1" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 mr-1" />
+                                Copy to Clipboard
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Deep Dive Analysis - Now 3rd */}
         <Card className="mb-8 bg-white/10 border-white/20 text-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -334,7 +389,7 @@ const DetailedReport: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Research & Resources */}
+        {/* Research & Resources - Now Last */}
         <Card className="mb-8 bg-white/10 border-white/20 text-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -391,72 +446,32 @@ const DetailedReport: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Content Ready to Share */}
+        {/* 10x Your Content - Content Multiplication Engine */}
         <Card className="mb-8 bg-white/10 border-white/20 text-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="w-5 h-5" />
-              Content Ready to Share
+              <Sparkles className="w-5 h-5" />
+              10x Your Content
             </CardTitle>
-            <p className="text-gray-300">Social posts, emails, presentations</p>
+            <p className="text-gray-300">Multiply your insights across platforms</p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {report.contentSuggestions?.socialPosts && (
-                <div>
-                  <h4 className="font-semibold mb-3">Social Media Posts</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(report.contentSuggestions.socialPosts).map(([platform, content]: [string, any]) => {
-                      const copyKey = `content-${platform}`;
-                      return (
-                        <div key={platform} className="p-4 bg-white/5 rounded-lg">
-                          <h5 className="font-medium mb-2 capitalize">{platform}</h5>
-                          <p className="text-sm text-gray-300 mb-3">{content?.content || 'No content available'}</p>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className={`border-white/20 text-white hover:bg-white/10 transition-all duration-200 ${
-                              copiedStates[copyKey] ? 'bg-green-600/20 border-green-400' : ''
-                            }`}
-                            onClick={() => copyToClipboard(content?.content || '', copyKey)}
-                          >
-                            {copiedStates[copyKey] ? (
-                              <>
-                                <Check className="w-3 h-3 mr-1" />
-                                Copied!
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 mr-1" />
-                                Copy to Clipboard
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
+            <ContentMultiplier 
+              originalInsight={{
+                originalInput: (() => {
+                  const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+                  const baseInsight = insights.find(i => i.id === insightId);
+                  return baseInsight?.originalInput || '';
+                })(),
+                id: insightId || ''
+              }}
+              onGenerate={(content) => {
+                console.log('Generated content suite:', content);
+                toast.success('Content suite generated successfully!');
+              }}
+            />
           </CardContent>
         </Card>
-
-        {/* Content Multiplication Engine */}
-        <ContentMultiplier 
-          originalInsight={{
-            originalInput: (() => {
-              const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
-              const baseInsight = insights.find(i => i.id === insightId);
-              return baseInsight?.originalInput || '';
-            })(),
-            id: insightId || ''
-          }}
-          onGenerate={(content) => {
-            console.log('Generated content suite:', content);
-            toast.success('Content suite generated successfully!');
-          }}
-        />
 
         {/* Footer */}
         <div className="text-center py-8 border-t border-white/20">
