@@ -156,8 +156,41 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="text-center space-y-4"
           >
+            {/* Recording Animation - similar to processing animation */}
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto">
+              {/* Main circle */}
+              <motion.div
+                className="w-full h-full rounded-full flex items-center justify-center relative"
+                style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                {/* Sound wave circles */}
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-full h-full rounded-full border-2 border-red-400/50"
+                    animate={{
+                      scale: [1, 2, 3],
+                      opacity: [0.8, 0.3, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: i * 0.7,
+                    }}
+                  />
+                ))}
+                
+                {/* Inner microphone icon */}
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center">
+                  <Mic className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
+                </div>
+              </motion.div>
+            </div>
+            
             <p className="text-sm font-medium text-red-400">
               Recording... Speak clearly
             </p>
