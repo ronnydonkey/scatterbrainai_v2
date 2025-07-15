@@ -34,13 +34,82 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [audioLevels, setAudioLevels] = useState<number[]>([0, 0, 0, 0, 0]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
   
   const { transcribeAudio } = useVoiceTranscription();
+
+  // Audio analysis function
+  const analyzeAudio = useCallback(() => {
+    if (!analyserRef.current) return;
+    
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    analyser.getByteFrequencyData(dataArray);
+    
+    // Convert to audio levels for 5 bars
+    const newLevels: number[] = [];
+    const segmentSize = Math.floor(bufferLength / 5);
+    
+    for (let i = 0; i < 5; i++) {
+      const start = i * segmentSize;
+      const end = start + segmentSize;
+      let sum = 0;
+      
+      for (let j = start; j < end; j++) {
+        sum += dataArray[j];
+      }
+      
+      const average = sum / segmentSize;
+      // Convert to height (4-20px range)
+      const height = Math.max(4, Math.min(20, (average / 255) * 16 + 4));
+      newLevels.push(height);
+    }
+    
+    setAudioLevels(newLevels);
+    
+    if (isRecording) {
+      animationFrameRef.current = requestAnimationFrame(analyzeAudio);
+    }
+  }, [isRecording]);
+
+  // Clean up audio analysis
+  const cleanupAudioAnalysis = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    analyserRef.current = null;
+    setAudioLevels([0, 0, 0, 0, 0]);
+  }, []);
 
   const startRecording = async () => {
     try {
       console.log('VoiceMemoRecorder: Starting recording...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Set up Web Audio API for real-time analysis
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
+      
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+      
+      // Start analyzing audio
+      analyzeAudio();
       
       const recorder = new MediaRecorder(stream);
       const chunks: Blob[] = [];
@@ -53,6 +122,10 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
       
       recorder.onstop = async () => {
         console.log('VoiceMemoRecorder: Recording stopped, processing...');
+        
+        // Clean up audio analysis
+        cleanupAudioAnalysis();
+        
         const audioBlob = new Blob(chunks, { type: 'audio/webm' });
         setRecordedChunks(chunks);
         
@@ -90,6 +163,7 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
       console.error('VoiceMemoRecorder: Error starting recording:', error);
       setError(error.message || 'Failed to start recording');
       onError?.(error.message || 'Failed to start recording');
+      cleanupAudioAnalysis();
     }
   };
 
@@ -118,19 +192,20 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
         <div className="flex items-center">
           <Square className="w-4 h-4 mr-3 fill-current" />
           <div className="flex items-center space-x-1 mr-3">
-            {/* Horizontal audio waveform animation */}
-            {[...Array(5)].map((_, i) => (
+            {/* Real-time reactive audio waveform */}
+            {audioLevels.map((level, i) => (
               <motion.div
                 key={i}
                 className="w-1 bg-white rounded-full"
                 animate={{
-                  height: [4, 16, 8, 20, 12, 6, 18, 10],
+                  height: level,
                 }}
                 transition={{
-                  duration: 1.2,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                  ease: "easeInOut",
+                  duration: 0.1,
+                  ease: "easeOut",
+                }}
+                style={{
+                  height: `${level}px`,
                 }}
               />
             ))}
