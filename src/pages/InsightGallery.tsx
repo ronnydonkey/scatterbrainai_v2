@@ -162,7 +162,7 @@ const InsightGallery: React.FC = () => {
               placeholder="Search insights..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+              className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 pl-10"
             />
           </div>
           
