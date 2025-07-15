@@ -66,12 +66,12 @@ export const ContentGenerationAnimation: React.FC<ContentGenerationAnimationProp
           status: 'pending',
           duration: 3000,
           sources: [
-            'Industry publications',
-            'Academic research papers', 
-            'Expert insights',
-            'Case studies',
-            'Statistical data',
-            'Market trends'
+            '🔴 Reddit - Community discussions & sentiment',
+            '🔴 Reddit - Niche subreddit trends & insights', 
+            '📊 Google Trends - Search patterns',
+            '🔍 Perplexity - Real-time research',
+            '📰 Industry publications',
+            '💼 Expert insights & case studies'
           ]
         },
         {
