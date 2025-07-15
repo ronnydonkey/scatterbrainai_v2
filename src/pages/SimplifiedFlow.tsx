@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { useSynthesizeStream, generateSessionId, detectUrgency, useOfflineInsights } from '@/hooks/api';
+import { VoiceMemoRecorder } from '@/components/VoiceMemoRecorder';
 
 type FlowStep = 'capture' | 'processing' | 'insights';
 
@@ -83,44 +84,29 @@ export default function SimplifiedFlow() {
     }
   }, []);
 
-  const handleVoiceInput = async () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      toast.error('Voice recognition not supported in your browser');
-      return;
-    }
-
+  const handleVoiceTranscription = (transcribedText: string) => {
+    // Add the transcribed text to the existing content
+    setCapturedThoughts(prev => 
+      prev ? `${prev}\n\n${transcribedText}` : transcribedText
+    );
+    
     // Track voice input preference
     trackInputMethod('voice');
-
-    setIsRecording(true);
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0])
-        .map((result: any) => result.transcript)
-        .join('');
-      
-      setCapturedThoughts(transcript);
-    };
-
-    recognition.onerror = () => {
-      toast.error('Voice recognition error');
-      setIsRecording(false);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognition.start();
     
-    setTimeout(() => {
-      recognition.stop();
-      setIsRecording(false);
-    }, 10000);
+    toast.success('Voice recording transcribed successfully!');
+  };
+
+  const handleVoiceRecordingStart = () => {
+    setIsRecording(true);
+  };
+
+  const handleVoiceRecordingStop = () => {
+    setIsRecording(false);
+  };
+
+  const handleVoiceError = (error: string) => {
+    setIsRecording(false);
+    toast.error(error);
   };
 
   const handleFileUpload = () => {
@@ -335,7 +321,10 @@ export default function SimplifiedFlow() {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden flex flex-col" style={{ background: 'var(--gradient-background)' }}>
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col bg-gradient-to-br from-cosmic-purple via-space-black to-cosmic-deep">
+      {/* Cosmic background effects */}
+      <div className="absolute inset-0 neural-grid opacity-30"></div>
+      <div className="absolute inset-0 cosmic-texture"></div>
       {/* Subtle Navigation Header - Only show in capture mode */}
       {currentStep === 'capture' && (
         <motion.header 
@@ -434,16 +423,20 @@ export default function SimplifiedFlow() {
 
               {/* Action Bar */}
               <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
+                {/* Voice Memo Recorder */}
+                <div className="flex justify-center">
+                  <VoiceMemoRecorder
+                    onTranscriptionComplete={handleVoiceTranscription}
+                    onRecordingStart={handleVoiceRecordingStart}
+                    onRecordingStop={handleVoiceRecordingStop}
+                    onError={handleVoiceError}
+                    maxDuration={300000} // 5 minutes
+                    placeholder="Record your voice memo..."
+                    className="w-full max-w-md"
+                  />
+                </div>
+                
                 <div className="flex flex-wrap gap-2 sm:gap-3 justify-center sm:justify-start">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleVoiceInput}
-                    disabled={isRecording}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-3 sm:px-4 text-sm sm:text-base"
-                  >
-                    <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'text-red-400 animate-pulse' : ''}`} />
-                    {isRecording ? 'Recording...' : 'Voice'}
-                  </Button>
                   <Button 
                     variant="outline" 
                     onClick={handleFileUpload}

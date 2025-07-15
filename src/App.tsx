@@ -47,7 +47,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<AuthenticatedLayout />}>
-              <Route index element={<ThoughtsPage />} />
+              <Route index element={<SimplifiedFlow />} />
               <Route path="thoughts" element={<ThoughtsPage />} />
               <Route path="gallery" element={<InsightGallery />} />
               <Route path="capture" element={<SimplifiedFlow />} />
