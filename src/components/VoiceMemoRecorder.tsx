@@ -210,20 +210,6 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
           </motion.div>
         )}
 
-        {transcriptionText && !isProcessing && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="bg-card/50 rounded-lg p-4 border border-border"
-          >
-            <h4 className="text-sm font-medium text-foreground mb-2">
-              Transcription:
-            </h4>
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              {transcriptionText}
-            </p>
-          </motion.div>
-        )}
 
         {error && (
           <motion.div
