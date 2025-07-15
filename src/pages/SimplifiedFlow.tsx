@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { usePersonalization } from '@/hooks/usePersonalization';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSynthesizeStream, generateSessionId, detectUrgency, useOfflineInsights } from '@/hooks/api';
 import { VoiceMemoRecorder } from '@/components/VoiceMemoRecorder';
 
@@ -68,6 +69,7 @@ export default function SimplifiedFlow() {
   } = useSynthesizeStream();
 
   const { saveInsight, trackAction } = useOfflineInsights();
+  const { firstName } = useUserProfile();
 
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     { id: 1, text: "Capturing your thoughts...", completed: false, current: false },
@@ -375,12 +377,15 @@ export default function SimplifiedFlow() {
                   <Brain className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white" />
                 </div>
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 sm:mb-3 px-2 sm:px-4 leading-tight">
-                  {isReturningUser ? `Welcome back! ${getTimeContext().suggestion}` : "What's swirling around in your head?"}
+                  {firstName ? `Hi ${firstName}! What's on your mind today?` : 
+                   isReturningUser ? `Welcome back! ${getTimeContext().suggestion}` : 
+                   "What's swirling around in your head?"}
                 </h1>
                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/70 px-2 sm:px-4 max-w-2xl mx-auto leading-relaxed">
-                  {isReturningUser 
-                    ? "Ready to transform more scattered thoughts into clear action?" 
-                    : "Dump everything here — I'll help you sort it out and turn chaos into clarity."
+                  {firstName ? "Ready to turn your scattered thoughts into clear insights?" :
+                   isReturningUser 
+                     ? "Ready to transform more scattered thoughts into clear action?" 
+                     : "Dump everything here — I'll help you sort it out and turn chaos into clarity."
                   }
                 </p>
               </div>

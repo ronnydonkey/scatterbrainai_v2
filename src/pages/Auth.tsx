@@ -11,6 +11,7 @@ import { Loader2, Brain } from 'lucide-react';
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
@@ -40,7 +41,7 @@ const Auth = () => {
     if (!email || !password) return;
     
     setLoading(true);
-    const { error } = await signUp(email, password, displayName);
+    const { error } = await signUp(email, password, firstName, displayName);
     setLoading(false);
     
     if (!error) {
@@ -104,6 +105,17 @@ const Auth = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="first-name" className="text-gray-300">First Name</Label>
+                  <Input
+                    id="first-name"
+                    type="text"
+                    placeholder="Your first name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="display-name" className="text-gray-300">Display Name (Optional)</Label>
                   <Input
