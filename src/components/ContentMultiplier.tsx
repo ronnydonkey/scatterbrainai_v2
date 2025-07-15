@@ -318,7 +318,7 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
 
         {/* Content Preview */}
         <div className="bg-background/50 rounded-lg p-4 max-h-96 overflow-y-auto border border-border">
-          <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
+          <pre className="whitespace-pre-wrap text-sm text-foreground font-inter">
             {contentText}
           </pre>
         </div>
