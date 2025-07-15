@@ -4,9 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import AuthenticatedLayout from "./components/AuthenticatedLayout";
 import DesktopAppShell from "./components/desktop/DesktopAppShell";
-import NeuralCommandCenter from "./pages/desktop/NeuralCommandCenter";
-import ThoughtInspector from "./pages/desktop/ThoughtInspector";
+import Index from "./pages/Index";
 import TrendingPage from "./pages/TrendingPage";
 import GeneratorPage from "./pages/GeneratorPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -46,23 +46,18 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/simplified" element={<SimplifiedFlow />} />
-            <Route path="/gallery" element={<InsightGallery />} />
-            <Route path="/report/:insightId" element={<DetailedReport />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/" element={<DesktopAppShell />}>
-              <Route index element={<NeuralCommandCenter />} />
-              <Route path="inspector" element={<ThoughtInspector />} />
-              <Route path="dashboard" element={<AnalyticsPage />} />
+            <Route path="/" element={<AuthenticatedLayout />}>
+              <Route index element={<Index />} />
+              <Route path="gallery" element={<InsightGallery />} />
+              <Route path="simplified" element={<SimplifiedFlow />} />
+              <Route path="report/:insightId" element={<DetailedReport />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="billing" element={<Billing />} />
               <Route path="trending" element={<TrendingPage />} />
               <Route path="generator" element={<GeneratorPage />} />
-              <Route path="library" element={<GeneratorPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="planning" element={<AnalyticsPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

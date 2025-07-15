@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Clock, Search, Filter, Sparkles, Plus } from 'lucide-react';
+import { Star, Clock, Search, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import UserAccountDropdown from '@/components/UserAccountDropdown';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
@@ -147,19 +146,6 @@ const InsightGallery: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Navigation */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-800/50">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/simplified')}
-          className="text-gray-300 hover:text-white"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Capture
-        </Button>
-        <UserAccountDropdown />
-      </div>
-
       <div className="container max-w-6xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">
