@@ -437,7 +437,8 @@ export default function SimplifiedFlow() {
                   <Button 
                     variant="outline" 
                     onClick={handleFileUpload}
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-6 text-sm sm:text-base"
+                    className="relative z-10 bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-6 text-sm sm:text-base transition-all duration-200 cursor-pointer"
+                    style={{ pointerEvents: 'auto' }}
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload File
