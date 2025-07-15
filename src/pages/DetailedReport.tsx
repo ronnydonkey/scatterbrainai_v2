@@ -234,20 +234,6 @@ const DetailedReport: React.FC = () => {
                 <p className="text-white">{finding}</p>
               </div>
             ))}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-300">{report.summary?.confidence || 'N/A'}</p>
-                <p className="text-sm text-gray-400">Confidence Level</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-300">{report.summary?.timeToImplement || 'N/A'}</p>
-                <p className="text-sm text-gray-400">Time to Implement</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-300">{report.summary?.impactLevel || 'N/A'}</p>
-                <p className="text-sm text-gray-400">Impact Level</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
