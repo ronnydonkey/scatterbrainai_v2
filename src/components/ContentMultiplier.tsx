@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ContentGenerationAnimation } from './ContentGenerationAnimation';
 
 interface ContentMultiplierProps {
   originalInsight: {
@@ -85,105 +86,105 @@ export const ContentMultiplier: React.FC<ContentMultiplierProps> = ({
   };
 
   return (
-    <div className="space-y-8">
-      <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-border/50">
-        <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-          <Zap className="w-6 h-6 text-primary" />
-          10x Your Content
-        </h2>
-        
-        <p className="text-muted-foreground mb-6">
-          Transform this insight into a complete content ecosystem. Select formats and we'll create everything you need.
-        </p>
+    <>
+      {/* Full Screen Content Generation Animation */}
+      <ContentGenerationAnimation
+        isVisible={isGenerating}
+        selectedFormats={selectedFormats}
+        onComplete={() => setIsGenerating(false)}
+      />
 
-        {/* Format Selection */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          {contentFormats.map(format => (
-            <button
-              key={format.id}
-              onClick={() => toggleFormat(format.id)}
-              className={`p-4 rounded-xl border-2 transition-all text-left hover:scale-105 ${
-                selectedFormats.includes(format.id)
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card/50 hover:border-primary/50'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl">{format.icon}</span>
-                <span className="font-semibold text-foreground">{format.name}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">{format.time}</p>
-            </button>
-          ))}
-        </div>
-
-        {/* Audience & Tone Settings */}
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Target Audience
-            </label>
-            <Select value={targetAudience} onValueChange={setTargetAudience}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select audience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="entrepreneurs">Entrepreneurs</SelectItem>
-                <SelectItem value="developers">Developers</SelectItem>
-                <SelectItem value="creators">Content Creators</SelectItem>
-                <SelectItem value="professionals">Business Professionals</SelectItem>
-                <SelectItem value="general">General Audience</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="space-y-8">
+        <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-border/50">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+            <Zap className="w-6 h-6 text-primary" />
+            10x Your Content
+          </h2>
           
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Tone & Style
-            </label>
-            <Select value={tone} onValueChange={setTone}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select tone" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="professional">Professional</SelectItem>
-                <SelectItem value="casual">Casual & Friendly</SelectItem>
-                <SelectItem value="educational">Educational</SelectItem>
-                <SelectItem value="inspirational">Inspirational</SelectItem>
-                <SelectItem value="analytical">Data-Driven</SelectItem>
-              </SelectContent>
-            </Select>
+          <p className="text-muted-foreground mb-6">
+            Transform this insight into a complete content ecosystem. Select formats and we'll create everything you need.
+          </p>
+
+          {/* Format Selection */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            {contentFormats.map(format => (
+              <button
+                key={format.id}
+                onClick={() => toggleFormat(format.id)}
+                className={`p-4 rounded-xl border-2 transition-all text-left hover:scale-105 ${
+                  selectedFormats.includes(format.id)
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border bg-card/50 hover:border-primary/50'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl">{format.icon}</span>
+                  <span className="font-semibold text-foreground">{format.name}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">{format.time}</p>
+              </button>
+            ))}
           </div>
+
+          {/* Audience & Tone Settings */}
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Target Audience
+              </label>
+              <Select value={targetAudience} onValueChange={setTargetAudience}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select audience" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="entrepreneurs">Entrepreneurs</SelectItem>
+                  <SelectItem value="developers">Developers</SelectItem>
+                  <SelectItem value="creators">Content Creators</SelectItem>
+                  <SelectItem value="professionals">Business Professionals</SelectItem>
+                  <SelectItem value="general">General Audience</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Tone & Style
+              </label>
+              <Select value={tone} onValueChange={setTone}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="professional">Professional</SelectItem>
+                  <SelectItem value="casual">Casual & Friendly</SelectItem>
+                  <SelectItem value="educational">Educational</SelectItem>
+                  <SelectItem value="inspirational">Inspirational</SelectItem>
+                  <SelectItem value="analytical">Data-Driven</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Generate Button */}
+          <Button
+            onClick={handleGenerate}
+            disabled={selectedFormats.length === 0 || isGenerating}
+            className="w-full py-4 text-lg"
+          >
+            <Sparkles className="w-5 h-5 mr-3" />
+            Generate {selectedFormats.length} Content Format{selectedFormats.length > 1 ? 's' : ''}
+          </Button>
         </div>
 
-        {/* Generate Button */}
-        <Button
-          onClick={handleGenerate}
-          disabled={selectedFormats.length === 0 || isGenerating}
-          className="w-full py-4 text-lg"
-        >
-          {isGenerating ? (
-            <>
-              <Loader className="w-5 h-5 animate-spin mr-3" />
-              Generating Content Suite...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5 mr-3" />
-              Generate {selectedFormats.length} Content Format{selectedFormats.length > 1 ? 's' : ''}
-            </>
-          )}
-        </Button>
+        {/* Generated Content Display */}
+        {generatedContent && (
+          <GeneratedContentSuite 
+            contentSuite={generatedContent} 
+            originalTheme={generatedContent.coreTheme}
+          />
+        )}
       </div>
-
-      {/* Generated Content Display */}
-      {generatedContent && (
-        <GeneratedContentSuite 
-          contentSuite={generatedContent} 
-          originalTheme={generatedContent.coreTheme}
-        />
-      )}
-    </div>
+    </>
   );
 };
 
