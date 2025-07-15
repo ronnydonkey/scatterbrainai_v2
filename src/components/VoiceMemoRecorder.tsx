@@ -26,87 +26,105 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
   maxDuration = 300000, // 5 minutes
   placeholder = "Record your thoughts..."
 }) => {
+  console.log('VoiceMemoRecorder: Component rendering');
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [transcriptionText, setTranscriptionText] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   
-  // Use the voice recording hook directly
-  const {
-    state,
-    startRecording,
-    stopRecording,
-    reset,
-    formatDuration,
-  } = useEnhancedVoiceRecording();
-  
-  const { transcribeAudio, isTranscribing } = useVoiceTranscription();
+  const { transcribeAudio } = useVoiceTranscription();
 
-  // Handle recording start
-  const handleStartRecording = useCallback(async () => {
+  const startRecording = async () => {
     try {
-      await startRecording();
+      console.log('VoiceMemoRecorder: Starting recording...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+      
+      recorder.onstop = async () => {
+        console.log('VoiceMemoRecorder: Recording stopped, processing...');
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        setRecordedChunks(chunks);
+        
+        try {
+          setIsProcessing(true);
+          const transcriptionResult = await transcribeAudio(audioBlob);
+          
+          if (transcriptionResult?.text) {
+            console.log('VoiceMemoRecorder: Transcription received:', transcriptionResult.text);
+            setTranscriptionText(transcriptionResult.text);
+            onTranscriptionComplete?.(transcriptionResult.text);
+          } else {
+            throw new Error('No transcription received');
+          }
+        } catch (error: any) {
+          console.error('VoiceMemoRecorder: Transcription error:', error);
+          setError(error.message || 'Failed to transcribe audio');
+          onError?.(error.message || 'Failed to transcribe audio');
+        } finally {
+          setIsProcessing(false);
+        }
+        
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      setMediaRecorder(recorder);
+      recorder.start();
+      setIsRecording(true);
+      setError(null);
+      setTranscriptionText('');
       onRecordingStart?.();
+      
     } catch (error: any) {
+      console.error('VoiceMemoRecorder: Error starting recording:', error);
+      setError(error.message || 'Failed to start recording');
       onError?.(error.message || 'Failed to start recording');
     }
-  }, [startRecording, onRecordingStart, onError]);
+  };
 
-  // Handle recording stop and transcription
-  const handleStopRecording = useCallback(async () => {
-    try {
-      const result = await stopRecording();
+  const stopRecording = () => {
+    console.log('VoiceMemoRecorder: Stopping recording...');
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      setIsRecording(false);
       onRecordingStop?.();
-      
-      if (result?.audioBlob) {
-        // Transcribe the recorded audio
-        const transcriptionResult = await transcribeAudio(result.audioBlob);
-        
-        if (transcriptionResult?.text) {
-          setTranscriptionText(transcriptionResult.text);
-          onTranscriptionComplete?.(transcriptionResult.text);
-        } else {
-          throw new Error('No transcription received');
-        }
-      }
-    } catch (error: any) {
-      onError?.(error.message || 'Failed to process recording');
     }
-  }, [stopRecording, onRecordingStop, transcribeAudio, onTranscriptionComplete, onError]);
+  };
 
-  // Handle button click
   const handleButtonClick = useCallback(() => {
-    if (state.isRecording) {
-      handleStopRecording();
-    } else {
-      handleStartRecording();
+    console.log('VoiceMemoRecorder: Button clicked, isRecording:', isRecording, 'isProcessing:', isProcessing);
+    
+    if (isRecording) {
+      stopRecording();
+    } else if (!isProcessing) {
+      startRecording();
     }
-  }, [state.isRecording, handleStartRecording, handleStopRecording]);
+  }, [isRecording, isProcessing]);
 
-  // Reset handler
-  const handleReset = useCallback(() => {
-    reset();
-    setTranscriptionText('');
-  }, [reset]);
-
-  // Get button content based on state
   const getButtonContent = () => {
-    if (state.isRecording) {
+    if (isRecording) {
       return (
         <>
           <Square className="w-4 h-4 mr-2 fill-current" />
           Stop Recording
         </>
       );
-    } else if (state.stage === 'processing' || isTranscribing) {
+    } else if (isProcessing) {
       return (
         <>
           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           Processing...
-        </>
-      );
-    } else if (state.stage === 'completed' && transcriptionText) {
-      return (
-        <>
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Record Again
         </>
       );
     } else {
@@ -119,28 +137,21 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
     }
   };
 
+  console.log('VoiceMemoRecorder: Rendering button, isRecording:', isRecording, 'isProcessing:', isProcessing);
+
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Voice Recorder Button - matching upload button style */}
       <div className="flex flex-col items-center space-y-4">
         <Button 
           variant="outline" 
           onClick={handleButtonClick}
-          disabled={state.stage === 'processing' || isTranscribing || state.stage === 'requesting-permission'}
+          disabled={isProcessing}
           className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-shrink-0 min-h-[44px] px-6 text-sm sm:text-base"
         >
           {getButtonContent()}
         </Button>
 
-        {/* Recording duration */}
-        {state.isRecording && (
-          <Badge variant="secondary" className="text-xs animate-pulse">
-            {formatDuration(state.duration)}
-          </Badge>
-        )}
-
-        {/* Status Messages */}
-        {state.isRecording && (
+        {isRecording && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -152,75 +163,23 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
           </motion.div>
         )}
 
-        {/* Processing Indicator */}
-        <AnimatePresence>
-          {(state.stage === 'processing' || isTranscribing) && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center space-x-2"
-            >
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">
-                Processing audio with Whisper AI...
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center space-x-2"
+          >
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span className="text-sm text-muted-foreground">
+              Processing audio with Whisper AI...
+            </span>
+          </motion.div>
+        )}
 
-        {/* Completion Indicator */}
-        <AnimatePresence>
-          {state.stage === 'completed' && transcriptionText && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center space-x-2"
-            >
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-sm text-green-600">
-                Voice successfully transcribed!
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Error Indicator */}
-        <AnimatePresence>
-          {state.stage === 'error' && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="flex flex-col items-center space-y-2"
-            >
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-red-500" />
-                <span className="text-sm text-red-600">
-                  {state.error || 'Recording failed'}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="text-xs"
-              >
-                Try Again
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Transcription Preview */}
-      <AnimatePresence>
-        {transcriptionText && state.stage === 'completed' && (
+        {transcriptionText && !isProcessing && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
             className="bg-card/50 rounded-lg p-4 border border-border"
           >
             <h4 className="text-sm font-medium text-foreground mb-2">
@@ -231,7 +190,18 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
             </p>
           </motion.div>
         )}
-      </AnimatePresence>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center space-x-2"
+          >
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <span className="text-sm text-red-600">{error}</span>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };

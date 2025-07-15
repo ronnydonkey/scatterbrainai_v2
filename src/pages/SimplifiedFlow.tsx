@@ -112,16 +112,24 @@ export default function SimplifiedFlow() {
   };
 
   const handleFileUpload = () => {
+    console.log('SimplifiedFlow: File upload button clicked');
+    console.log('SimplifiedFlow: fileInputRef.current:', fileInputRef.current);
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('SimplifiedFlow: File selected:', event.target.files);
     const file = event.target.files?.[0];
     if (file) {
+      console.log('SimplifiedFlow: Reading file:', file.name, file.type);
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
+        console.log('SimplifiedFlow: File content loaded:', content.substring(0, 100) + '...');
         setCapturedThoughts(prev => prev + '\n' + content);
+      };
+      reader.onerror = (e) => {
+        console.error('SimplifiedFlow: File reading error:', e);
       };
       reader.readAsText(file);
     }
