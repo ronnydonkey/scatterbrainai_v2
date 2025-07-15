@@ -162,16 +162,18 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
           />
         </div>
 
-        {/* Status Message */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <p className={cn("text-sm font-medium", getStatusColor())}>
-            {getStatusMessage()}
-          </p>
-        </motion.div>
+        {/* Status Message - only show when not idle */}
+        {stage !== 'idle' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <p className={cn("text-sm font-medium", getStatusColor())}>
+              {getStatusMessage()}
+            </p>
+          </motion.div>
+        )}
 
         {/* Processing Indicator */}
         <AnimatePresence>
