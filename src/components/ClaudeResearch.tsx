@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Brain, Lightbulb, Target, TrendingUp, Loader2, Sparkles } from 'lucide-react';
+import { Brain, Lightbulb, Target, TrendingUp, Loader2, Sparkles, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useInterestProfiler } from '@/hooks/useInterestProfiler';
 
 interface ClaudeResearchProps {
   topic?: string;
@@ -44,6 +45,7 @@ const ClaudeResearch: React.FC<ClaudeResearchProps> = ({
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const { toast } = useToast();
+  const { profile, hasProfile, topInterest } = useInterestProfiler();
 
   const canUseClaude = userTier !== 'starter';
 
@@ -106,7 +108,8 @@ const ClaudeResearch: React.FC<ClaudeResearchProps> = ({
           topic: useCustomPrompt ? undefined : topic,
           niche,
           researchType: useCustomPrompt ? 'custom' : researchType,
-          customPrompt: useCustomPrompt ? customPrompt : undefined
+          customPrompt: useCustomPrompt ? customPrompt : undefined,
+          userInterests: hasProfile ? profile.primaryInterests.slice(0, 3) : undefined
         }
       });
 
@@ -238,6 +241,23 @@ const ClaudeResearch: React.FC<ClaudeResearchProps> = ({
                 rows={4}
                 className="resize-none"
               />
+            </div>
+          )}
+
+          {hasProfile && canUseClaude && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-start gap-3">
+                <Users className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-green-800">
+                    🎯 Adaptive Reddit Targeting Active
+                  </p>
+                  <p className="text-xs text-green-700 mt-1">
+                    Research will be targeted to {topInterest}-focused subreddits based on your thought patterns.
+                    {profile.primaryInterests.length > 1 && ` Also includes ${profile.primaryInterests[1].category} communities.`}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
