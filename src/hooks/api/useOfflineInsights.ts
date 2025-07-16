@@ -216,11 +216,9 @@ export const useOfflineInsights = () => {
         });
 
         if (!error && data) {
-          const fileType = data.contentType === 'text/plain' ? 'text/plain' : 'application/pdf';
-          const fileExtension = data.contentType === 'text/plain' ? 'txt' : 'pdf';
-          const fileName = data.filename || `scatterbrain-insight-${id}.${fileExtension}`;
+          const fileName = data.filename || `Scatterbrain-Insight-${new Date().toISOString().slice(0,10)}.txt`;
           
-          const reportBlob = new Blob([new Uint8Array(data.pdfBuffer)], { type: fileType });
+          const reportBlob = new Blob([new Uint8Array(data.pdfBuffer)], { type: data.contentType });
           const url = URL.createObjectURL(reportBlob);
           
           const link = document.createElement('a');

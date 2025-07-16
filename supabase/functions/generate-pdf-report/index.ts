@@ -16,6 +16,21 @@ serve(async (req) => {
     
     console.log('Generating PDF for insight:', insightId);
 
+    // Create readable filename from timestamp
+    const date = new Date(parseInt(timestamp));
+    const dateStr = date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: '2-digit' 
+    }).replace(/[,\s]/g, '-');
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false 
+    }).replace(':', '');
+    
+    const readableFilename = `Scatterbrain-Insight-${dateStr}-${timeStr}`;
+
     // Create HTML content for the PDF
     const htmlContent = generateReportHTML(reportData, originalInput, timestamp, insightId);
     
@@ -27,7 +42,7 @@ serve(async (req) => {
       JSON.stringify({ 
         pdfBuffer: Array.from(textBytes),
         contentType: 'text/plain',
-        filename: `scatterbrain-report-${insightId}.txt`
+        filename: `${readableFilename}.txt`
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
