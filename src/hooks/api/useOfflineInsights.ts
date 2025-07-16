@@ -345,11 +345,14 @@ export const useOfflineInsights = () => {
   const archiveInsight = useCallback(async (id: string) => {
     try {
       await insightDB.updateInsight(id, { archived: true });
-      setInsights(prev => prev.filter(i => i.id !== id));
+      // Update the insight in state instead of removing it
+      setInsights(prev => prev.map(i => 
+        i.id === id ? { ...i, archived: true } : i
+      ));
       
       toast({
-        title: "Insight archived",
-        description: "Moved to your archive.",
+        title: "Insight moved to vault",
+        description: "Moved to your Bad Idea vault.",
       });
     } catch (error) {
       console.error('Failed to archive insight:', error);
@@ -421,8 +424,10 @@ export const useOfflineInsights = () => {
   const restoreInsight = useCallback(async (id: string) => {
     try {
       await insightDB.updateInsight(id, { archived: false });
-      // Reload insights to get both archived and non-archived
-      await loadInsights();
+      // Update the insight in state instead of reloading everything
+      setInsights(prev => prev.map(i => 
+        i.id === id ? { ...i, archived: false } : i
+      ));
       
       toast({
         title: "Insight restored",
@@ -436,7 +441,7 @@ export const useOfflineInsights = () => {
         variant: "destructive",
       });
     }
-  }, [loadInsights]);
+  }, []);
 
   return {
     insights,
