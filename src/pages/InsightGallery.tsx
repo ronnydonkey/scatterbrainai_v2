@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Clock, Search, Sparkles, Plus } from 'lucide-react';
+import { Star, Clock, Search, Sparkles, Plus, Trash2, RotateCcw, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
-  const { insights, isLoading, toggleStar, searchInsights, loadInsights } = useOfflineInsights();
+  const { insights, isLoading, toggleStar, searchInsights, loadInsights, archiveInsight, restoreInsight } = useOfflineInsights();
   const [filteredInsights, setFilteredInsights] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     loadInsights();
@@ -19,7 +20,7 @@ const InsightGallery: React.FC = () => {
 
   useEffect(() => {
     filterInsights(searchTerm, activeFilter);
-  }, [insights, searchTerm, activeFilter]);
+  }, [insights, searchTerm, activeFilter, showArchived]);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -37,7 +38,10 @@ const InsightGallery: React.FC = () => {
   const filterInsights = (search, filter) => {
     let filtered = insights;
     
-    // Apply filter
+    // First filter by archived status
+    filtered = filtered.filter(insight => insight.archived === showArchived);
+    
+    // Apply additional filters
     switch(filter) {
       case 'This Week':
         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -53,6 +57,14 @@ const InsightGallery: React.FC = () => {
     }
     
     setFilteredInsights(filtered);
+  };
+
+  const handleDeleteInsight = async (insightId: string) => {
+    await archiveInsight(insightId);
+  };
+
+  const handleRestoreInsight = async (insightId: string) => {
+    await restoreInsight(insightId);
   };
 
   const handleToggleStar = async (insightId) => {
@@ -87,17 +99,46 @@ const InsightGallery: React.FC = () => {
           </div>
           <span className="text-gray-400 text-sm">{getRelativeTime(insight.timestamp)}</span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleToggleStar(insight.id);
-          }}
-          className={`${insight.starred ? 'text-yellow-400' : 'text-gray-400'} hover:text-yellow-300`}
-        >
-          <Star className={`w-4 h-4 ${insight.starred ? 'fill-current' : ''}`} />
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleStar(insight.id);
+            }}
+            className={`${insight.starred ? 'text-yellow-400' : 'text-gray-400'} hover:text-yellow-300`}
+          >
+            <Star className={`w-4 h-4 ${insight.starred ? 'fill-current' : ''}`} />
+          </Button>
+          {showArchived ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRestoreInsight(insight.id);
+              }}
+              className="text-green-400 hover:text-green-300"
+              title="Restore insight"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteInsight(insight.id);
+              }}
+              className="text-red-400 hover:text-red-300"
+              title="Move to Bad Idea vault"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="mb-4">
@@ -135,8 +176,23 @@ const InsightGallery: React.FC = () => {
       <div className="container max-w-6xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Insight Gallery</h1>
-          <p className="text-xl text-gray-300">Your captured thoughts and their insights</p>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h1 className="text-4xl font-bold text-white">
+              {showArchived ? 'Bad Idea Vault' : 'Insight Gallery'}
+            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowArchived(!showArchived)}
+              className={`${showArchived ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-gray-300'} transition-colors`}
+              title={showArchived ? 'View active insights' : 'View Bad Idea vault'}
+            >
+              <Archive className="w-5 h-5" />
+            </Button>
+          </div>
+          <p className="text-xl text-gray-300">
+            {showArchived ? 'Ideas you\'ve set aside (but might want back)' : 'Your captured thoughts and their insights'}
+          </p>
         </div>
 
         {/* Search and Filter Controls */}

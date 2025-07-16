@@ -296,7 +296,9 @@ export const useOfflineInsights = () => {
   const loadInsights = useCallback(async (filters?: Parameters<typeof insightDB.getInsights>[0]) => {
     setIsLoading(true);
     try {
-      const loadedInsights = await insightDB.getInsights(filters);
+      // Load all insights by default (don't filter by archived status unless specified)
+      const defaultFilters = filters || { archived: undefined };
+      const loadedInsights = await insightDB.getInsights(defaultFilters);
       setInsights(loadedInsights);
     } catch (error) {
       console.error('Failed to load insights:', error);
@@ -416,6 +418,26 @@ export const useOfflineInsights = () => {
     }
   }, []);
 
+  const restoreInsight = useCallback(async (id: string) => {
+    try {
+      await insightDB.updateInsight(id, { archived: false });
+      // Reload insights to get both archived and non-archived
+      await loadInsights();
+      
+      toast({
+        title: "Insight restored",
+        description: "Moved back to your gallery.",
+      });
+    } catch (error) {
+      console.error('Failed to restore insight:', error);
+      toast({
+        title: "Failed to restore insight",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [loadInsights]);
+
   return {
     insights,
     isLoading,
@@ -427,7 +449,8 @@ export const useOfflineInsights = () => {
     archiveInsight,
     deleteInsight,
     trackAction,
-    updateInsight
+    updateInsight,
+    restoreInsight
   };
 };
 
