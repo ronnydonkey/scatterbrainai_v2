@@ -74,6 +74,37 @@ export const ThoughtCapture = () => {
     }
   };
 
+  const generateThoughtTitle = async (content: string): Promise<string> => {
+    try {
+      // Use a simple approach to generate title
+      const words = content.split(' ').slice(0, 6); // First 6 words
+      let title = words.join(' ');
+      
+      // If it's too short, try to extract key terms
+      if (title.length < 10) {
+        // Extract meaningful words (not common articles/prepositions)
+        const meaningfulWords = content.split(' ')
+          .filter(word => word.length > 3 && 
+            !['that', 'this', 'with', 'from', 'they', 'them', 'were', 'been', 'have', 'will', 'would', 'could', 'should'].includes(word.toLowerCase()))
+          .slice(0, 4);
+        title = meaningfulWords.join(' ');
+      }
+      
+      // Ensure it's not too long
+      if (title.length > 50) {
+        title = title.substring(0, 47) + '...';
+      }
+      
+      // Capitalize first letter
+      title = title.charAt(0).toUpperCase() + title.slice(1);
+      
+      return title || 'Untitled Thought';
+    } catch (error) {
+      console.error('Error generating title:', error);
+      return 'Untitled Thought';
+    }
+  };
+
   const saveThought = async () => {
     if (!user || !newThought.content.trim()) return;
 
@@ -89,12 +120,18 @@ export const ThoughtCapture = () => {
         throw new Error('User profile not found');
       }
 
+      // Generate title if not provided
+      let thoughtTitle = newThought.title.trim();
+      if (!thoughtTitle) {
+        thoughtTitle = await generateThoughtTitle(newThought.content.trim());
+      }
+
       const { error } = await supabase
         .from('thoughts')
         .insert({
           user_id: user.id,
           organization_id: profile.organization_id,
-          title: newThought.title.trim() || null,
+          title: thoughtTitle,
           content: newThought.content.trim(),
           tags: newThought.tags.split(',').map(t => t.trim()).filter(Boolean),
           mood: newThought.mood || null,
