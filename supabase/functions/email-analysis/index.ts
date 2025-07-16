@@ -34,7 +34,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'ScatterBrain <insights@yourdomain.com>',
+        from: 'ScatterBrain <onboarding@resend.dev>',
         to: [email],
         subject: `🧠 Thought Analysis: ${thoughtTitle || 'Your Latest Insight'}`,
         html: emailHtml,
