@@ -47,6 +47,9 @@ const ThoughtsPage: React.FC = () => {
 
       if (error) throw error;
       
+      console.log('Fetched thoughts:', data);
+      console.log('Thoughts without titles:', data?.filter(t => !t.title));
+      
       setThoughts(data || []);
       setFilteredThoughts(data || []);
     } catch (error) {
