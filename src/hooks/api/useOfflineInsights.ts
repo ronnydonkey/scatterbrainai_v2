@@ -182,15 +182,56 @@ export const useOfflineInsights = () => {
   ): Promise<string> => {
     const id = `insight_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // Generate title based on input content
+    const generateInsightTitle = (content: string): string => {
+      if (!content?.trim()) return 'Untitled Insight';
+      
+      const normalizedContent = content.trim().replace(/\s+/g, ' ');
+      const words = normalizedContent.split(' ');
+      
+      if (words.length <= 6) {
+        return words.join(' ');
+      }
+      
+      let title = words.slice(0, 6).join(' ');
+      
+      if (title.length < 15) {
+        const meaningfulWords = words.filter(word => word.length > 3);
+        if (meaningfulWords.length > 0) {
+          title = meaningfulWords.slice(0, 4).join(' ');
+        }
+      }
+      
+      if (title.length > 50) {
+        title = title.substring(0, 47) + '...';
+      }
+      
+      return title;
+    };
+
+    // Generate title and inject it into response
+    const generatedTitle = generateInsightTitle(input);
+    const enhancedResponse = {
+      ...response,
+      insights: {
+        ...response?.insights,
+        keyThemes: [{
+          theme: generatedTitle,
+          confidence: 0.8,
+          explanation: 'AI-generated title based on content'
+        }, ...(response?.insights?.keyThemes || [])]
+      }
+    };
+    
     const insight: StoredInsight = {
       id,
       input,
-      response,
+      response: enhancedResponse,
       timestamp: Date.now(),
       starred: false,
       archived: false,
       themes,
-      searchTerms: generateSearchTerms(input, response),
+      searchTerms: generateSearchTerms(input, enhancedResponse),
       userActions: {
         calendarEvents: [],
         sharedContent: [],

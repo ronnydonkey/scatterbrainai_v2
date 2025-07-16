@@ -1,19 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Clock, Search, Sparkles, Plus, Wand2 } from 'lucide-react';
+import { Star, Clock, Search, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
-import { toast } from '@/hooks/use-toast';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
-  const { insights, isLoading, toggleStar, searchInsights, loadInsights, updateInsight } = useOfflineInsights();
+  const { insights, isLoading, toggleStar, searchInsights, loadInsights } = useOfflineInsights();
   const [filteredInsights, setFilteredInsights] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
-  const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
 
   useEffect(() => {
     loadInsights();
@@ -74,100 +72,6 @@ const InsightGallery: React.FC = () => {
     if (diffInDays < 7) return `${diffInDays} days ago`;
     
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  const generateInsightTitle = (content: string): string => {
-    if (!content?.trim()) return 'Untitled Insight';
-    
-    // Remove extra whitespace and normalize
-    const normalizedContent = content.trim().replace(/\s+/g, ' ');
-    
-    // Split into words
-    const words = normalizedContent.split(' ');
-    
-    // If less than 6 words, use all of them
-    if (words.length <= 6) {
-      return words.join(' ');
-    }
-    
-    // Take first 6 words and ensure it doesn't end awkwardly
-    let title = words.slice(0, 6).join(' ');
-    
-    // If title is too short (less than 15 characters), try to get more meaningful terms
-    if (title.length < 15) {
-      // Look for meaningful words (longer than 3 characters)
-      const meaningfulWords = words.filter(word => word.length > 3);
-      if (meaningfulWords.length > 0) {
-        title = meaningfulWords.slice(0, 4).join(' ');
-      }
-    }
-    
-    // Ensure the title isn't too long
-    if (title.length > 50) {
-      title = title.substring(0, 47) + '...';
-    }
-    
-    return title;
-  };
-
-  const generateTitlesForInsights = async () => {
-    setIsGeneratingTitles(true);
-    
-    try {
-      // Find insights without proper titles
-      const insightsNeedingTitles = insights.filter(insight => 
-        !insight.response?.insights?.keyThemes?.[0]?.theme || 
-        insight.response?.insights?.keyThemes?.[0]?.theme === 'Untitled Insight'
-      );
-
-      console.log('Insights needing titles:', insightsNeedingTitles);
-
-      if (insightsNeedingTitles.length === 0) {
-        toast({
-          title: "All insights have titles! ✨",
-          description: "No insights need title generation.",
-        });
-        return;
-      }
-
-      // Generate titles for insights that need them
-      for (const insight of insightsNeedingTitles) {
-        const generatedTitle = generateInsightTitle(insight.input);
-        
-        // Update the insight's response structure to include the generated title
-        const updatedResponse = {
-          ...insight.response,
-          insights: {
-            ...insight.response?.insights,
-            keyThemes: [{
-              theme: generatedTitle,
-              confidence: 0.8,
-              explanation: 'AI-generated title based on content'
-            }, ...(insight.response?.insights?.keyThemes || [])]
-          }
-        };
-
-        // Update the insight with the new response
-        await updateInsight(insight.id, { response: updatedResponse });
-      }
-
-      await loadInsights(); // Refresh the insights list
-      
-      toast({
-        title: "Titles generated! 🎯",
-        description: `Added titles to ${insightsNeedingTitles.length} insights.`,
-      });
-
-    } catch (error) {
-      console.error('Error generating titles:', error);
-      toast({
-        title: "Error generating titles",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingTitles(false);
-    }
   };
 
   const handleContinueAnalysis = (insight: any) => {
@@ -264,34 +168,6 @@ const InsightGallery: React.FC = () => {
               </Button>
             ))}
           </div>
-
-          {/* Title Generation Button */}
-          {insights.length > 0 && insights.some(insight => 
-            !insight.response?.insights?.keyThemes?.[0]?.theme || 
-            insight.response?.insights?.keyThemes?.[0]?.theme === 'Untitled Insight'
-          ) && (
-            <div className="flex justify-center">
-              <Button
-                onClick={generateTitlesForInsights}
-                disabled={isGeneratingTitles}
-                variant="outline"
-                size="sm"
-                className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:border-purple-400"
-              >
-                {isGeneratingTitles ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full mr-2"></div>
-                    Generating Titles...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="w-4 h-4 mr-2" />
-                    Generate Titles for Insights
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Results */}
