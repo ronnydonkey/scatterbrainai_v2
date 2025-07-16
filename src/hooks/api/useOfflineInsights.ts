@@ -203,9 +203,43 @@ export const useOfflineInsights = () => {
       await insightDB.saveInsight(insight);
       setInsights(prev => [insight, ...prev]);
       
+      // Auto-download PDF after saving
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data, error } = await supabase.functions.invoke('generate-pdf-report', {
+          body: {
+            insightId: id,
+            reportData: response,
+            originalInput: input,
+            timestamp: Date.now()
+          }
+        });
+
+        if (!error && data) {
+          const fileType = data.contentType === 'text/plain' ? 'text/plain' : 'application/pdf';
+          const fileExtension = data.contentType === 'text/plain' ? 'txt' : 'pdf';
+          const fileName = data.filename || `scatterbrain-insight-${id}.${fileExtension}`;
+          
+          const reportBlob = new Blob([new Uint8Array(data.pdfBuffer)], { type: fileType });
+          const url = URL.createObjectURL(reportBlob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          URL.revokeObjectURL(url);
+        }
+      } catch (pdfError) {
+        console.error('PDF auto-download failed:', pdfError);
+        // Don't show error to user as the main save was successful
+      }
+      
       toast({
         title: "Insight saved! 💾",
-        description: "Added to your personal gallery for future reference.",
+        description: "Added to your personal gallery and PDF downloaded.",
       });
       
       return id;

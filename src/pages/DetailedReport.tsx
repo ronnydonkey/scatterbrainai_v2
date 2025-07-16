@@ -71,24 +71,45 @@ const DetailedReport: React.FC = () => {
 
   const shareReport = async () => {
     try {
-      const shareData = {
-        title: 'My Scatterbrain Insight Report',
-        text: `Check out my insight analysis: ${report?.summary?.keyFindings?.[0] || 'Detailed analysis of my thoughts and action plan.'}`,
-        url: window.location.href
-      };
+      const email = prompt('Enter email address to share this report:');
+      if (!email) return;
 
-      if (navigator.share) {
-        // Native sharing on mobile
-        await navigator.share(shareData);
-        toast.success('Report shared successfully!');
-      } else {
-        // Copy link to clipboard
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success('Report link copied to clipboard!');
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error('Please enter a valid email address');
+        return;
       }
+
+      setLoading(true);
+      
+      // Get the base insight for context
+      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+      const baseInsight = insights.find(i => i.id === insightId);
+      
+      if (!baseInsight || !report) {
+        toast.error('Report data not available for sharing');
+        return;
+      }
+
+      // Send email with the beautiful report
+      const { data, error } = await supabase.functions.invoke('email-analysis', {
+        body: {
+          email,
+          analysisData: report,
+          thoughtContent: baseInsight.originalInput,
+          thoughtTitle: `Insight Analysis - ${new Date(baseInsight.timestamp).toLocaleDateString()}`
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Report shared successfully via email!');
     } catch (error) {
       console.error('Failed to share report:', error);
       toast.error('Failed to share report. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,9 +223,10 @@ const DetailedReport: React.FC = () => {
               variant="outline"
               onClick={shareReport}
               className="border-white/20 text-white hover:bg-white/10"
+              disabled={loading}
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Share
+              {loading ? 'Sending...' : 'Email Report'}
             </Button>
             <Button
               variant="outline"
