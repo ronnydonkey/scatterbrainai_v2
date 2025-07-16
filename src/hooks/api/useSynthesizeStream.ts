@@ -121,7 +121,9 @@ class ResponseCache {
   generateKey(input: string, preferences: any): string {
     const normalizedInput = input.toLowerCase().trim();
     const prefString = JSON.stringify(preferences);
-    return btoa(normalizedInput + prefString).slice(0, 32);
+    // Use encodeURIComponent to safely handle Unicode characters, then create a simple hash
+    const combined = encodeURIComponent(normalizedInput + prefString);
+    return combined.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32) || 'default_key';
   }
 }
 
