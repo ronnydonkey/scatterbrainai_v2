@@ -303,6 +303,17 @@ export default function SimplifiedFlow() {
         console.error('Failed to save insight:', error);
       }
 
+      // Wait a moment for state to settle, then automatically navigate to detailed report
+      setTimeout(() => {
+        const storedInsights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+        const latestInsight = storedInsights[0];
+        if (latestInsight) {
+          navigate(`/report/${latestInsight.id}`);
+        } else {
+          setCurrentStep('insights'); // Fallback to insights view
+        }
+      }, 500);
+
     } catch (error) {
       console.error('Analysis failed:', error);
       setIsProcessing(false);
@@ -312,7 +323,6 @@ export default function SimplifiedFlow() {
     }
     
     setIsProcessing(false);
-    setCurrentStep('insights');
   };
 
   const resetFlow = () => {
