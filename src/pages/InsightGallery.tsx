@@ -1,48 +1,41 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Clock, Search, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
-  const [insights, setInsights] = useState([]);
+  const { insights, isLoading, toggleStar, searchInsights, loadInsights } = useOfflineInsights();
   const [filteredInsights, setFilteredInsights] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => {
-    loadInsightsFromStorage();
-  }, []);
+    loadInsights();
+  }, [loadInsights]);
 
-  const loadInsightsFromStorage = () => {
-    const stored = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
-    setInsights(stored);
-    setFilteredInsights(stored);
-  };
+  useEffect(() => {
+    filterInsights(searchTerm, activeFilter);
+  }, [insights, searchTerm, activeFilter]);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    filterInsights(term, activeFilter);
+    if (term.trim()) {
+      searchInsights(term);
+    } else {
+      loadInsights();
+    }
   };
 
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
-    filterInsights(searchTerm, filter);
   };
 
   const filterInsights = (search, filter) => {
     let filtered = insights;
-    
-    // Apply search
-    if (search) {
-      filtered = filtered.filter(insight => 
-        insight.originalInput?.toLowerCase().includes(search.toLowerCase()) ||
-        insight.insights?.keyThemes?.some(theme => 
-          theme.theme?.toLowerCase().includes(search.toLowerCase())
-        )
-      );
-    }
     
     // Apply filter
     switch(filter) {
@@ -62,18 +55,11 @@ const InsightGallery: React.FC = () => {
     setFilteredInsights(filtered);
   };
 
-  const toggleStar = (insightId) => {
-    const updated = insights.map(insight => 
-      insight.id === insightId 
-        ? { ...insight, starred: !insight.starred }
-        : insight
-    );
-    setInsights(updated);
-    localStorage.setItem('scatterbrain_insights', JSON.stringify(updated));
-    filterInsights(searchTerm, activeFilter); // Refresh filtered view
+  const handleToggleStar = async (insightId) => {
+    await toggleStar(insightId);
   };
 
-  const getRelativeTime = (timestamp: string): string => {
+  const getRelativeTime = (timestamp: number): string => {
     const now = new Date();
     const date = new Date(timestamp);
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
@@ -106,7 +92,7 @@ const InsightGallery: React.FC = () => {
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            toggleStar(insight.id);
+            handleToggleStar(insight.id);
           }}
           className={`${insight.starred ? 'text-yellow-400' : 'text-gray-400'} hover:text-yellow-300`}
         >
@@ -116,19 +102,19 @@ const InsightGallery: React.FC = () => {
       
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-white mb-2">
-          {insight.title || insight.insights?.keyThemes?.[0]?.theme || 'Untitled Insight'}
+          {insight.response?.insights?.keyThemes?.[0]?.theme || 'Untitled Insight'}
         </h3>
         <p className="text-gray-300 text-sm mb-4 line-clamp-3">
-          {insight.originalInput || 'No content available'}
+          {insight.input || 'No content available'}
         </p>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <span className={`px-2 py-1 rounded-full text-xs ${
-              insight.actionsCompleted === insight.totalActions 
+              insight.userActions?.completedTasks?.length === insight.response?.insights?.actionItems?.length 
                 ? 'bg-green-600 text-green-100' 
                 : 'bg-purple-600 text-purple-100'
             }`}>
-              {insight.actionsCompleted || 0}/{insight.insights?.actionItems?.length || 0} Actions
+              {insight.userActions?.completedTasks?.length || 0}/{insight.response?.insights?.actionItems?.length || 0} Actions
             </span>
           </div>
           <Button
@@ -166,7 +152,7 @@ const InsightGallery: React.FC = () => {
             />
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             {['All', 'This Week', 'Starred'].map((filter) => (
               <Button
                 key={filter}
@@ -185,7 +171,12 @@ const InsightGallery: React.FC = () => {
         </div>
 
         {/* Results */}
-        {filteredInsights.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading insights...</p>
+          </div>
+        ) : filteredInsights.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 bg-gray-800/50 rounded-lg flex items-center justify-center mx-auto mb-6">
               <Sparkles className="w-8 h-8 text-gray-400" />
@@ -207,7 +198,7 @@ const InsightGallery: React.FC = () => {
                 onClick={() => {
                   setSearchTerm('');
                   setActiveFilter('All');
-                  loadInsightsFromStorage();
+                  loadInsights();
                 }}
                 variant="outline"
                 className="border-white/20 text-white hover:bg-white/10"
