@@ -363,6 +363,18 @@ export const useOfflineInsights = () => {
     loadInsights();
   }, [loadInsights]);
 
+  const updateInsight = useCallback(async (id: string, updates: Partial<StoredInsight>) => {
+    try {
+      await insightDB.updateInsight(id, updates);
+      setInsights(prev => prev.map(i => 
+        i.id === id ? { ...i, ...updates } : i
+      ));
+    } catch (error) {
+      console.error('Failed to update insight:', error);
+      throw error;
+    }
+  }, []);
+
   return {
     insights,
     isLoading,
@@ -373,7 +385,8 @@ export const useOfflineInsights = () => {
     toggleStar,
     archiveInsight,
     deleteInsight,
-    trackAction
+    trackAction,
+    updateInsight
   };
 };
 
