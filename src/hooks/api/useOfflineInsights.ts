@@ -184,13 +184,17 @@ export const useOfflineInsights = () => {
     
     // Generate title based on input content
     const generateInsightTitle = (content: string): string => {
+      console.log('Generating title for content:', content?.substring(0, 100));
+      
       if (!content?.trim()) return 'Untitled Insight';
       
       const normalizedContent = content.trim().replace(/\s+/g, ' ');
       const words = normalizedContent.split(' ');
       
       if (words.length <= 6) {
-        return words.join(' ');
+        const title = words.join(' ');
+        console.log('Generated short title:', title);
+        return title;
       }
       
       let title = words.slice(0, 6).join(' ');
@@ -206,11 +210,14 @@ export const useOfflineInsights = () => {
         title = title.substring(0, 47) + '...';
       }
       
+      console.log('Generated title:', title);
       return title;
     };
 
     // Generate title and inject it into response
     const generatedTitle = generateInsightTitle(input);
+    console.log('Final generated title for insight:', generatedTitle);
+    
     const enhancedResponse = {
       ...response,
       insights: {
@@ -222,6 +229,8 @@ export const useOfflineInsights = () => {
         }, ...(response?.insights?.keyThemes || [])]
       }
     };
+    
+    console.log('Enhanced response with title:', enhancedResponse);
     
     const insight: StoredInsight = {
       id,

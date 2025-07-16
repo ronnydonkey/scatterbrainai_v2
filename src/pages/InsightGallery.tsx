@@ -8,7 +8,7 @@ import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
-  const { insights, isLoading, toggleStar, searchInsights, loadInsights, archiveInsight, restoreInsight } = useOfflineInsights();
+  const { insights, isLoading, toggleStar, searchInsights, loadInsights, archiveInsight, restoreInsight, updateInsight } = useOfflineInsights();
   const [filteredInsights, setFilteredInsights] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
@@ -65,6 +65,70 @@ const InsightGallery: React.FC = () => {
 
   const handleRestoreInsight = async (insightId: string) => {
     await restoreInsight(insightId);
+  };
+
+  const migrateExistingInsights = async () => {
+    console.log('Starting migration of existing insights...');
+    
+    for (const insight of insights) {
+      const currentTitle = insight.response?.insights?.keyThemes?.[0]?.theme;
+      
+      if (!currentTitle || currentTitle === 'Untitled Insight') {
+        console.log('Migrating insight:', insight.id, 'with input:', insight.input?.substring(0, 50));
+        
+        // Generate title using the same logic
+        const generateInsightTitle = (content: string): string => {
+          if (!content?.trim()) return 'Untitled Insight';
+          
+          const normalizedContent = content.trim().replace(/\s+/g, ' ');
+          const words = normalizedContent.split(' ');
+          
+          if (words.length <= 6) {
+            return words.join(' ');
+          }
+          
+          let title = words.slice(0, 6).join(' ');
+          
+          if (title.length < 15) {
+            const meaningfulWords = words.filter(word => word.length > 3);
+            if (meaningfulWords.length > 0) {
+              title = meaningfulWords.slice(0, 4).join(' ');
+            }
+          }
+          
+          if (title.length > 50) {
+            title = title.substring(0, 47) + '...';
+          }
+          
+          return title;
+        };
+        
+        const generatedTitle = generateInsightTitle(insight.input);
+        console.log('Generated title for migration:', generatedTitle);
+        
+        const enhancedResponse = {
+          ...insight.response,
+          insights: {
+            ...insight.response?.insights,
+            keyThemes: [{
+              theme: generatedTitle,
+              confidence: 0.8,
+              explanation: 'AI-generated title based on content'
+            }, ...(insight.response?.insights?.keyThemes || [])]
+          }
+        };
+        
+        try {
+          await updateInsight(insight.id, { response: enhancedResponse });
+          console.log('Successfully migrated insight:', insight.id);
+        } catch (error) {
+          console.error('Failed to migrate insight:', insight.id, error);
+        }
+      }
+    }
+    
+    console.log('Migration complete, reloading insights...');
+    await loadInsights();
   };
 
   const handleToggleStar = async (insightId) => {
@@ -143,7 +207,12 @@ const InsightGallery: React.FC = () => {
       
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-white mb-2">
-          {insight.response?.insights?.keyThemes?.[0]?.theme || 'Untitled Insight'}
+          {(() => {
+            const title = insight.response?.insights?.keyThemes?.[0]?.theme || 'Untitled Insight';
+            console.log('Displaying title for insight:', insight.id, 'Title:', title);
+            console.log('Full insight response:', insight.response);
+            return title;
+          })()}
         </h3>
         <p className="text-gray-300 text-sm mb-4 line-clamp-3">
           {insight.input || 'No content available'}
@@ -193,6 +262,21 @@ const InsightGallery: React.FC = () => {
           <p className="text-xl text-gray-300">
             {showArchived ? 'Ideas you\'ve set aside (but might want back)' : 'Your captured thoughts and their insights'}
           </p>
+          
+          {/* Temporary migration button - remove after running once */}
+          {!showArchived && insights.some(insight => 
+            !insight.response?.insights?.keyThemes?.[0]?.theme || 
+            insight.response?.insights?.keyThemes?.[0]?.theme === 'Untitled Insight'
+          ) && (
+            <Button
+              onClick={migrateExistingInsights}
+              variant="outline"
+              size="sm"
+              className="mt-4 border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/10"
+            >
+              🔧 Fix Titles for Existing Insights
+            </Button>
+          )}
         </div>
 
         {/* Search and Filter Controls */}
