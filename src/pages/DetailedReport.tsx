@@ -92,6 +92,10 @@ const DetailedReport: React.FC = () => {
         return;
       }
 
+      console.log('Attempting to send email to:', email);
+      console.log('Report data:', report);
+      console.log('Base insight:', baseInsight);
+      
       // Send email with the beautiful report
       const { data, error } = await supabase.functions.invoke('email-analysis', {
         body: {
@@ -102,7 +106,12 @@ const DetailedReport: React.FC = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('Email response:', { data, error });
+
+      if (error) {
+        console.error('Email function error:', error);
+        throw error;
+      }
 
       toast.success('Report shared successfully via email!');
     } catch (error) {
