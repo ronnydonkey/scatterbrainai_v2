@@ -28,6 +28,7 @@ const ThoughtsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -57,6 +58,91 @@ const ThoughtsPage: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateThoughtTitle = async (content: string): Promise<string> => {
+    try {
+      // Use a simple approach to generate title
+      const words = content.split(' ').slice(0, 6); // First 6 words
+      let title = words.join(' ');
+      
+      // If it's too short, try to extract key terms
+      if (title.length < 10) {
+        // Extract meaningful words (not common articles/prepositions)
+        const meaningfulWords = content.split(' ')
+          .filter(word => word.length > 3 && 
+            !['that', 'this', 'with', 'from', 'they', 'them', 'were', 'been', 'have', 'will', 'would', 'could', 'should'].includes(word.toLowerCase()))
+          .slice(0, 4);
+        title = meaningfulWords.join(' ');
+      }
+      
+      // Ensure it's not too long
+      if (title.length > 50) {
+        title = title.substring(0, 47) + '...';
+      }
+      
+      // Capitalize first letter
+      title = title.charAt(0).toUpperCase() + title.slice(1);
+      
+      return title || 'Untitled Thought';
+    } catch (error) {
+      console.error('Error generating title:', error);
+      return 'Untitled Thought';
+    }
+  };
+
+  const generateTitlesForExistingThoughts = async () => {
+    if (!user) return;
+
+    setIsGeneratingTitles(true);
+    
+    try {
+      // Find thoughts without titles
+      const thoughtsNeedingTitles = thoughts.filter(thought => !thought.title);
+      
+      if (thoughtsNeedingTitles.length === 0) {
+        toast({
+          title: "All Set!",
+          description: "All your thoughts already have titles.",
+        });
+        return;
+      }
+
+      let updatedCount = 0;
+
+      // Generate titles for each thought
+      for (const thought of thoughtsNeedingTitles) {
+        const newTitle = await generateThoughtTitle(thought.content);
+        
+        const { error } = await supabase
+          .from('thoughts')
+          .update({ title: newTitle })
+          .eq('id', thought.id);
+
+        if (!error) {
+          updatedCount++;
+        }
+      }
+
+      if (updatedCount > 0) {
+        // Refresh the thoughts list
+        await fetchThoughts();
+        
+        toast({
+          title: "Titles Generated!",
+          description: `Generated titles for ${updatedCount} thought${updatedCount > 1 ? 's' : ''}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error generating titles:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate titles. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingTitles(false);
     }
   };
 
@@ -226,8 +312,8 @@ const ThoughtsPage: React.FC = () => {
           <p className="text-xl text-gray-300">Capture and organize your ideas, insights, and inspirations</p>
         </div>
 
-        {/* Add New Thought Button */}
-        <div className="mb-8 text-center">
+        {/* Action Buttons */}
+        <div className="mb-8 text-center space-y-4">
           <Button
             onClick={() => navigate('/capture')}
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
@@ -235,6 +321,29 @@ const ThoughtsPage: React.FC = () => {
             <Plus className="w-5 h-5 mr-2" />
             Add New Thought
           </Button>
+          
+          {thoughts.some(thought => !thought.title) && (
+            <div>
+              <Button
+                onClick={generateTitlesForExistingThoughts}
+                disabled={isGeneratingTitles}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                {isGeneratingTitles ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Generating Titles...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-4 h-4 mr-2" />
+                    Generate Titles for Existing Thoughts
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Search and Filter Controls */}
