@@ -24,11 +24,10 @@ const Auth = () => {
   const TURNSTILE_SITE_KEY = '0x4AAAAAABlbYQOWR4osFhfH';
   
   
-  // Temporarily disable Turnstile to debug auth issues
-  // const { containerRef, isLoaded, error: captchaError, reset } = useTurnstile(
-  //   TURNSTILE_SITE_KEY,
-  //   (token: string) => setCaptchaToken(token)
-  // );
+  const { containerRef, isLoaded, error: captchaError, reset } = useTurnstile(
+    TURNSTILE_SITE_KEY,
+    (token: string) => setCaptchaToken(token)
+  );
 
   // Redirect if already authenticated
   if (user) {
@@ -61,10 +60,36 @@ const Auth = () => {
     e.preventDefault();
     if (!email || !password) return;
     
+    if (!captchaToken) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete the security verification",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      // Proceed with signup (temporarily without captcha)
+      // Verify captcha token first
+      const { data: captchaData } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token: captchaToken }
+      });
+      
+      if (!captchaData?.success) {
+        toast({
+          title: "Verification Failed",
+          description: "Security verification failed. Please try again.",
+          variant: "destructive",
+        });
+        reset();
+        setCaptchaToken(null);
+        setLoading(false);
+        return;
+      }
+      
+      // Proceed with signup if captcha is valid
       const { error } = await signUp(email, password, firstName, displayName);
       
       if (!error) {
@@ -78,6 +103,7 @@ const Auth = () => {
         setFirstName('');
         setDisplayName('');
         setCaptchaToken(null);
+        reset();
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -86,6 +112,8 @@ const Auth = () => {
         description: "An error occurred during signup. Please try again.",
         variant: "destructive",
       });
+      reset();
+      setCaptchaToken(null);
     }
     
     setLoading(false);
@@ -194,17 +222,28 @@ const Auth = () => {
                   />
                 </div>
                 
-                {/* Temporarily disabled captcha for debugging */}
+                {/* Turnstile Captcha */}
                 <div className="space-y-2">
-                  <p className="text-gray-400 text-sm text-center">
-                    Captcha temporarily disabled for debugging
-                  </p>
+                  <Label className="text-gray-300 flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    Security Verification
+                  </Label>
+                  <div 
+                    ref={containerRef} 
+                    className="flex justify-center"
+                  />
+                  {captchaError && (
+                    <p className="text-red-400 text-sm">{captchaError}</p>
+                  )}
+                  {!isLoaded && (
+                    <p className="text-gray-400 text-sm text-center">Loading security verification...</p>
+                  )}
                 </div>
                 
                 <Button 
                   type="submit" 
                   className="w-full bg-purple-600 hover:bg-purple-700" 
-                  disabled={loading}
+                  disabled={loading || !captchaToken || !isLoaded}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign Up
