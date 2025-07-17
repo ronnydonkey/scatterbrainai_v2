@@ -49,7 +49,78 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
   return (
     <section className="py-16 bg-gradient-to-br from-primary/10 to-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* Teaser Report Preview */}
+          <Card className="border-primary/20 shadow-xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-4">
+                  Your Method Preview
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Here's a glimpse of what we found in your thoughts...
+                </p>
+              </div>
+              
+              {/* Teaser Insights */}
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-primary">Key Patterns Detected</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 p-3 bg-primary/5 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm">Strategic thinking patterns identified</span>
+                    </div>
+                    <div className="flex items-center space-x-3 p-3 bg-primary/5 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm">Action-oriented mindset detected</span>
+                    </div>
+                    <div className="flex items-center space-x-3 p-3 bg-primary/5 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm">Innovation opportunities found</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-primary">Ready Actions</h3>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+                      <div className="font-medium mb-1">Priority Focus Area</div>
+                      <div className="text-sm text-muted-foreground">Your thoughts reveal a clear direction...</div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+                      <div className="font-medium mb-1">Next Steps Mapped</div>
+                      <div className="text-sm text-muted-foreground">We've organized your ideas into...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Blur Effect for Teaser */}
+              <div className="relative">
+                <div className="p-6 bg-gradient-to-br from-card/50 to-primary/10 rounded-lg border border-primary/20">
+                  <h3 className="text-xl font-semibold mb-4">Full Analysis Report</h3>
+                  <div className="space-y-3 relative">
+                    <div className="h-4 bg-gradient-to-r from-primary/20 to-primary/10 rounded"></div>
+                    <div className="h-4 bg-gradient-to-r from-primary/15 to-primary/5 rounded w-4/5"></div>
+                    <div className="h-4 bg-gradient-to-r from-primary/10 to-transparent rounded w-3/5"></div>
+                    
+                    {/* Blur overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent backdrop-blur-sm rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary mb-2">🔒</div>
+                        <div className="text-sm font-medium">Unlock your complete method</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Email Capture */}
           <Card className="border-primary/30 shadow-2xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
             <CardHeader className="text-center space-y-4">
               <div className="flex items-center justify-center space-x-2">
@@ -60,22 +131,26 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
               
               <CardTitle className="text-2xl">
                 <span className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                  Method Found!
+                  Ready to See Everything?
                 </span>
               </CardTitle>
               
               <p className="text-muted-foreground leading-relaxed">
-                Your chaos has been structured. Create an account to unlock your personalized insights and continue building your method.
+                Create your free account to unlock the complete analysis, personalized action plan, and content suggestions.
               </p>
               
               <div className="flex items-center justify-center space-x-4 text-sm text-primary">
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Patterns identified</span>
+                  <span>Full insights report</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Actions prioritized</span>
+                  <span>Content suggestions</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Action roadmap</span>
                 </div>
               </div>
             </CardHeader>
