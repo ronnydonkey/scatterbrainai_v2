@@ -14,6 +14,7 @@ import SettingsPage from "./pages/SettingsPage";
 import SimplifiedFlow from "./pages/SimplifiedFlow";
 import InsightGallery from "./pages/InsightGallery";
 import DetailedReport from "./pages/DetailedReport";
+import SharedInsight from "./pages/SharedInsight";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
@@ -49,6 +50,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/landing" element={<AppRouter />} />
+              <Route path="/shared-insight/:insightId" element={<SharedInsight />} />
               <Route path="/" element={<AppRouter />} />
               <Route path="/thoughts" element={<AppRouter />} />
               <Route path="/gallery" element={<AppRouter />} />

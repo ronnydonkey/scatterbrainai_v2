@@ -10,6 +10,7 @@ import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animati
 import { toast } from '@/hooks/use-toast';
 import { DemoModeButton } from '@/components/DemoModeButton';
 import { DemoBanner } from '@/components/DemoBanner';
+import { ShareInsight } from '@/components/ShareInsight';
 import { demoInsights } from '@/data/demoInsights';
 
 const InsightGallery: React.FC = () => {
@@ -185,6 +186,7 @@ const InsightGallery: React.FC = () => {
           )}
         </div>
         <div className="flex items-center space-x-2">
+          <ShareInsight insight={insight} isDemo={insight.isDemo || isDemoMode} />
           <Button
             variant="ghost"
             size="sm"
