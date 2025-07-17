@@ -12,47 +12,93 @@ export function HowItWorks() {
     {
       id: 1,
       icon: FileText,
-      title: "Drop in scattered thoughts",
-      description: "Voice memos, meeting notes, random ideas - just dump everything in.",
-      demo: "Try with Meeting Notes",
+      title: "Neural Processing",
+      subtitle: "Drop scattered thoughts",
+      description: "Voice memos, meeting notes, random ideas - AI finds patterns in your chaos",
+      demo: "Try with Example",
       visual: (
-        <div className="bg-background/30 rounded-lg p-4 text-sm font-mono text-left">
-          <div className="text-primary/60 mb-2">// Your raw thoughts:</div>
-          <div className="text-muted-foreground leading-relaxed">
-            Team sync - need to fix onboarding...<br/>
-            Coffee shop idea keeps coming up...<br/>
-            Random dream about flying library...
+        <div className="space-y-3">
+          <div className="bg-background/50 rounded-lg p-4 border border-border/30">
+            <div className="text-xs text-primary/70 mb-2 font-medium">Raw Input</div>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span>Team sync notes...</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>Coffee shop idea...</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Random thoughts...</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
           </div>
         </div>
       )
     },
     {
       id: 2,
-      icon: Brain,
-      title: "AI synthesizes insights",
-      description: "Our neural engine finds patterns, themes, and actionable items in seconds.",
-      demo: "Neural Processing",
+      icon: Zap,
+      title: "Instant Clarity",
+      subtitle: "AI synthesizes insights",
+      description: "Seconds to structured insights with themes, patterns, and actionable items",
+      demo: "See Processing",
       visual: (
-        <div className="flex items-center justify-center h-24">
-          <NeuralThinkingAnimation size="sm" />
+        <div className="space-y-3">
+          <div className="bg-background/50 rounded-lg p-4 border border-border/30">
+            <div className="text-xs text-primary/70 mb-3 font-medium">Analysis Complete</div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-2 bg-primary/10 rounded">
+                <span className="text-sm font-medium">Patterns Found</span>
+                <span className="text-xs bg-primary/20 px-2 py-1 rounded">3</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-primary/10 rounded">
+                <span className="text-sm font-medium">Action Items</span>
+                <span className="text-xs bg-primary/20 px-2 py-1 rounded">7</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-primary/10 rounded">
+                <span className="text-sm font-medium">Key Themes</span>
+                <span className="text-xs bg-primary/20 px-2 py-1 rounded">2</span>
+              </div>
+            </div>
+          </div>
         </div>
       )
     },
     {
       id: 3,
-      icon: Share2,
-      title: "Organize in your gallery",
-      description: "Beautiful, shareable insights you can actually use and build upon.",
-      demo: "View Results",
+      icon: CheckCircle,
+      title: "Actionable Results",
+      subtitle: "Organize & share insights",
+      description: "Beautiful, shareable insights you can build upon and turn into action",
+      demo: "View Gallery",
       visual: (
         <div className="space-y-2">
-          <div className="bg-primary/10 rounded-lg p-3 text-left">
-            <div className="font-semibold text-sm mb-1">🎯 Product Strategy Session</div>
-            <div className="text-xs text-muted-foreground">3 action items • 2 key quotes</div>
+          <div className="bg-background/50 rounded-lg p-3 border border-border/30">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <span className="text-sm font-medium">Strategy Session</span>
+            </div>
+            <div className="text-xs text-muted-foreground">5 actions • 2 hours ago</div>
           </div>
-          <div className="bg-primary/10 rounded-lg p-3 text-left">
-            <div className="font-semibold text-sm mb-1">💡 Coffee Shop Business Idea</div>
-            <div className="text-xs text-muted-foreground">5 action items • 1 key theme</div>
+          <div className="bg-background/50 rounded-lg p-3 border border-border/30">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium">Creative Ideas</span>
+            </div>
+            <div className="text-xs text-muted-foreground">3 actions • Yesterday</div>
+          </div>
+          <div className="bg-background/50 rounded-lg p-3 border border-border/30">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-sm font-medium">Business Model</span>
+            </div>
+            <div className="text-xs text-muted-foreground">7 actions • 3 days ago</div>
           </div>
         </div>
       )
@@ -123,20 +169,23 @@ export function HowItWorks() {
                     {/* Content */}
                     <div className="space-y-8">
                       <div className="flex items-start space-x-4">
-                        <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                           <step.icon className="w-8 h-8 text-white" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="text-sm text-primary font-semibold mb-2 tracking-wide uppercase">
                             Step {step.id}
                           </div>
-                          <h3 className="text-3xl lg:text-4xl font-bold text-foreground mb-3 leading-tight">
+                          <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-2 leading-tight">
                             {step.title}
                           </h3>
+                          <p className="text-lg text-muted-foreground/80 font-medium">
+                            {step.subtitle}
+                          </p>
                         </div>
                       </div>
                       
-                      <p className="text-xl text-muted-foreground leading-relaxed">
+                      <p className="text-lg text-muted-foreground leading-relaxed">
                         {step.description}
                       </p>
 
