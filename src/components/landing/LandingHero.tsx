@@ -88,6 +88,19 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
               </Card>
             ))}
           </div>
+
+          {/* Additional CTA for Demo */}
+          <div className="mt-12">
+            <p className="text-muted-foreground mb-4">Want to see examples first?</p>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/gallery'}
+              className="border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Explore Demo Gallery
+            </Button>
+          </div>
         </div>
       </div>
     </section>

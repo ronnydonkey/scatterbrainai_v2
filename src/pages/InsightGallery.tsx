@@ -8,6 +8,9 @@ import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
 import { NeuralAmbientBackground } from '@/components/ui/neural-ambient-background';
 import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animation';
 import { toast } from '@/hooks/use-toast';
+import { DemoModeButton } from '@/components/DemoModeButton';
+import { DemoBanner } from '@/components/DemoBanner';
+import { demoInsights } from '@/data/demoInsights';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ const InsightGallery: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [showArchived, setShowArchived] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     loadInsights();
@@ -24,7 +28,7 @@ const InsightGallery: React.FC = () => {
 
   useEffect(() => {
     filterInsights(searchTerm, activeFilter);
-  }, [insights, searchTerm, activeFilter, showArchived]);
+  }, [insights, searchTerm, activeFilter, showArchived, isDemoMode]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -59,7 +63,7 @@ const InsightGallery: React.FC = () => {
   };
 
   const filterInsights = (search, filter) => {
-    let filtered = insights;
+    let filtered = isDemoMode ? demoInsights : insights;
     
     // First filter by archived status
     filtered = filtered.filter(insight => insight.archived === showArchived);
@@ -83,14 +87,38 @@ const InsightGallery: React.FC = () => {
   };
 
   const handleDeleteInsight = async (insightId: string) => {
+    if (isDemoMode) {
+      toast({
+        title: "Demo Mode",
+        description: "Create an account to manage your own insights!",
+        variant: "default",
+      });
+      return;
+    }
     await archiveInsight(insightId);
   };
 
   const handleRestoreInsight = async (insightId: string) => {
+    if (isDemoMode) {
+      toast({
+        title: "Demo Mode",
+        description: "Create an account to manage your own insights!",
+        variant: "default",
+      });
+      return;
+    }
     await restoreInsight(insightId);
   };
 
   const handleToggleStar = async (insightId) => {
+    if (isDemoMode) {
+      toast({
+        title: "Demo Mode",
+        description: "Create an account to save your favorite insights!",
+        variant: "default",
+      });
+      return;
+    }
     await toggleStar(insightId);
   };
 
@@ -110,17 +138,51 @@ const InsightGallery: React.FC = () => {
   };
 
   const handleContinueAnalysis = (insight: any) => {
+    if (isDemoMode) {
+      toast({
+        title: "Demo Mode",
+        description: "Create an account to continue analysis and generate full reports!",
+        variant: "default",
+      });
+      return;
+    }
     navigate(`/report/${insight.id}`);
   };
 
+  const handleEnterDemo = () => {
+    setIsDemoMode(true);
+    toast({
+      title: "Demo Mode Activated! 🎭",
+      description: "Exploring sample insights to show you the magic of Scatterbrain",
+    });
+  };
+
+  const handleStartFresh = () => {
+    setIsDemoMode(false);
+    setSearchTerm('');
+    setActiveFilter('All');
+    setShowArchived(false);
+    toast({
+      title: "Back to Reality! ✨",
+      description: "Ready to capture your own thoughts and insights",
+    });
+  };
+
+  const handleCreateAccount = () => {
+    navigate('/auth');
+  };
+
   const InsightCard: React.FC<{ insight: any }> = ({ insight }) => (
-    <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-lg p-6 hover:border-purple-500/50 transition-all duration-300">
+    <div className={`bg-card/50 backdrop-blur-xl border border-border/50 rounded-lg p-6 hover:border-primary/50 transition-all duration-300 ${insight.isDemo ? 'ring-1 ring-primary/20' : ''}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+          <div className={`w-8 h-8 ${insight.isDemo ? 'bg-gradient-to-r from-primary to-primary/80' : 'bg-primary'} rounded-lg flex items-center justify-center`}>
             <Clock className="w-4 h-4 text-white" />
           </div>
-          <span className="text-gray-400 text-sm">{getRelativeTime(insight.timestamp)}</span>
+          <span className="text-muted-foreground text-sm">{getRelativeTime(insight.timestamp)}</span>
+          {insight.isDemo && (
+            <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">Demo</span>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -130,7 +192,7 @@ const InsightGallery: React.FC = () => {
               e.stopPropagation();
               handleToggleStar(insight.id);
             }}
-            className={`${insight.starred ? 'text-yellow-400' : 'text-gray-400'} hover:text-yellow-300`}
+            className={`${insight.starred ? 'text-yellow-400' : 'text-muted-foreground'} hover:text-yellow-300`}
           >
             <Star className={`w-4 h-4 ${insight.starred ? 'fill-current' : ''}`} />
           </Button>
@@ -155,7 +217,7 @@ const InsightGallery: React.FC = () => {
                 e.stopPropagation();
                 handleDeleteInsight(insight.id);
               }}
-              className="text-red-400 hover:text-red-300"
+              className="text-destructive hover:text-destructive/80"
               title="Move to Bad Idea vault"
             >
               <Trash2 className="w-4 h-4" />
@@ -165,18 +227,18 @@ const InsightGallery: React.FC = () => {
       </div>
       
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white mb-2">
+        <h3 className="text-lg font-semibold text-foreground mb-2">
           {insight.response?.insights?.keyThemes?.[0]?.theme || 'Untitled Insight'}
         </h3>
-        <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+        <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
           {insight.input || 'No content available'}
         </p>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4 text-sm text-gray-400">
+          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <span className={`px-2 py-1 rounded-full text-xs ${
               insight.userActions?.completedTasks?.length === insight.response?.insights?.actionItems?.length 
                 ? 'bg-green-600 text-green-100' 
-                : 'bg-purple-600 text-purple-100'
+                : 'bg-primary text-primary-foreground'
             }`}>
               {insight.userActions?.completedTasks?.length || 0}/{insight.response?.insights?.actionItems?.length || 0} Actions
             </span>
@@ -184,7 +246,7 @@ const InsightGallery: React.FC = () => {
           <Button
             size="sm"
             onClick={() => handleContinueAnalysis(insight)}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Sparkles className="w-4 h-4 mr-1" />
             Continue
@@ -195,37 +257,55 @@ const InsightGallery: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <NeuralAmbientBackground intensity="minimal" />
       <div className="container max-w-6xl mx-auto px-6 py-8">
+
+        {/* Demo Mode Banner */}
+        {isDemoMode && (
+          <DemoBanner 
+            onStartFresh={handleStartFresh}
+            onCreateAccount={handleCreateAccount}
+            className="mb-8"
+          />
+        )}
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <h1 className="text-4xl font-bold text-white">
-              {showArchived ? 'Bad Idea Vault' : 'Insight Gallery'}
+            <h1 className="text-4xl font-bold text-foreground">
+              {showArchived ? 'Bad Idea Vault' : isDemoMode ? 'Demo Gallery' : 'Insight Gallery'}
             </h1>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowArchived(!showArchived)}
-              className={`${showArchived ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-gray-300'} transition-colors`}
-              title={showArchived ? 'View active insights' : 'View Bad Idea vault'}
-            >
-              <Archive className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="text-gray-400 hover:text-gray-300 transition-colors"
-              title="Refresh insights"
-            >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            {!isDemoMode && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={`${showArchived ? 'text-destructive hover:text-destructive/80' : 'text-muted-foreground hover:text-foreground'} transition-colors`}
+                  title={showArchived ? 'View active insights' : 'View Bad Idea vault'}
+                >
+                  <Archive className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  title="Refresh insights"
+                >
+                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </>
+            )}
           </div>
-          <p className="text-xl text-gray-300">
-            {showArchived ? 'Ideas you\'ve set aside (but might want back)' : 'Your captured thoughts and their insights'}
+          <p className="text-xl text-muted-foreground">
+            {showArchived 
+              ? 'Ideas you\'ve set aside (but might want back)' 
+              : isDemoMode 
+                ? 'Sample insights showing how Scatterbrain transforms scattered thoughts'
+                : 'Your captured thoughts and their insights'
+            }
           </p>
         </div>
 
@@ -238,7 +318,7 @@ const InsightGallery: React.FC = () => {
               placeholder="Search insights..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 pl-10"
+              className="bg-background/50 border-border text-foreground placeholder:text-muted-foreground pl-10"
             />
           </div>
           
@@ -250,8 +330,8 @@ const InsightGallery: React.FC = () => {
                 size="sm"
                 onClick={() => handleFilterChange(filter)}
                 className={activeFilter === filter 
-                  ? "bg-white text-black hover:bg-gray-200" 
-                  : "border-white/20 text-white hover:bg-white/10"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                  : "border-border text-foreground hover:bg-accent"
                 }
               >
                 {filter}
@@ -270,41 +350,64 @@ const InsightGallery: React.FC = () => {
           </div>
         ) : filteredInsights.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-gray-800/50 rounded-lg flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-semibold text-white mb-4">
-              {searchTerm || activeFilter !== 'All' 
-                ? 'No insights found' 
-                : 'No insights yet'
-              }
-            </h3>
-            <p className="text-gray-400 mb-8">
-              {searchTerm || activeFilter !== 'All'
-                ? 'Try adjusting your search or filters.'
-                : 'Start capturing thoughts to see insights here.'
-              }
-            </p>
-            {searchTerm || activeFilter !== 'All' ? (
-              <Button
-                onClick={() => {
-                  setSearchTerm('');
-                  setActiveFilter('All');
-                  loadInsights();
-                }}
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                Clear Filters
-              </Button>
+            {!isDemoMode ? (
+              <>
+                <div className="w-16 h-16 bg-card/50 rounded-lg flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-2xl font-semibold text-foreground mb-4">
+                  {searchTerm || activeFilter !== 'All' 
+                    ? 'No insights found' 
+                    : 'No insights yet'
+                  }
+                </h3>
+                <p className="text-muted-foreground mb-8">
+                  {searchTerm || activeFilter !== 'All'
+                    ? 'Try adjusting your search or filters.'
+                    : 'Start capturing thoughts to see insights here.'
+                  }
+                </p>
+                {searchTerm || activeFilter !== 'All' ? (
+                  <Button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setActiveFilter('All');
+                      loadInsights();
+                    }}
+                    variant="outline"
+                    className="border-border text-foreground hover:bg-accent"
+                  >
+                    Clear Filters
+                  </Button>
+                ) : (
+                  <div className="space-y-6">
+                    <DemoModeButton onEnterDemo={handleEnterDemo} className="max-w-md mx-auto" />
+                    <div className="text-center">
+                      <p className="text-muted-foreground mb-4">Or dive right in:</p>
+                      <Button
+                        onClick={() => navigate('/simplified')}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        <Plus className="w-4 w-4 mr-2" />
+                        Start Thinking
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <Button
-                onClick={() => navigate('/simplified')}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                <Plus className="w-4 w-4 mr-2" />
-                Start Thinking
-              </Button>
+              <div className="text-center">
+                <h3 className="text-2xl font-semibold text-foreground mb-4">No demo insights match your search</h3>
+                <Button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setActiveFilter('All');
+                  }}
+                  variant="outline"
+                >
+                  Clear Filters
+                </Button>
+              </div>
             )}
           </div>
         ) : (
