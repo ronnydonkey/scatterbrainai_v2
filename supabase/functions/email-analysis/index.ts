@@ -263,7 +263,7 @@ serve(async (req) => {
 
     // Send email using Resend
     const emailResponse = await resend.emails.send({
-      from: "ScatterBrainAI <onboarding@resend.dev>",
+      from: "ScatterBrainAI <reports@scatterbrainai.com>",
       to: [email],
       subject: `🧠 Your ScatterBrainAI Report - ${thoughtTitle}`,
       html: emailHTML,
