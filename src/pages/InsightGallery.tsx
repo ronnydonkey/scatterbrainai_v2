@@ -11,6 +11,8 @@ import { toast } from '@/hooks/use-toast';
 import { DemoModeButton } from '@/components/DemoModeButton';
 import { DemoBanner } from '@/components/DemoBanner';
 import { ShareInsight } from '@/components/ShareInsight';
+import { EmptyState, SkeletonCard } from '@/components/ui/empty-states';
+import { useGlobalKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { demoInsights } from '@/data/demoInsights';
 
 const InsightGallery: React.FC = () => {
@@ -22,6 +24,9 @@ const InsightGallery: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Enable global keyboard shortcuts
+  useGlobalKeyboardShortcuts();
 
   useEffect(() => {
     loadInsights();
@@ -185,7 +190,7 @@ const InsightGallery: React.FC = () => {
             <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">Demo</span>
           )}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 group">
           <ShareInsight insight={insight} isDemo={insight.isDemo || isDemoMode} />
           <Button
             variant="ghost"
@@ -194,7 +199,7 @@ const InsightGallery: React.FC = () => {
               e.stopPropagation();
               handleToggleStar(insight.id);
             }}
-            className={`${insight.starred ? 'text-yellow-400' : 'text-muted-foreground'} hover:text-yellow-300`}
+            className={`${insight.starred ? 'text-yellow-400' : 'text-muted-foreground'} hover:text-yellow-300 transition-all duration-200 hover:scale-110`}
           >
             <Star className={`w-4 h-4 ${insight.starred ? 'fill-current' : ''}`} />
           </Button>
@@ -206,7 +211,7 @@ const InsightGallery: React.FC = () => {
                 e.stopPropagation();
                 handleRestoreInsight(insight.id);
               }}
-              className="text-green-400 hover:text-green-300"
+              className="text-green-400 hover:text-green-300 transition-all duration-200 hover:scale-110"
               title="Restore insight"
             >
               <RotateCcw className="w-4 h-4" />
@@ -219,7 +224,7 @@ const InsightGallery: React.FC = () => {
                 e.stopPropagation();
                 handleDeleteInsight(insight.id);
               }}
-              className="text-destructive hover:text-destructive/80"
+              className="text-destructive hover:text-destructive/80 transition-all duration-200 hover:scale-110"
               title="Move to Bad Idea vault"
             >
               <Trash2 className="w-4 h-4" />
@@ -344,74 +349,30 @@ const InsightGallery: React.FC = () => {
 
         {/* Results */}
         {isLoading ? (
-          <div className="text-center py-20">
-            <NeuralThinkingAnimation size="md" className="mx-auto mb-6" />
-            <p className="text-sm font-medium bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent">
-              Gathering neural patterns...
-            </p>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         ) : filteredInsights.length === 0 ? (
-          <div className="text-center py-20">
-            {!isDemoMode ? (
-              <>
-                <div className="w-16 h-16 bg-card/50 rounded-lg flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-2xl font-semibold text-foreground mb-4">
-                  {searchTerm || activeFilter !== 'All' 
-                    ? 'No insights found' 
-                    : 'No insights yet'
-                  }
-                </h3>
-                <p className="text-muted-foreground mb-8">
-                  {searchTerm || activeFilter !== 'All'
-                    ? 'Try adjusting your search or filters.'
-                    : 'Start capturing thoughts to see insights here.'
-                  }
-                </p>
-                {searchTerm || activeFilter !== 'All' ? (
-                  <Button
-                    onClick={() => {
-                      setSearchTerm('');
-                      setActiveFilter('All');
-                      loadInsights();
-                    }}
-                    variant="outline"
-                    className="border-border text-foreground hover:bg-accent"
-                  >
-                    Clear Filters
-                  </Button>
-                ) : (
-                  <div className="space-y-6">
-                    <DemoModeButton onEnterDemo={handleEnterDemo} className="max-w-md mx-auto" />
-                    <div className="text-center">
-                      <p className="text-muted-foreground mb-4">Or dive right in:</p>
-                      <Button
-                        onClick={() => navigate('/simplified')}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        <Plus className="w-4 w-4 mr-2" />
-                        Start Thinking
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center">
-                <h3 className="text-2xl font-semibold text-foreground mb-4">No demo insights match your search</h3>
-                <Button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setActiveFilter('All');
-                  }}
-                  variant="outline"
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            )}
-          </div>
+          <EmptyState
+            type={showArchived ? 'archived' : 'gallery'}
+            action={!isDemoMode && !searchTerm && activeFilter === 'All' ? {
+              label: 'Start Thinking',
+              onClick: () => navigate('/simplified')
+            } : undefined}
+            secondaryAction={!isDemoMode && !searchTerm && activeFilter === 'All' ? {
+              label: 'Try Demo',
+              onClick: handleEnterDemo
+            } : searchTerm || activeFilter !== 'All' ? {
+              label: 'Clear Filters',
+              onClick: () => {
+                setSearchTerm('');
+                setActiveFilter('All');
+                loadInsights();
+              }
+            } : undefined}
+          />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredInsights.map((insight) => (

@@ -147,13 +147,20 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
                   placeholder="Drop your scattered thoughts here... voice memos, meeting notes, random ideas..."
                   value={demoText}
                   onChange={(e) => setDemoText(e.target.value)}
-                  className="min-h-32 resize-none border-primary/20 focus:border-primary/40 text-base"
+                  className="min-h-32 resize-none border-primary/20 focus:border-primary/40 text-base transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                   disabled={isProcessing}
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !isProcessing && demoText.trim()) {
+                      e.preventDefault();
+                      handleDemo();
+                    }
+                  }}
                 />
                 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button 
                     onClick={handleDemo}
+                    data-synthesis-submit
                     disabled={!demoText.trim() || isProcessing}
                     className="flex-1 py-6 text-lg font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300"
                   >
@@ -181,6 +188,13 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
                       <span>Try Demo</span>
                     </div>
                   </Button>
+                </div>
+                
+                {/* Keyboard shortcut hint */}
+                <div className="text-center mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Press <kbd className="px-1.5 py-0.5 bg-muted/50 rounded text-xs">⌘ Enter</kbd> to synthesize
+                  </p>
                 </div>
               </div>
             </CardContent>
