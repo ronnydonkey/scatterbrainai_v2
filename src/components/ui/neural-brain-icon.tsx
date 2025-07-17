@@ -46,71 +46,79 @@ export function NeuralBrainIcon({
           </defs>
         )}
         
-        {/* Main Brain Shape with Cortical Folds */}
+        {/* Left Hemisphere Outline */}
         <path
-          d="M24 6C28 6 32 8 34 12C36 10 38 9 40 10C42 11 43 13 42 16C43 18 42 20 40 21C41 23 40 26 38 28C39 30 38 32 36 33C35 35 33 36 30 36C28 37 26 36 24 36C22 36 20 37 18 36C15 36 13 35 12 33C10 32 9 30 10 28C8 26 7 23 8 21C6 20 5 18 6 16C5 13 6 11 8 10C10 9 12 10 14 12C16 8 20 6 24 6Z"
-          fill={variant === 'premium' ? "url(#brain-gradient)" : "hsl(var(--neural-purple))"}
-          stroke="hsl(var(--neural-purple)/0.2)"
-          strokeWidth="0.5"
+          d="M8 24C8 16 12 10 18 8C20 7 22 7 24 8V40C22 41 20 41 18 40C12 38 8 32 8 24Z"
+          fill="none"
+          stroke={variant === 'premium' ? "url(#brain-gradient)" : "hsl(var(--neural-purple))"}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           className={animate ? "animate-[pulse-neural_4s_ease-in-out_infinite]" : ""}
         />
         
-        {/* Left Hemisphere Cortical Folds */}
+        {/* Right Hemisphere Outline */}
         <path
-          d="M12 16C14 14 16 15 18 17C16 19 17 21 19 22C17 24 18 26 20 27"
-          stroke="hsl(var(--neural-purple)/0.4)"
-          strokeWidth="1"
+          d="M40 24C40 16 36 10 30 8C28 7 26 7 24 8V40C26 41 28 41 30 40C36 38 40 32 40 24Z"
           fill="none"
+          stroke={variant === 'premium' ? "url(#brain-gradient)" : "hsl(var(--neural-purple))"}
+          strokeWidth="3"
           strokeLinecap="round"
+          strokeLinejoin="round"
+          className={animate ? "animate-[pulse-neural_4s_ease-in-out_infinite_0.2s]" : ""}
         />
-        <path
-          d="M14 20C16 18 17 20 19 21C17 23 18 25 20 26"
-          stroke="hsl(var(--neural-purple)/0.3)"
-          strokeWidth="0.8"
-          fill="none"
+        
+        {/* Central Divider */}
+        <line
+          x1="24" y1="12" x2="24" y2="36"
+          stroke={variant === 'premium' ? "url(#brain-gradient)" : "hsl(var(--neural-purple))"}
+          strokeWidth="2"
           strokeLinecap="round"
         />
         
-        {/* Right Hemisphere Cortical Folds */}
-        <path
-          d="M36 16C34 14 32 15 30 17C32 19 31 21 29 22C31 24 30 26 28 27"
-          stroke="hsl(var(--neural-purple)/0.4)"
-          strokeWidth="1"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M34 20C32 18 31 20 29 21C31 23 30 25 28 26"
-          stroke="hsl(var(--neural-purple)/0.3)"
-          strokeWidth="0.8"
-          fill="none"
-          strokeLinecap="round"
-        />
+        {/* Left Hemisphere Neural Network */}
+        <g opacity="0.9">
+          {/* Left side nodes */}
+          <circle cx="14" cy="16" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="19" cy="14" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="12" cy="22" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="18" cy="20" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="16" cy="26" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="20" cy="30" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="14" cy="32" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          
+          {/* Left side connections */}
+          <line x1="14" y1="16" x2="19" y2="14" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="14" y1="16" x2="12" y2="22" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="19" y1="14" x2="18" y2="20" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="12" y1="22" x2="18" y2="20" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="18" y1="20" x2="16" y2="26" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="16" y1="26" x2="20" y2="30" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="16" y1="26" x2="14" y2="32" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="20" y1="30" x2="14" y2="32" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+        </g>
         
-        {/* Central Fissure */}
-        <path
-          d="M24 12C24 16 24 20 24 24C24 26 24 28 24 30"
-          stroke="hsl(var(--neural-purple)/0.5)"
-          strokeWidth="1.5"
-          fill="none"
-          strokeLinecap="round"
-        />
-        
-        {/* Additional Brain Texture */}
-        <path
-          d="M16 14C18 13 19 15 21 16"
-          stroke="hsl(var(--neural-purple)/0.25)"
-          strokeWidth="0.6"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M32 14C30 13 29 15 27 16"
-          stroke="hsl(var(--neural-purple)/0.25)"
-          strokeWidth="0.6"
-          fill="none"
-          strokeLinecap="round"
-        />
+        {/* Right Hemisphere Neural Network */}
+        <g opacity="0.9">
+          {/* Right side nodes */}
+          <circle cx="34" cy="16" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="29" cy="14" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="36" cy="22" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="30" cy="20" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="32" cy="26" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="28" cy="30" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          <circle cx="34" cy="32" r="1.5" fill="hsl(var(--neural-gold))" className={animate ? "animate-pulse" : ""} />
+          
+          {/* Right side connections */}
+          <line x1="34" y1="16" x2="29" y2="14" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="34" y1="16" x2="36" y2="22" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="29" y1="14" x2="30" y2="20" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="36" y1="22" x2="30" y2="20" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="30" y1="20" x2="32" y2="26" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="32" y1="26" x2="28" y2="30" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="32" y1="26" x2="34" y2="32" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+          <line x1="28" y1="30" x2="34" y2="32" stroke="hsl(var(--neural-purple))" strokeWidth="1.5" opacity="0.7" />
+        </g>
         
         {/* Neural Pathways - Left Hemisphere */}
         <path
