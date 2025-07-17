@@ -60,23 +60,22 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
               
               <CardTitle className="text-2xl">
                 <span className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                  Analysis Complete!
+                  Method Found!
                 </span>
               </CardTitle>
               
               <p className="text-muted-foreground leading-relaxed">
-                Your thoughts have been processed and we've discovered some fascinating patterns. 
-                Create a free account to unlock your personalized neural map.
+                Your chaos has been structured. Create an account to unlock your personalized insights and continue building your method.
               </p>
               
               <div className="flex items-center justify-center space-x-4 text-sm text-primary">
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>5 key insights found</span>
+                  <span>Patterns identified</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>7 action items identified</span>
+                  <span>Actions prioritized</span>
                 </div>
               </div>
             </CardHeader>
@@ -120,7 +119,7 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span>Reveal My Insights</span>
+                      <span>Show Me My Method</span>
                       <Sparkles className="w-5 h-5" />
                     </div>
                   )}
@@ -138,7 +137,7 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
                   </button>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Free forever • No credit card required • Unsubscribe anytime
+                  Free forever • No spam • Unsubscribe anytime
                 </p>
               </div>
             </CardContent>

@@ -34,7 +34,14 @@ export default function Landing() {
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     setIsProcessing(false);
-    setShowEmailCapture(true);
+    
+    // Always show email capture for non-authenticated users
+    if (!user) {
+      setShowEmailCapture(true);
+    } else {
+      // If user is authenticated, show results directly
+      setShowResults(true);
+    }
   };
 
   return (
@@ -89,7 +96,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2024 Scatterbrain. Transform scattered thoughts into clear insights.</p>
+          <p>&copy; 2024 Scatterbrain. A method for your madness.</p>
         </div>
       </footer>
     </div>
