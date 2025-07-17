@@ -87,12 +87,12 @@ export default function Landing() {
     setIsProcessing(false);
     setShowProcessingAnimation(false);
     
-    // Always show email capture for non-authenticated users
+    // Always show email capture for non-authenticated users to sign up
     if (!user) {
       setShowEmailCapture(true);
     } else {
-      // If user is authenticated, show results directly
-      setShowResults(true);
+      // If user is authenticated, redirect to main app
+      navigate('/');
     }
   };
 
@@ -180,7 +180,7 @@ export default function Landing() {
       {showEmailCapture && (
         <LandingEmailCapture 
           demoText={demoText}
-          onEmailSubmitted={() => setShowResults(true)}
+          onEmailSubmitted={() => navigate('/')}
         />
       )}
 

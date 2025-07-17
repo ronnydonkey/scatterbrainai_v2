@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Brain, Sparkles, CheckCircle } from 'lucide-react';
+import { Brain, Sparkles, CheckCircle, Crown, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -36,7 +36,7 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
           toast.error(error.message);
         }
       } else {
-        toast.success('Account created! Revealing your insights...');
+        toast.success('Account created! Welcome to Scatterbrain!');
         setTimeout(onEmailSubmitted, 1000);
       }
     } catch (error) {
@@ -51,74 +51,17 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto space-y-8">
           
-          {/* Teaser Report Preview */}
-          <Card className="border-primary/20 shadow-xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
-            <CardContent className="p-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-4">
-                  Your Method Preview
-                </h2>
-                <p className="text-muted-foreground text-lg">
-                  Here's a glimpse of what we found in your thoughts...
-                </p>
-              </div>
-              
-              {/* Teaser Insights */}
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-primary">Key Patterns Detected</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 bg-primary/5 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm">Strategic thinking patterns identified</span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-primary/5 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm">Action-oriented mindset detected</span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-primary/5 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm">Innovation opportunities found</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-primary">Ready Actions</h3>
-                  <div className="space-y-3">
-                    <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20">
-                      <div className="font-medium mb-1">Priority Focus Area</div>
-                      <div className="text-sm text-muted-foreground">Your thoughts reveal a clear direction...</div>
-                    </div>
-                    <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20">
-                      <div className="font-medium mb-1">Next Steps Mapped</div>
-                      <div className="text-sm text-muted-foreground">We've organized your ideas into...</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Blur Effect for Teaser */}
-              <div className="relative">
-                <div className="p-6 bg-gradient-to-br from-card/50 to-primary/10 rounded-lg border border-primary/20">
-                  <h3 className="text-xl font-semibold mb-4">Full Analysis Report</h3>
-                  <div className="space-y-3 relative">
-                    <div className="h-4 bg-gradient-to-r from-primary/20 to-primary/10 rounded"></div>
-                    <div className="h-4 bg-gradient-to-r from-primary/15 to-primary/5 rounded w-4/5"></div>
-                    <div className="h-4 bg-gradient-to-r from-primary/10 to-transparent rounded w-3/5"></div>
-                    
-                    {/* Blur overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent backdrop-blur-sm rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary mb-2">🔒</div>
-                        <div className="text-sm font-medium">Unlock your complete method</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Pricing Banner */}
+          <div className="text-center">
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-6 py-3 rounded-full shadow-lg">
+              <Crown className="w-5 h-5" />
+              <span className="font-bold text-lg">FREE 7-Day Trial!</span>
+              <Zap className="w-5 h-5" />
+            </div>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Try everything for free • No credit card required • Cancel anytime
+            </p>
+          </div>
           
           {/* Email Capture */}
           <Card className="border-primary/30 shadow-2xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
@@ -131,26 +74,30 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
               
               <CardTitle className="text-2xl">
                 <span className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                  Ready to See Everything?
+                  Start Your Free Trial
                 </span>
               </CardTitle>
               
               <p className="text-muted-foreground leading-relaxed">
-                Create your free account to unlock the complete analysis, personalized action plan, and content suggestions.
+                Get instant access to your complete analysis and start transforming your thoughts into action.
               </p>
               
-              <div className="flex items-center justify-center space-x-4 text-sm text-primary">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-primary">
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Full insights report</span>
+                  <span>Full insights</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Content suggestions</span>
+                  <span>Content library</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Action roadmap</span>
+                  <span>Action plans</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Trending topics</span>
                 </div>
               </div>
             </CardHeader>
@@ -194,10 +141,37 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span>Show Me My Method</span>
+                      <span>Start Free Trial</span>
                       <Sparkles className="w-5 h-5" />
                     </div>
                   )}
+                </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border/50" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  type="button"
+                  variant="outline"
+                  disabled={isSigningUp}
+                  className="w-full h-12 border-primary/20 hover:border-primary/40"
+                  onClick={() => toast.info('Google sign-in coming soon!')}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                  </div>
                 </Button>
               </form>
               
@@ -211,9 +185,12 @@ export function LandingEmailCapture({ demoText, onEmailSubmitted }: LandingEmail
                     Sign in here
                   </button>
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Free forever • No spam • Unsubscribe anytime
-                </p>
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 text-xs text-center">
+                  <div className="font-medium text-primary mb-1">🎉 Free 7-Day Trial Includes:</div>
+                  <div className="text-muted-foreground">
+                    Unlimited thought analysis • Content generation • Action plans
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
