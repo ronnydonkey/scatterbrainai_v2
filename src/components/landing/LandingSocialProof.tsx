@@ -1,109 +1,101 @@
+import { ArrowRight, Sparkles, Star, TrendingUp, Users, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Star, Brain, Users, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function LandingSocialProof() {
+  const metrics = [
+    { icon: Users, value: "10K+", label: "Thoughts Organized" },
+    { icon: Zap, value: "3.2s", label: "Average Processing Time" },
+    { icon: Star, value: "4.9", label: "User Rating" },
+    { icon: TrendingUp, value: "89%", label: "Users Find Clarity" }
+  ];
+
   const testimonials = [
     {
-      quote: "Finally, my ADHD brain feels organized. Scatterbrain turns my chaos into clarity.",
-      author: "Sarah K.",
+      name: "Sarah Chen",
+      role: "Product Manager",
+      content: "Finally found a way to turn my chaotic brainstorming sessions into actual strategy. Game changer.",
+      avatar: "🚀"
+    },
+    {
+      name: "Marcus Rodriguez", 
       role: "Creative Director",
-      rating: 5
+      content: "My scattered creative ideas now have structure. It's like having a personal insight assistant.",
+      avatar: "🎨"
     },
     {
-      quote: "Like having a thought translator in my pocket. My voice memos actually become useful insights.",
-      author: "Marcus R.", 
-      role: "Startup Founder",
-      rating: 5
-    },
-    {
-      quote: "Turns my scattered meeting notes into actionable plans. Game changer for productivity.",
-      author: "Jennifer L.",
-      role: "Product Manager", 
-      rating: 5
+      name: "Dr. Emily Watson",
+      role: "Researcher",
+      content: "Transforms hours of research notes into clear, actionable findings. Incredible time saver.",
+      avatar: "🔬"
     }
   ];
 
-  const stats = [
-    { icon: Brain, label: "Insights Created", value: "10,000+", subtitle: "This week" },
-    { icon: Users, label: "Active Thinkers", value: "2,000+", subtitle: "Finding clarity" },
-    { icon: TrendingUp, label: "Success Rate", value: "94%", subtitle: "User satisfaction" }
-  ];
-
   return (
-    <section className="py-16 bg-gradient-to-br from-background to-muted/20">
+    <section className="py-20 bg-gradient-to-br from-background/50 to-primary/5">
       <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Stats Row */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            {stats.map(({ icon: Icon, label, value, subtitle }) => (
-              <Card key={label} className="text-center border-primary/10 hover:border-primary/20 transition-colors">
-                <CardContent className="p-6">
-                  <Icon className="w-8 h-8 mx-auto mb-3 text-primary" />
-                  <div className="text-3xl font-bold text-primary mb-1">{value}</div>
-                  <div className="font-medium text-foreground">{label}</div>
-                  <div className="text-sm text-muted-foreground">{subtitle}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            Trusted by Creative Minds
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Join thousands who've found their method in the madness
+          </p>
+        </div>
 
-          {/* Testimonials */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">What Scattered Thinkers Say</h2>
-            <p className="text-muted-foreground">Real feedback from users finding clarity</p>
-          </div>
+        {/* Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+          {metrics.map((metric) => (
+            <Card key={metric.label} className="bg-card/50 backdrop-blur-sm border-border/50 text-center">
+              <CardContent className="p-6">
+                <metric.icon className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <div className="text-3xl font-bold text-foreground mb-1">{metric.value}</div>
+                <div className="text-sm text-muted-foreground">{metric.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-primary/10 hover:border-primary/20 transition-colors">
-                <CardContent className="p-6">
-                  {/* Rating Stars */}
-                  <div className="flex space-x-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                    ))}
+        {/* Testimonials */}
+        <div className="grid md:grid-cols-3 gap-6 mb-16">
+          {testimonials.map((testimonial) => (
+            <Card key={testimonial.name} className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="text-2xl">{testimonial.avatar}</div>
+                  <div>
+                    <div className="font-semibold text-foreground">{testimonial.name}</div>
+                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                   </div>
+                </div>
+                <p className="text-muted-foreground italic">"{testimonial.content}"</p>
+                <div className="flex mt-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-                  {/* Quote */}
-                  <blockquote className="text-sm leading-relaxed mb-4 italic">
-                    "{testimonial.quote}"
-                  </blockquote>
-
-                  {/* Author */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-sm">{testimonial.author}</div>
-                      <div className="text-xs text-muted-foreground">{testimonial.role}</div>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">Verified</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Trust Badges */}
-          <div className="mt-16 flex flex-wrap justify-center items-center gap-8 opacity-60">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-full" />
-              </div>
-              <span>Privacy First</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-full" />
-              </div>
-              <span>SOC 2 Compliant</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-full" />
-              </div>
-              <span>GDPR Ready</span>
-            </div>
-          </div>
+        {/* CTA */}
+        <div className="text-center">
+          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                Ready to transform your scattered thoughts?
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Join the creative minds who've found clarity in their chaos. Start your free trial today.
+              </p>
+              <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
+                Start Your Free Trial
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

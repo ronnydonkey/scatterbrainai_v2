@@ -8,6 +8,7 @@ import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingSocialProof } from '@/components/landing/LandingSocialProof';
 import { LandingSignup } from '@/components/landing/LandingSignup';
 import { LandingEmailCapture } from '@/components/landing/LandingEmailCapture';
+import { HowItWorks } from '@/components/landing/HowItWorks';
 import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animation';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
@@ -189,6 +190,9 @@ export default function Landing() {
         showResults={showResults}
         demoText={demoText}
       />
+
+      {/* How It Works Section */}
+      <HowItWorks />
 
       {/* Social Proof */}
       <LandingSocialProof />

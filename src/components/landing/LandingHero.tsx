@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import { MiniGalleryPreview } from './MiniGalleryPreview';
 
 import { Sparkles, Brain, Zap } from 'lucide-react';
 
@@ -109,10 +110,10 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
           {/* Headlines */}
           <div className="space-y-6 mb-12">
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
-              A method for your madness
+              Transform scattered thoughts into clear, actionable insights
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Transform scattered thoughts into structured insights. Your chaos becomes clarity.
+              Stop drowning in random ideas. Our AI finds the method in your madness and turns chaos into clarity.
             </p>
           </div>
 
@@ -150,31 +151,43 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
                   disabled={isProcessing}
                 />
                 
-                <Button 
-                  onClick={handleDemo}
-                  disabled={!demoText.trim() || isProcessing}
-                  className="w-full py-6 text-lg font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300"
-                >
-                  {isProcessing ? (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    onClick={handleDemo}
+                    disabled={!demoText.trim() || isProcessing}
+                    className="flex-1 py-6 text-lg font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300"
+                  >
+                    {isProcessing ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Finding the method...</span>
+                        <Zap className="w-5 h-5 animate-pulse" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Brain className="w-5 h-5" />
+                        <span>Unlock My Insights</span>
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.location.href = '/gallery'}
+                    className="sm:w-auto py-6 text-lg font-medium border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50"
+                  >
                     <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Finding the method...</span>
-                      <Zap className="w-5 h-5 animate-pulse" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Brain className="w-5 h-5" />
-                      <span>Unlock My Insights</span>
                       <Sparkles className="w-5 h-5" />
+                      <span>Try Demo</span>
                     </div>
-                  )}
-                </Button>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Value Props */}
-          <div className="grid md:grid-cols-3 gap-6 mt-16 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 mt-16 max-w-6xl mx-auto">
             {[
               { icon: Brain, title: "Neural Processing", desc: "AI finds patterns in your chaos" },
               { icon: Zap, title: "Instant Clarity", desc: "Seconds to structured insights" },
@@ -188,6 +201,15 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
                 </CardContent>
               </Card>
             ))}
+            
+            {/* Mini Gallery Preview */}
+            <div className="md:col-span-1">
+              <Card className="bg-gradient-to-br from-card/50 to-card/30 border-primary/10 hover:border-primary/20 transition-colors h-full">
+                <CardContent className="p-6">
+                  <MiniGalleryPreview />
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Additional CTA for Demo */}
