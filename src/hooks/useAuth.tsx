@@ -120,11 +120,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Sign out result:', { error });
       
       if (error) {
-        toast({
-          title: "Sign out failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        // If it's just a session missing error, still clear local state
+        if (error.message === "Auth session missing!") {
+          console.log('Session already missing, clearing local state...');
+          setSession(null);
+          setUser(null);
+          toast({
+            title: "Signed out",
+            description: "You have been signed out successfully.",
+          });
+        } else {
+          toast({
+            title: "Sign out failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Signed out",
@@ -133,10 +144,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.error('Sign out catch block:', err);
+      // Clear local state even if sign out fails
+      setSession(null);
+      setUser(null);
       toast({
-        title: "Sign out error",
-        description: "An unexpected error occurred during sign out.",
-        variant: "destructive",
+        title: "Signed out",
+        description: "You have been signed out successfully.",
       });
     }
   };
