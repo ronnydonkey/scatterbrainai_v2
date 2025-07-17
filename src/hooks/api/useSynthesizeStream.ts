@@ -1,5 +1,7 @@
+
 import { useState, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 export interface SynthesizeRequest {
   input: string;
@@ -119,11 +121,16 @@ class ResponseCache {
   }
   
   generateKey(input: string, preferences: any): string {
-    const normalizedInput = input.toLowerCase().trim();
-    const prefString = JSON.stringify(preferences);
-    // Use encodeURIComponent to safely handle Unicode characters, then create a simple hash
-    const combined = encodeURIComponent(normalizedInput + prefString);
-    return combined.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32) || 'default_key';
+    try {
+      const normalizedInput = input.toLowerCase().trim();
+      const prefString = JSON.stringify(preferences);
+      // Use encodeURIComponent to safely handle Unicode characters, then create a simple hash
+      const combined = encodeURIComponent(normalizedInput + prefString);
+      return combined.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32) || 'default_key';
+    } catch (error) {
+      console.warn('Failed to generate cache key:', error);
+      return 'default_key';
+    }
   }
 }
 
@@ -146,6 +153,7 @@ export const useSynthesizeStream = () => {
   const [currentInsight, setCurrentInsight] = useState<StreamedInsight | null>(null);
   const [accumulatedInsights, setAccumulatedInsights] = useState<StreamedInsight[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { handleError, handleAsyncError } = useErrorHandler();
 
   const synthesizeWithStream = useCallback(async (
     request: SynthesizeRequest,
@@ -169,7 +177,7 @@ export const useSynthesizeStream = () => {
       return cachedResponse;
     }
 
-    try {
+    const result = await handleAsyncError(async () => {
       const { supabase } = await import('@/integrations/supabase/client');
       
       const { data, error: functionError } = await supabase.functions.invoke('synthesize', {
@@ -244,8 +252,6 @@ export const useSynthesizeStream = () => {
       setAccumulatedInsights(prev => [...prev, completeInsight]);
       onInsight(completeInsight);
 
-      setIsStreaming(false);
-
       // Cache successful response
       responseCache.set(cacheKey, finalResponse);
       
@@ -255,34 +261,23 @@ export const useSynthesizeStream = () => {
       });
       
       return finalResponse;
+    }, { component: 'useSynthesizeStream', action: 'synthesize' });
 
-    } catch (error: any) {
-      console.error('Synthesis error:', error);
-      
-      if (retryCount < 3 && isRetryableError(error)) {
-        const backoffDelay = Math.pow(2, retryCount) * 1000;
-        
-        toast({
-          title: "Retrying analysis...",
-          description: `Attempt ${retryCount + 2}/4 in ${backoffDelay/1000}s`,
-        });
-        
-        await delay(backoffDelay);
-        return synthesizeWithStream(request, onInsight, retryCount + 1);
-      }
-
-      setIsStreaming(false);
-      setError(error.message);
+    if (result === null && retryCount < 3) {
+      const backoffDelay = Math.pow(2, retryCount) * 1000;
       
       toast({
-        title: "Analysis failed",
-        description: error.message,
-        variant: "destructive",
+        title: "Retrying analysis...",
+        description: `Attempt ${retryCount + 2}/4 in ${backoffDelay/1000}s`,
       });
-
-      return null;
+      
+      await delay(backoffDelay);
+      return synthesizeWithStream(request, onInsight, retryCount + 1);
     }
-  }, []);
+
+    setIsStreaming(false);
+    return result;
+  }, [handleAsyncError]);
 
   const clearInsights = useCallback(() => {
     setCurrentInsight(null);
