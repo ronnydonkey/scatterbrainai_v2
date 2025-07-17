@@ -113,17 +113,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    console.log('Starting sign out process...');
+    
+    try {
+      const { error } = await supabase.auth.signOut();
+      console.log('Sign out result:', { error });
+      
+      if (error) {
+        toast({
+          title: "Sign out failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
+      }
+    } catch (err) {
+      console.error('Sign out catch block:', err);
       toast({
-        title: "Sign out failed",
-        description: error.message,
+        title: "Sign out error",
+        description: "An unexpected error occurred during sign out.",
         variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
       });
     }
   };
