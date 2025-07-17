@@ -1,159 +1,211 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Mic, MicOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
-import { useVoiceCapture } from '@/hooks/api/useVoiceCapture';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Mic, MicOff, Upload, Brain, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { EnhancedVoiceRecorder } from "./EnhancedVoiceRecorder";
+import { FileUpload } from "./FileUpload";
+import { NeuralThinkingAnimation } from "./ui/neural-thinking-animation";
+import { SimpleNeuralLoading } from "./ui/simple-neural-loading";
 
 interface ThoughtCaptureProps {
-  onCapture?: (thought: string) => void;
-  placeholder?: string;
+  onInsightGenerated?: (insight: any) => void;
   className?: string;
 }
 
-export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
-  onCapture,
-  placeholder = "What's on your mind?",
+export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({ 
+  onInsightGenerated,
   className = ""
 }) => {
-  const [thought, setThought] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { saveInsight } = useOfflineInsights();
-  const { isRecording, isProcessing: voiceProcessing, captures, startRecording, stopRecording } = useVoiceCapture();
 
-  // Watch for completed voice captures and add their transcripts to the thought
-  useEffect(() => {
-    const latestCapture = captures[0]; // Most recent capture
-    if (latestCapture && latestCapture.status === 'completed' && latestCapture.transcript) {
-      setThought(prev => {
-        const newText = prev + (prev ? ' ' : '') + latestCapture.transcript;
-        return newText;
+  const handleSubmit = async () => {
+    if (!input.trim()) {
+      toast({
+        title: "No input provided",
+        description: "Please enter some text or record a voice memo first.",
+        variant: "destructive",
       });
+      return;
     }
-  }, [captures]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!thought.trim() || isProcessing) return;
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to capture thoughts.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    console.log('ThoughtCapture: Processing thought:', thought.substring(0, 50));
-    setIsProcessing(true);
+    setIsLoading(true);
 
     try {
-      // First, analyze the thought
-      const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-thought', {
-        body: { content: thought }
+      // Store the thought
+      const { data: thoughtData, error: thoughtError } = await supabase
+        .from('thoughts')
+        .insert({
+          content: input,
+          user_id: user.id,
+          organization_id: user.user_metadata?.organization_id
+        })
+        .select()
+        .single();
+
+      if (thoughtError) throw thoughtError;
+
+      // Generate insights
+      const { data: insightData, error: insightError } = await supabase.functions
+        .invoke('analyze-thought', {
+          body: { 
+            content: input,
+            thoughtId: thoughtData.id
+          }
+        });
+
+      if (insightError) throw insightError;
+
+      toast({
+        title: "✨ Insight Generated!",
+        description: "Your thought has been analyzed and insights are ready.",
       });
 
-      if (analysisError) {
-        console.error('Analysis error:', analysisError);
-        throw new Error('Failed to analyze thought');
+      if (onInsightGenerated && insightData) {
+        onInsightGenerated(insightData);
       }
 
-      console.log('ThoughtCapture: Analysis completed:', analysisData);
-
-      // Save the insight immediately after analysis
-      const insightId = await saveInsight(thought, analysisData);
-      console.log('ThoughtCapture: Insight saved with ID:', insightId);
-
-      // Call the onCapture callback if provided
-      if (onCapture) {
-        onCapture(thought);
-      }
-
-      // Clear the input
-      setThought('');
-      
+      setInput('');
+    } catch (error: any) {
       toast({
-        title: "Thought captured! 🧠",
-        description: "Your insight has been analyzed and saved to your gallery.",
-      });
-
-    } catch (error) {
-      console.error('ThoughtCapture: Failed to process thought:', error);
-      toast({
-        title: "Failed to capture thought",
-        description: "Please try again. Your thought wasn't lost.",
+        title: "Error",
+        description: error.message || "Failed to process your thought. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsProcessing(false);
+      setIsLoading(false);
     }
   };
 
-  const handleVoiceToggle = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
+  const handleVoiceTranscription = (transcription: string) => {
+    setInput(prev => prev + (prev ? ' ' : '') + transcription);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
   };
 
-  const adjustTextareaHeight = () => {
+  const handleFileContent = (content: string) => {
+    setInput(prev => prev + (prev ? '\n\n' : '') + content);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  // Auto-resize textarea
+  useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  };
-
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, [thought]);
+  }, [input]);
 
   return (
-    <div className={`w-full ${className}`}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative">
-          <Textarea
-            ref={textareaRef}
-            value={thought}
-            onChange={(e) => setThought(e.target.value)}
-            placeholder={placeholder}
-            className="w-full min-h-[100px] max-h-[200px] resize-none bg-white/10 border-white/20 text-white placeholder:text-gray-400 pr-12"
-            disabled={isProcessing}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={`absolute top-2 right-2 ${isRecording ? 'text-red-400' : 'text-gray-400'} hover:text-white`}
-            onClick={handleVoiceToggle}
-            disabled={isProcessing || voiceProcessing}
-          >
-            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-          </Button>
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-400">
-            {thought.length > 0 && `${thought.length} characters`}
-            {isRecording && <span className="ml-2 text-red-400">Recording...</span>}
-            {voiceProcessing && <span className="ml-2 text-blue-400">Processing voice...</span>}
+    <div className={`space-y-4 ${className}`}>
+      <Card className="p-6 bg-gradient-to-br from-background via-background to-muted/20 border-primary/20">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Brain className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Capture Your Thoughts</h3>
           </div>
           
-          <Button
-            type="submit"
-            disabled={!thought.trim() || isProcessing}
-            className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Capture Thought
-              </>
+          <div className="flex gap-2 mb-4">
+            <EnhancedVoiceRecorder 
+              onTranscription={handleVoiceTranscription}
+              onRecordingStateChange={setIsRecording}
+              className="flex-1"
+            />
+            
+            <FileUpload 
+              onFileContent={handleFileContent}
+              className="flex-shrink-0"
+            />
+          </div>
+
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="What's on your mind? Share your thoughts, ideas, or questions..."
+              className="min-h-[120px] max-h-[300px] resize-none bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all duration-200"
+              disabled={isLoading}
+            />
+            
+            {isRecording && (
+              <div className="absolute bottom-2 right-2">
+                <div className="flex items-center gap-2 text-sm text-red-500">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  Recording...
+                </div>
+              </div>
             )}
-          </Button>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              Press Cmd/Ctrl + Enter to submit
+            </div>
+            
+            <Button 
+              onClick={handleSubmit} 
+              disabled={isLoading || !input.trim()}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <SimpleNeuralLoading size="sm" />
+                  <span>Analyzing...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Generate Insights</span>
+                </div>
+              )}
+            </Button>
+          </div>
         </div>
-      </form>
+      </Card>
+
+      {isLoading && (
+        <Card className="p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+          <div className="flex flex-col items-center space-y-4">
+            <NeuralThinkingAnimation />
+            <div className="text-center">
+              <h4 className="font-medium text-foreground">Processing your thoughts...</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Our AI is analyzing patterns and generating insights
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
