@@ -45,7 +45,11 @@ const DetailedReport: React.FC = () => {
       const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
       const baseInsight = insights.find(i => i.id === id);
       
-      if (!baseInsight) throw new Error('Insight not found');
+      if (!baseInsight) {
+        console.error('Insight not found in localStorage for ID:', id);
+        console.log('Available insights:', insights.map(i => ({ id: i.id, timestamp: i.timestamp })));
+        throw new Error('Insight not found');
+      }
 
       // Call backend for detailed analysis
       const { data, error } = await supabase.functions.invoke('detailed-report', {
