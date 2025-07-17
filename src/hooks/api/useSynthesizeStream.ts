@@ -177,7 +177,7 @@ export const useSynthesizeStream = () => {
       return cachedResponse;
     }
 
-    const result = await handleAsyncError(async () => {
+    try {
       const { supabase } = await import('@/integrations/supabase/client');
       
       const { data, error: functionError } = await supabase.functions.invoke('synthesize', {
@@ -260,23 +260,27 @@ export const useSynthesizeStream = () => {
         description: `Generated insights with ${data.detectedTopics?.length || 0} detected topics`,
       });
       
+      setIsStreaming(false);
       return finalResponse;
-    }, { component: 'useSynthesizeStream', action: 'synthesize' });
 
-    if (result === null && retryCount < 3) {
-      const backoffDelay = Math.pow(2, retryCount) * 1000;
+    } catch (error) {
+      handleAsyncError(error, { component: 'useSynthesizeStream', action: 'synthesize' });
       
-      toast({
-        title: "Retrying analysis...",
-        description: `Attempt ${retryCount + 2}/4 in ${backoffDelay/1000}s`,
-      });
+      if (retryCount < 3) {
+        const backoffDelay = Math.pow(2, retryCount) * 1000;
+        
+        toast({
+          title: "Retrying analysis...",
+          description: `Attempt ${retryCount + 2}/4 in ${backoffDelay/1000}s`,
+        });
+        
+        await delay(backoffDelay);
+        return synthesizeWithStream(request, onInsight, retryCount + 1);
+      }
       
-      await delay(backoffDelay);
-      return synthesizeWithStream(request, onInsight, retryCount + 1);
+      setIsStreaming(false);
+      return null;
     }
-
-    setIsStreaming(false);
-    return result;
   }, [handleAsyncError]);
 
   const clearInsights = useCallback(() => {
