@@ -185,6 +185,9 @@ export default function Landing() {
         />
       )}
 
+      {/* How It Works Section */}
+      <HowItWorks />
+
       {/* Social Proof */}
       <LandingSocialProof />
 
