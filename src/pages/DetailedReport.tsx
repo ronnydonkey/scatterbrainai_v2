@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, Download, Target, Search, CheckSquare, BookOpen, Smartphone, Copy, Check, Sparkles } from 'lucide-react';
@@ -14,6 +15,7 @@ const DetailedReport: React.FC = () => {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [baseInsight, setBaseInsight] = useState(null);
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
@@ -26,6 +28,24 @@ const DetailedReport: React.FC = () => {
     try {
       setLoading(true);
       console.log('Looking for detailed report with insight ID:', id);
+      
+      // Get base insight from storage first and store it
+      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+      console.log('Available insights in localStorage:', insights.map(i => ({ id: i.id, timestamp: i.timestamp })));
+      const foundInsight = insights.find(i => i.id === id);
+      
+      if (foundInsight) {
+        console.log('Found base insight:', foundInsight);
+        setBaseInsight(foundInsight);
+      } else {
+        console.warn('Base insight not found in localStorage for ID:', id);
+        // Set a minimal base insight to prevent errors
+        setBaseInsight({
+          id: id,
+          originalInput: 'Insight content not available in localStorage',
+          timestamp: Date.now()
+        });
+      }
       
       // First, check if a detailed report already exists
       const { data: existingReport, error: fetchError } = await supabase
@@ -43,12 +63,7 @@ const DetailedReport: React.FC = () => {
 
       console.log('No existing report found in database, checking localStorage');
       
-      // Get base insight from storage
-      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
-      console.log('Available insights in localStorage:', insights.map(i => ({ id: i.id, timestamp: i.timestamp })));
-      const baseInsight = insights.find(i => i.id === id);
-      
-      if (!baseInsight) {
+      if (!foundInsight) {
         console.error('Insight not found in localStorage for ID:', id);
         console.log('Available insights:', insights.map(i => ({ id: i.id, timestamp: i.timestamp })));
         
@@ -96,8 +111,8 @@ const DetailedReport: React.FC = () => {
       const { data, error } = await supabase.functions.invoke('detailed-report', {
         body: {
           insightId: id,
-          originalInput: baseInsight.originalInput,
-          basicInsights: baseInsight.insights,
+          originalInput: foundInsight.originalInput,
+          basicInsights: foundInsight.insights,
           generateResources: true,
           includeAffiliateLinks: true
         }
@@ -126,20 +141,21 @@ const DetailedReport: React.FC = () => {
         return;
       }
 
-      setLoading(true);
-      
-      // Get the base insight for context
-      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
-      const baseInsight = insights.find(i => i.id === insightId);
-      
-      if (!baseInsight || !report) {
-        toast.error('Report data not available for sharing');
+      if (!report) {
+        toast.error('Report is not loaded yet. Please wait for the report to finish loading.');
         return;
       }
 
+      if (!baseInsight) {
+        toast.error('Base insight data is not available. Please try refreshing the page.');
+        return;
+      }
+
+      setLoading(true);
+      
       console.log('Attempting to send email to:', email);
-      console.log('Report data:', report);
-      console.log('Base insight:', baseInsight);
+      console.log('Report data available:', !!report);
+      console.log('Base insight available:', !!baseInsight);
       
       // Send email with the beautiful report
       const { data, error } = await supabase.functions.invoke('email-analysis', {
@@ -169,17 +185,22 @@ const DetailedReport: React.FC = () => {
 
   const downloadReport = async () => {
     try {
-      setLoading(true);
-      
-      // Get the base insight for context
-      const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
-      const baseInsight = insights.find(i => i.id === insightId);
-      
-      if (!baseInsight || !report) {
-        toast.error('Report data not available for download');
+      if (!report) {
+        toast.error('Report is not loaded yet. Please wait for the report to finish loading.');
         return;
       }
 
+      if (!baseInsight) {
+        toast.error('Base insight data is not available. Please try refreshing the page.');
+        return;
+      }
+
+      setLoading(true);
+      
+      console.log('Attempting to download report');
+      console.log('Report data available:', !!report);
+      console.log('Base insight available:', !!baseInsight);
+      
       // Call the PDF generation edge function
       const { data, error } = await supabase.functions.invoke('generate-pdf-report', {
         body: {
@@ -277,7 +298,7 @@ const DetailedReport: React.FC = () => {
               variant="outline"
               onClick={shareReport}
               className="border-white/20 text-white hover:bg-white/10"
-              disabled={loading}
+              disabled={loading || !report || !baseInsight}
             >
               <Share2 className="w-4 h-4 mr-2" />
               {loading ? 'Sending...' : 'Email Report'}
@@ -286,11 +307,21 @@ const DetailedReport: React.FC = () => {
               variant="outline"
               onClick={downloadReport}
               className="border-white/20 text-white hover:bg-white/10"
+              disabled={loading || !report || !baseInsight}
             >
               <Download className="w-4 h-4 mr-2" />
               Save
             </Button>
           </div>
+        </div>
+
+        {/* Debug Info - Remove this in production */}
+        <div className="mb-4 p-3 bg-white/10 rounded text-white text-sm">
+          <div>Debug Info:</div>
+          <div>Report loaded: {report ? 'Yes' : 'No'}</div>
+          <div>Base insight loaded: {baseInsight ? 'Yes' : 'No'}</div>
+          <div>Insight ID: {insightId}</div>
+          {baseInsight && <div>Original input available: {baseInsight.originalInput ? 'Yes' : 'No'}</div>}
         </div>
 
         {/* Title */}
@@ -426,11 +457,7 @@ const DetailedReport: React.FC = () => {
           <CardContent>
             <ContentMultiplier 
               originalInsight={{
-                originalInput: (() => {
-                  const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
-                  const baseInsight = insights.find(i => i.id === insightId);
-                  return baseInsight?.originalInput || '';
-                })(),
+                originalInput: baseInsight?.originalInput || '',
                 id: insightId || ''
               }}
               onGenerate={(content) => {
