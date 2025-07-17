@@ -38,13 +38,21 @@ const Auth = () => {
     e.preventDefault();
     if (!email || !password) return;
     
+    console.log('Starting sign in process...');
     setLoading(true);
-    const { error } = await signIn(email, password);
-    setLoading(false);
     
-    if (!error) {
-      navigate('/');
+    try {
+      const { error } = await signIn(email, password);
+      console.log('Sign in result:', { error });
+      
+      if (!error) {
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Sign in catch block:', err);
     }
+    
+    setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
