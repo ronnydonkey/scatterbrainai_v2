@@ -4,6 +4,8 @@ import AppHeader from './AppHeader';
 
 const AuthenticatedLayout = () => {
   const { user, loading } = useAuth();
+  
+  console.log('AuthenticatedLayout state:', { user: !!user, loading });
 
   if (loading) {
     return (
