@@ -185,12 +185,6 @@ export default function Landing() {
         />
       )}
 
-      {/* Demo Results */}
-      <LandingDemo 
-        showResults={showResults}
-        demoText={demoText}
-      />
-
       {/* How It Works Section */}
       <HowItWorks />
 
