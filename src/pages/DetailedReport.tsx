@@ -30,7 +30,7 @@ const DetailedReport: React.FC = () => {
         .from('detailed_reports')
         .select('report_data')
         .eq('insight_id', id)
-        .single();
+        .maybeSingle();
 
       if (existingReport && !fetchError) {
         console.log('Loading existing detailed report from database');
