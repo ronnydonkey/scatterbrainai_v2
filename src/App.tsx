@@ -4,8 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AppRouter } from "./components/AppRouter";
 import AuthenticatedLayout from "./components/AuthenticatedLayout";
-import Index from "./pages/Index";
 import ThoughtsPage from "./pages/ThoughtsPage";
 import TrendingPage from "./pages/TrendingPage";
 import GeneratorPage from "./pages/GeneratorPage";
@@ -48,19 +48,18 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={<AuthenticatedLayout />}>
-                <Route index element={<SimplifiedFlow />} />
-                <Route path="thoughts" element={<ThoughtsPage />} />
-                <Route path="gallery" element={<InsightGallery />} />
-                <Route path="capture" element={<SimplifiedFlow />} />
-                <Route path="report/:insightId" element={<DetailedReport />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="billing" element={<Billing />} />
-                <Route path="trending" element={<TrendingPage />} />
-                <Route path="generator" element={<GeneratorPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
+              <Route path="/landing" element={<AppRouter />} />
+              <Route path="/" element={<AppRouter />} />
+              <Route path="/thoughts" element={<AppRouter />} />
+              <Route path="/gallery" element={<AppRouter />} />
+              <Route path="/capture" element={<AppRouter />} />
+              <Route path="/report/:insightId" element={<AppRouter />} />
+              <Route path="/profile" element={<AppRouter />} />
+              <Route path="/billing" element={<AppRouter />} />
+              <Route path="/trending" element={<AppRouter />} />
+              <Route path="/generator" element={<AppRouter />} />
+              <Route path="/analytics" element={<AppRouter />} />
+              <Route path="/settings" element={<AppRouter />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

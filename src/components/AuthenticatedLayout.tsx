@@ -1,31 +1,17 @@
-import { useAuth } from '@/hooks/useAuth';
-import { Navigate, Outlet } from 'react-router-dom';
 import AppHeader from './AppHeader';
 
-const AuthenticatedLayout = () => {
-  const { user, loading } = useAuth();
-  
-  console.log('AuthenticatedLayout state:', { user: !!user, loading });
+interface AuthenticatedLayoutProps {
+  children: React.ReactNode;
+}
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
+const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <AppHeader />
       <main>
-        <Outlet />
+        {children}
       </main>
-    </div>
+    </>
   );
 };
 
