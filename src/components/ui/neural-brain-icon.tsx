@@ -46,32 +46,68 @@ export function NeuralBrainIcon({
           </defs>
         )}
         
-        {/* Brain Structure - Anatomically recognizable brain shape */}
-        {/* Left Hemisphere */}
+        {/* Main Brain Shape with Cortical Folds */}
         <path
-          d="M8 18C8 12 12 8 18 8C20 8 22 9 23 11C23.5 10 24.5 9.5 26 9.5C28 9.5 30 11 30 13.5C30 15 29 16.5 27.5 17.2C27.8 18.5 28 19.8 28 21C28 25 25 28 21 29C20.5 30.5 19.5 32 18 32.5C16.5 33 15 32.5 14 31C12 32 9.5 31.5 8.5 29C7.5 27.5 7.5 25.5 8 23C7.5 21.5 7.5 19.5 8 18Z"
+          d="M24 6C28 6 32 8 34 12C36 10 38 9 40 10C42 11 43 13 42 16C43 18 42 20 40 21C41 23 40 26 38 28C39 30 38 32 36 33C35 35 33 36 30 36C28 37 26 36 24 36C22 36 20 37 18 36C15 36 13 35 12 33C10 32 9 30 10 28C8 26 7 23 8 21C6 20 5 18 6 16C5 13 6 11 8 10C10 9 12 10 14 12C16 8 20 6 24 6Z"
           fill={variant === 'premium' ? "url(#brain-gradient)" : "hsl(var(--neural-purple))"}
-          stroke="hsl(var(--neural-purple)/0.3)"
+          stroke="hsl(var(--neural-purple)/0.2)"
           strokeWidth="0.5"
-          filter={variant === 'premium' ? "url(#neural-glow)" : undefined}
           className={animate ? "animate-[pulse-neural_4s_ease-in-out_infinite]" : ""}
         />
         
-        {/* Right Hemisphere */}
+        {/* Left Hemisphere Cortical Folds */}
         <path
-          d="M40 18C40 12 36 8 30 8C28 8 26 9 25 11C24.5 10 23.5 9.5 22 9.5C20 9.5 18 11 18 13.5C18 15 19 16.5 20.5 17.2C20.2 18.5 20 19.8 20 21C20 25 23 28 27 29C27.5 30.5 28.5 32 30 32.5C31.5 33 33 32.5 34 31C36 32 38.5 31.5 39.5 29C40.5 27.5 40.5 25.5 40 23C40.5 21.5 40.5 19.5 40 18Z"
-          fill={variant === 'premium' ? "url(#brain-gradient)" : "hsl(var(--neural-purple))"}
+          d="M12 16C14 14 16 15 18 17C16 19 17 21 19 22C17 24 18 26 20 27"
+          stroke="hsl(var(--neural-purple)/0.4)"
+          strokeWidth="1"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M14 20C16 18 17 20 19 21C17 23 18 25 20 26"
           stroke="hsl(var(--neural-purple)/0.3)"
-          strokeWidth="0.5"
-          filter={variant === 'premium' ? "url(#neural-glow)" : undefined}
-          className={animate ? "animate-[pulse-neural_4s_ease-in-out_infinite_0.2s]" : ""}
+          strokeWidth="0.8"
+          fill="none"
+          strokeLinecap="round"
         />
         
-        {/* Brain Stem */}
+        {/* Right Hemisphere Cortical Folds */}
         <path
-          d="M22 32C22 33 22.5 34 24 34C25.5 34 26 33 26 32"
-          stroke="hsl(var(--neural-purple))"
-          strokeWidth="2"
+          d="M36 16C34 14 32 15 30 17C32 19 31 21 29 22C31 24 30 26 28 27"
+          stroke="hsl(var(--neural-purple)/0.4)"
+          strokeWidth="1"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M34 20C32 18 31 20 29 21C31 23 30 25 28 26"
+          stroke="hsl(var(--neural-purple)/0.3)"
+          strokeWidth="0.8"
+          fill="none"
+          strokeLinecap="round"
+        />
+        
+        {/* Central Fissure */}
+        <path
+          d="M24 12C24 16 24 20 24 24C24 26 24 28 24 30"
+          stroke="hsl(var(--neural-purple)/0.5)"
+          strokeWidth="1.5"
+          fill="none"
+          strokeLinecap="round"
+        />
+        
+        {/* Additional Brain Texture */}
+        <path
+          d="M16 14C18 13 19 15 21 16"
+          stroke="hsl(var(--neural-purple)/0.25)"
+          strokeWidth="0.6"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M32 14C30 13 29 15 27 16"
+          stroke="hsl(var(--neural-purple)/0.25)"
+          strokeWidth="0.6"
           fill="none"
           strokeLinecap="round"
         />
