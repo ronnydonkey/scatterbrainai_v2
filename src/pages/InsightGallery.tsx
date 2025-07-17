@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
 import { NeuralAmbientBackground } from '@/components/ui/neural-ambient-background';
 import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animation';
+import { NeuralBrainVisualization } from '@/components/ui/neural-brain-visualization';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
@@ -246,6 +247,16 @@ const InsightGallery: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <NeuralAmbientBackground intensity="minimal" />
       <div className="container max-w-6xl mx-auto px-6 py-8">
+        {/* Neural Brain Visualization */}
+        {!showArchived && (
+          <div className="mb-12">
+            <NeuralBrainVisualization 
+              className="h-64 mb-8 rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm"
+              insightCount={insights.length}
+            />
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-4">
