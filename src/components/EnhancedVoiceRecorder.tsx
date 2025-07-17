@@ -4,16 +4,33 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Square } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { type AudioProcessingResult } from '@/hooks/useEnhancedVoiceRecording';
 
 interface EnhancedVoiceRecorderProps {
-  onTranscription: (text: string) => void;
+  onTranscription?: (text: string) => void;
+  onRecordingComplete?: (result: AudioProcessingResult) => Promise<void>;
+  onRecordingStart?: () => void;
+  onRecordingStop?: () => void;
   onRecordingStateChange?: (isRecording: boolean) => void;
+  onError?: (error: string) => void;
+  maxDuration?: number;
+  size?: 'sm' | 'md' | 'lg';
+  showWaveform?: boolean;
+  autoStop?: boolean;
   className?: string;
 }
 
 export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
   onTranscription,
+  onRecordingComplete,
+  onRecordingStart,
+  onRecordingStop,
   onRecordingStateChange,
+  onError,
+  maxDuration = 300000,
+  size = 'md',
+  showWaveform = false,
+  autoStop = false,
   className = ""
 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -24,6 +41,7 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
   const chunksRef = useRef<Blob[]>([]);
   const animationFrameRef = useRef<number>();
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const maxDurationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const startRecording = async () => {
@@ -62,7 +80,26 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
+        
+        // Create audio URL and duration for AudioProcessingResult
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const duration = Date.now() - (mediaRecorder as any).startTime || 0;
+        
+        const result: AudioProcessingResult = {
+          audioBlob,
+          duration,
+          audioUrl,
+          waveformData: showWaveform && analyserRef.current ? 
+            Array.from(new Uint8Array(analyserRef.current.frequencyBinCount)) : undefined
+        };
+
+        // Call both callbacks if they exist
+        if (onRecordingComplete) {
+          await onRecordingComplete(result);
+        } else {
+          // Fallback to transcription if onRecordingComplete is not provided
+          await processAudio(audioBlob);
+        }
         
         // Cleanup
         stream.getTracks().forEach(track => track.stop());
@@ -73,9 +110,20 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
         }
       };
 
+      // Store start time for duration calculation
+      (mediaRecorder as any).startTime = Date.now();
+      
       mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       onRecordingStateChange?.(true);
+      onRecordingStart?.();
+      
+      // Setup auto-stop if maxDuration is set
+      if (autoStop && maxDuration > 0) {
+        maxDurationTimeoutRef.current = setTimeout(() => {
+          stopRecording();
+        }, maxDuration);
+      }
       
       // Start audio level monitoring
       updateAudioLevel();
@@ -85,10 +133,12 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
         description: "Speak clearly into your microphone",
       });
       
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = "Please allow microphone access to use voice recording.";
+      onError?.(errorMessage);
       toast({
         title: "Microphone access denied",
-        description: "Please allow microphone access to use voice recording.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -96,10 +146,17 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      // Clear auto-stop timeout
+      if (maxDurationTimeoutRef.current) {
+        clearTimeout(maxDurationTimeoutRef.current);
+        maxDurationTimeoutRef.current = null;
+      }
+      
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setAudioLevel(0);
       onRecordingStateChange?.(false);
+      onRecordingStop?.();
     }
   };
 
@@ -129,7 +186,7 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
       if (error) throw error;
 
       if (data?.transcription) {
-        onTranscription(data.transcription);
+        onTranscription?.(data.transcription);
         toast({
           title: "Transcription complete",
           description: "Your voice has been converted to text successfully.",
@@ -138,9 +195,11 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
         throw new Error('No transcription received');
       }
     } catch (error: any) {
+      const errorMessage = error.message || "Could not transcribe your voice. Please try again.";
+      onError?.(errorMessage);
       toast({
         title: "Transcription failed",
-        description: error.message || "Could not transcribe your voice. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -157,30 +216,49 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      if (maxDurationTimeoutRef.current) {
+        clearTimeout(maxDurationTimeoutRef.current);
+      }
     };
   }, []);
+
+  const getButtonSize = () => {
+    switch (size) {
+      case 'sm': return 'h-12 w-12';
+      case 'lg': return 'h-20 w-20';
+      default: return 'h-16 w-16';
+    }
+  };
+
+  const getIconSize = () => {
+    switch (size) {
+      case 'sm': return 'h-4 w-4';
+      case 'lg': return 'h-8 w-8';
+      default: return 'h-6 w-6';
+    }
+  };
 
   const buttonContent = () => {
     if (isProcessing) {
       return (
-        <>
-          <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-          <span>Processing...</span>
-        </>
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-current border-t-transparent" />
+          {size === 'lg' && <span className="text-xs">Processing...</span>}
+        </div>
       );
     } else if (isRecording) {
       return (
-        <>
-          <Square className="h-4 w-4" />
-          <span>Stop Recording</span>
-        </>
+        <div className="flex flex-col items-center gap-2">
+          <Square className={getIconSize()} />
+          {size === 'lg' && <span className="text-xs">Stop</span>}
+        </div>
       );
     } else {
       return (
-        <>
-          <Mic className="h-4 w-4" />
-          <span>Record Voice</span>
-        </>
+        <div className="flex flex-col items-center gap-2">
+          <Mic className={getIconSize()} />
+          {size === 'lg' && <span className="text-xs">Record</span>}
+        </div>
       );
     }
   };
@@ -191,9 +269,9 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
         onClick={isRecording ? stopRecording : startRecording}
         disabled={isProcessing}
         variant={isRecording ? "destructive" : "outline"}
-        className={`flex items-center gap-2 transition-all duration-200 ${
+        className={`${getButtonSize()} rounded-full flex items-center justify-center transition-all duration-200 ${
           isRecording ? 'animate-pulse' : ''
-        }`}
+        } ${size === 'lg' ? 'p-4' : 'p-2'}`}
       >
         {buttonContent()}
       </Button>
@@ -207,6 +285,23 @@ export const EnhancedVoiceRecorder: React.FC<EnhancedVoiceRecorderProps> = ({
               transform: `scale(${0.8 + (audioLevel * 0.4)})` 
             }}
           />
+        </div>
+      )}
+
+      {showWaveform && isRecording && (
+        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+          <div className="flex items-center gap-1">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div
+                key={i}
+                className="w-1 bg-synaptic-400 rounded-full transition-all duration-100"
+                style={{
+                  height: `${8 + (audioLevel * 16)}px`,
+                  opacity: 0.6 + (audioLevel * 0.4),
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
