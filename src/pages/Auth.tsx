@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useTurnstile } from '@/hooks/useTurnstile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Brain, Shield } from 'lucide-react';
+import { Loader2, Brain } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -18,17 +17,8 @@ const Auth = () => {
   const [firstName, setFirstName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
-  
-  const TURNSTILE_SITE_KEY = '0x4AAAAAABlbYQOWR4osFhfH';
-  
-  
-  const { containerRef, isLoaded, error: captchaError, reset } = useTurnstile(
-    TURNSTILE_SITE_KEY,
-    (token: string) => setCaptchaToken(token)
-  );
 
   // Redirect if already authenticated
   if (user) {
@@ -61,36 +51,9 @@ const Auth = () => {
     e.preventDefault();
     if (!email || !password) return;
     
-    if (!captchaToken) {
-      toast({
-        title: "Verification Required",
-        description: "Please complete the security verification",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setLoading(true);
     
     try {
-      // Verify captcha token first
-      const { data: captchaData } = await supabase.functions.invoke('verify-turnstile', {
-        body: { token: captchaToken }
-      });
-      
-      if (!captchaData?.success) {
-        toast({
-          title: "Verification Failed",
-          description: "Security verification failed. Please try again.",
-          variant: "destructive",
-        });
-        reset();
-        setCaptchaToken(null);
-        setLoading(false);
-        return;
-      }
-      
-      // Proceed with signup if captcha is valid
       const { error } = await signUp(email, password, firstName, displayName);
       
       if (!error) {
@@ -103,8 +66,6 @@ const Auth = () => {
         setPassword('');
         setFirstName('');
         setDisplayName('');
-        setCaptchaToken(null);
-        reset();
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -113,8 +74,6 @@ const Auth = () => {
         description: "An error occurred during signup. Please try again.",
         variant: "destructive",
       });
-      reset();
-      setCaptchaToken(null);
     }
     
     setLoading(false);
@@ -303,28 +262,10 @@ const Auth = () => {
                   />
                 </div>
                 
-                {/* Turnstile Captcha */}
-                <div className="space-y-2">
-                  <Label className="text-gray-300 flex items-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    Security Verification
-                  </Label>
-                  <div 
-                    ref={containerRef} 
-                    className="flex justify-center"
-                  />
-                  {captchaError && (
-                    <p className="text-red-400 text-sm">{captchaError}</p>
-                  )}
-                  {!isLoaded && (
-                    <p className="text-gray-400 text-sm text-center">Loading security verification...</p>
-                  )}
-                </div>
-                
                 <Button 
                   type="submit" 
                   className="w-full bg-purple-600 hover:bg-purple-700" 
-                  disabled={loading || !captchaToken || !isLoaded}
+                  disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign Up
