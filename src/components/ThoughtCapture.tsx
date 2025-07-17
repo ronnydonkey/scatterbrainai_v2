@@ -23,13 +23,18 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { saveInsight } = useOfflineInsights();
-  const { startRecording, stopRecording, isRecording, transcript } = useVoiceCapture();
+  const { isRecording, isProcessing: voiceProcessing, captures, startRecording, stopRecording } = useVoiceCapture();
 
+  // Watch for completed voice captures and add their transcripts to the thought
   useEffect(() => {
-    if (transcript) {
-      setThought(prev => prev + ' ' + transcript);
+    const latestCapture = captures[0]; // Most recent capture
+    if (latestCapture && latestCapture.status === 'completed' && latestCapture.transcript) {
+      setThought(prev => {
+        const newText = prev + (prev ? ' ' : '') + latestCapture.transcript;
+        return newText;
+      });
     }
-  }, [transcript]);
+  }, [captures]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +122,7 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
             size="sm"
             className={`absolute top-2 right-2 ${isRecording ? 'text-red-400' : 'text-gray-400'} hover:text-white`}
             onClick={handleVoiceToggle}
-            disabled={isProcessing}
+            disabled={isProcessing || voiceProcessing}
           >
             {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </Button>
@@ -127,6 +132,7 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
           <div className="text-sm text-gray-400">
             {thought.length > 0 && `${thought.length} characters`}
             {isRecording && <span className="ml-2 text-red-400">Recording...</span>}
+            {voiceProcessing && <span className="ml-2 text-blue-400">Processing voice...</span>}
           </div>
           
           <Button
