@@ -25,15 +25,22 @@ class InsightDatabase {
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
+      console.log('InitialDatabase: Starting initialization...');
       const request = indexedDB.open(this.dbName, this.version);
       
-      request.onerror = () => reject(request.error);
+      request.onerror = () => {
+        console.error('InitialDatabase: Failed to open:', request.error);
+        reject(request.error);
+      };
+      
       request.onsuccess = () => {
         this.db = request.result;
+        console.log('InitialDatabase: Successfully opened');
         resolve();
       };
       
       request.onupgradeneeded = (event) => {
+        console.log('InitialDatabase: Upgrading database...');
         const db = (event.target as IDBOpenDBRequest).result;
         
         if (!db.objectStoreNames.contains('insights')) {
@@ -42,6 +49,7 @@ class InsightDatabase {
           store.createIndex('themes', 'themes', { unique: false, multiEntry: true });
           store.createIndex('starred', 'starred', { unique: false });
           store.createIndex('archived', 'archived', { unique: false });
+          console.log('InitialDatabase: Created insights store');
         }
       };
     });
@@ -51,12 +59,19 @@ class InsightDatabase {
     if (!this.db) await this.init();
     
     return new Promise((resolve, reject) => {
+      console.log('Saving insight to IndexedDB:', insight.id);
       const transaction = this.db!.transaction(['insights'], 'readwrite');
       const store = transaction.objectStore('insights');
       const request = store.put(insight);
       
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onerror = () => {
+        console.error('Failed to save insight:', request.error);
+        reject(request.error);
+      };
+      request.onsuccess = () => {
+        console.log('Successfully saved insight:', insight.id);
+        resolve();
+      };
     });
   }
 
@@ -70,13 +85,19 @@ class InsightDatabase {
     if (!this.db) await this.init();
     
     return new Promise((resolve, reject) => {
+      console.log('Loading insights from IndexedDB with filters:', filters);
       const transaction = this.db!.transaction(['insights'], 'readonly');
       const store = transaction.objectStore('insights');
       const request = store.getAll();
       
-      request.onerror = () => reject(request.error);
+      request.onerror = () => {
+        console.error('Failed to load insights:', request.error);
+        reject(request.error);
+      };
+      
       request.onsuccess = () => {
         let insights = request.result as StoredInsight[];
+        console.log('Raw insights from IndexedDB:', insights.length, insights);
         
         // Apply filters
         if (filters) {
@@ -107,6 +128,7 @@ class InsightDatabase {
           insights = insights.slice(0, filters.limit);
         }
         
+        console.log('Filtered insights:', insights.length);
         resolve(insights);
       };
     });
@@ -172,7 +194,10 @@ export const useOfflineInsights = () => {
 
   // Initialize database on mount
   useEffect(() => {
-    insightDB.init().catch(console.error);
+    console.log('useOfflineInsights: Initializing...');
+    insightDB.init().catch(error => {
+      console.error('Failed to initialize insight database:', error);
+    });
   }, []);
 
   const saveInsight = useCallback(async (
@@ -180,6 +205,8 @@ export const useOfflineInsights = () => {
     response: any,
     themes: string[] = []
   ): Promise<string> => {
+    console.log('useOfflineInsights: saveInsight called with:', { input: input?.substring(0, 50), themes });
+    
     const id = `insight_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Generate title based on input content
@@ -251,7 +278,12 @@ export const useOfflineInsights = () => {
 
     try {
       await insightDB.saveInsight(insight);
-      setInsights(prev => [insight, ...prev]);
+      console.log('Insight saved successfully, updating state...');
+      setInsights(prev => {
+        const updated = [insight, ...prev];
+        console.log('State updated with new insight count:', updated.length);
+        return updated;
+      });
       
       // Auto-download PDF after saving
       try {
@@ -303,11 +335,13 @@ export const useOfflineInsights = () => {
   }, []);
 
   const loadInsights = useCallback(async (filters?: Parameters<typeof insightDB.getInsights>[0]) => {
+    console.log('useOfflineInsights: loadInsights called with filters:', filters);
     setIsLoading(true);
     try {
       // Load all insights by default (don't filter by archived status unless specified)
       const defaultFilters = filters || { archived: undefined };
       const loadedInsights = await insightDB.getInsights(defaultFilters);
+      console.log('Loaded insights from database:', loadedInsights.length);
       setInsights(loadedInsights);
     } catch (error) {
       console.error('Failed to load insights:', error);
@@ -415,6 +449,7 @@ export const useOfflineInsights = () => {
 
   // Load insights on mount
   useEffect(() => {
+    console.log('useOfflineInsights: Effect triggered for loadInsights');
     loadInsights();
   }, [loadInsights]);
 
