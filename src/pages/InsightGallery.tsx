@@ -5,6 +5,8 @@ import { Star, Clock, Search, Sparkles, Plus, Trash2, RotateCcw, Archive } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
+import { NeuralAmbientBackground } from '@/components/ui/neural-ambient-background';
+import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animation';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
@@ -242,6 +244,7 @@ const InsightGallery: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <NeuralAmbientBackground intensity="minimal" />
       <div className="container max-w-6xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -313,8 +316,10 @@ const InsightGallery: React.FC = () => {
         {/* Results */}
         {isLoading ? (
           <div className="text-center py-20">
-            <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading insights...</p>
+            <NeuralThinkingAnimation size="md" className="mx-auto mb-6" />
+            <p className="text-sm font-medium bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent">
+              Gathering neural patterns...
+            </p>
           </div>
         ) : filteredInsights.length === 0 ? (
           <div className="text-center py-20">

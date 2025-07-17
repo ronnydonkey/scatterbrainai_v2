@@ -13,6 +13,9 @@ import { VoiceMemoRecorder } from '@/components/VoiceMemoRecorder';
 import { AdaptationIndicator } from '@/components/AdaptationIndicator';
 import { SmartSourcesDisplay } from '@/components/SmartSourcesDisplay';
 import { useAdaptiveIntelligence } from '@/hooks/useAdaptiveIntelligence';
+import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animation';
+import { NeuralSynthesisOverlay } from '@/components/ui/neural-synthesis-overlay';
+import { NeuralAmbientBackground } from '@/components/ui/neural-ambient-background';
 
 type FlowStep = 'capture' | 'processing' | 'insights';
 
@@ -363,6 +366,16 @@ export default function SimplifiedFlow() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden flex flex-col bg-gradient-to-br from-cosmic-purple via-space-black to-cosmic-deep">
+      {/* Neural Ambient Background */}
+      <NeuralAmbientBackground intensity="subtle" />
+      
+      {/* Neural Synthesis Overlay */}
+      <NeuralSynthesisOverlay 
+        isVisible={isProcessing}
+        title="Illuminating Neural Pathways"
+        subtitle="Your thoughts are finding their perfect form"
+      />
+      
       {/* Cosmic background effects */}
       <div className="absolute inset-0 neural-grid opacity-30"></div>
       <div className="absolute inset-0 cosmic-texture"></div>
@@ -487,7 +500,7 @@ export default function SimplifiedFlow() {
                 
                 <Button 
                   onClick={handleCapture}
-                  disabled={!capturedThoughts.trim()}
+                  disabled={!capturedThoughts.trim() || isProcessing}
                   className="text-white font-bold w-full min-h-[52px] sm:min-h-[56px] text-base sm:text-lg md:text-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   style={{ 
                     background: capturedThoughts.trim() 
@@ -498,10 +511,18 @@ export default function SimplifiedFlow() {
                       : 'none'
                   }}
                 >
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">Transform My Thoughts</span>
-                  <span className="sm:hidden">Transform</span>
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
+                  {isProcessing ? (
+                    <NeuralThinkingAnimation size="sm" className="mr-3" />
+                  ) : (
+                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-3 flex-shrink-0" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isProcessing ? "Illuminating patterns..." : "Transform My Thoughts"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isProcessing ? "Processing..." : "Transform"}
+                  </span>
+                  {!isProcessing && <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />}
                 </Button>
               </div>
 

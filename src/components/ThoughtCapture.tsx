@@ -12,6 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PenTool, Plus, Trash2, Calendar, Tag, Brain, Lightbulb, Sparkles, TrendingUp, User, FileText, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { FileUpload, AttachmentFile } from './FileUpload';
+import { NeuralThinkingAnimation } from './ui/neural-thinking-animation';
+import { NeuralSynthesisOverlay } from './ui/neural-synthesis-overlay';
 
 interface Thought {
   id: string;
@@ -407,6 +409,11 @@ export const ThoughtCapture = () => {
 
   return (
     <div className="space-y-6">
+      <NeuralSynthesisOverlay 
+        isVisible={isAnalyzing}
+        title="Analyzing Neural Patterns"
+        subtitle="Extracting insights from your thoughts"
+      />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -589,8 +596,8 @@ export const ThoughtCapture = () => {
                   >
                     {isAnalyzing ? (
                       <>
-                        <Brain className="h-4 w-4 mr-2 animate-spin" />
-                        Analyzing...
+                        <NeuralThinkingAnimation size="sm" className="mr-2" />
+                        Synthesizing insights...
                       </>
                     ) : (
                       <>
