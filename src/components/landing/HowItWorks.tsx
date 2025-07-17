@@ -60,44 +60,44 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-24 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-20 left-20 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
             How It Works
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            From chaos to clarity in three simple steps. See how Scatterbrain transforms your scattered thoughts.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            From chaos to clarity in three simple steps. See how Scatterbrain transforms your scattered thoughts into actionable insights.
           </p>
         </div>
 
         {/* Interactive Steps */}
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Step Navigation */}
-          <div className="flex justify-center mb-12">
-            <div className="flex items-center space-x-4 bg-card/30 backdrop-blur-sm rounded-full p-2 border border-border/50">
+          <div className="flex justify-center mb-16">
+            <div className="flex items-center space-x-6 bg-card/40 backdrop-blur-sm rounded-full p-3 border border-border/30 shadow-lg">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                   <button
                     onClick={() => setActiveStep(step.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                    className={`flex items-center space-x-3 px-6 py-3 rounded-full transition-all duration-300 ${
                       activeStep === step.id 
-                        ? 'bg-primary text-primary-foreground shadow-lg' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                        ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50 hover:scale-102'
                     }`}
                   >
-                    <step.icon className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">{step.id}</span>
+                    <step.icon className="w-5 h-5" />
+                    <span className="text-sm font-medium hidden sm:inline">Step {step.id}</span>
                   </button>
                   {index < steps.length - 1 && (
-                    <ArrowRight className="w-4 h-4 text-muted-foreground mx-2" />
+                    <ArrowRight className="w-5 h-5 text-muted-foreground/60 mx-3" />
                   )}
                 </div>
               ))}
@@ -108,52 +108,57 @@ export function HowItWorks() {
           {steps.map((step) => (
             <motion.div
               key={step.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ 
                 opacity: activeStep === step.id ? 1 : 0,
-                y: activeStep === step.id ? 0 : 20,
+                y: activeStep === step.id ? 0 : 30,
                 display: activeStep === step.id ? 'block' : 'none'
               }}
-              transition={{ duration: 0.3 }}
-              className="mb-8"
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="mb-12"
             >
-              <Card className="bg-gradient-to-br from-card/50 to-card/30 border-primary/20 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <div className="grid md:grid-cols-2 gap-8 items-center">
+              <Card className="bg-gradient-to-br from-card/60 to-card/30 border-primary/20 backdrop-blur-sm shadow-xl">
+                <CardContent className="p-10 lg:p-12">
+                  <div className="grid lg:grid-cols-2 gap-12 items-center">
                     {/* Content */}
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                          <step.icon className="w-6 h-6 text-white" />
+                    <div className="space-y-8">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+                          <step.icon className="w-8 h-8 text-white" />
                         </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-foreground">{step.title}</h3>
-                          <div className="text-sm text-primary font-medium">Step {step.id}</div>
+                        <div className="flex-1">
+                          <div className="text-sm text-primary font-semibold mb-2 tracking-wide uppercase">
+                            Step {step.id}
+                          </div>
+                          <h3 className="text-3xl lg:text-4xl font-bold text-foreground mb-3 leading-tight">
+                            {step.title}
+                          </h3>
                         </div>
                       </div>
                       
-                      <p className="text-lg text-muted-foreground leading-relaxed">
+                      <p className="text-xl text-muted-foreground leading-relaxed">
                         {step.description}
                       </p>
 
                       <Button 
                         variant="outline"
-                        className="border-primary/30 text-primary hover:bg-primary/10"
+                        size="lg"
+                        className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-300"
                       >
-                        <Play className="w-4 h-4 mr-2" />
+                        <Play className="w-5 h-5 mr-3" />
                         {step.demo}
                       </Button>
                     </div>
 
                     {/* Visual */}
                     <div className="relative">
-                      <div className="bg-gradient-to-br from-background/80 to-background/60 backdrop-blur-sm rounded-xl border border-border/50 p-6">
+                      <div className="bg-gradient-to-br from-background/90 to-background/70 backdrop-blur-sm rounded-2xl border border-border/40 p-8 shadow-lg min-h-[280px] flex items-center justify-center">
                         {step.visual}
                       </div>
                       
                       {/* Decorative Elements */}
-                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary/40 rounded-full animate-ping" />
-                      <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-primary/60 rounded-full animate-pulse delay-500" />
+                      <div className="absolute -top-3 -right-3 w-6 h-6 bg-primary/40 rounded-full animate-ping" />
+                      <div className="absolute -bottom-3 -left-3 w-4 h-4 bg-primary/60 rounded-full animate-pulse delay-500" />
                     </div>
                   </div>
                 </CardContent>
@@ -163,17 +168,17 @@ export function HowItWorks() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <p className="text-lg text-muted-foreground mb-6">
+        <div className="text-center mt-20">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Ready to see the magic yourself?
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
-              <Brain className="w-5 h-5 mr-2" />
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 px-8 py-4 text-lg">
+              <Brain className="w-6 h-6 mr-3" />
               Start Free Trial
             </Button>
-            <Button variant="outline" size="lg" className="border-primary/30 text-primary hover:bg-primary/10">
-              <Sparkles className="w-5 h-5 mr-2" />
+            <Button variant="outline" size="lg" className="border-primary/30 text-primary hover:bg-primary/10 px-8 py-4 text-lg">
+              <Sparkles className="w-6 h-6 mr-3" />
               View Demo Gallery
             </Button>
           </div>
