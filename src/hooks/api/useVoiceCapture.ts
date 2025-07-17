@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import type { VoiceCapture, CreateThoughtParams, ApiError } from '@/types/api';
+import type { VoiceCapture, CreateThoughtParams } from '@/types/api';
 import { thoughtsKeys } from './useThoughts';
 
 // Voice capture hook with neural processing
