@@ -18,8 +18,9 @@ export default function Landing() {
   const [showResults, setShowResults] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
 
-  // Redirect authenticated users to main app
-  if (user) {
+  // If user is authenticated but came from landing page signup, allow them to see results first
+  // Only redirect if they didn't just sign up to view demo results
+  if (user && !showEmailCapture && !showResults) {
     navigate('/');
     return null;
   }

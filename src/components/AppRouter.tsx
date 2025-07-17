@@ -22,11 +22,8 @@ export function AppRouter() {
   useEffect(() => {
     if (loading) return;
     
-    // If user is authenticated and on landing page, redirect to main app
-    if (user && location.pathname === '/landing') {
-      navigate('/');
-      return;
-    }
+    // If user is authenticated and on landing page, allow them to stay to see results
+    // They can navigate away manually or will be redirected after viewing results
     
     // If user is not authenticated and trying to access protected routes, redirect to landing
     if (!user && !location.pathname.includes('/auth') && !location.pathname.includes('/landing') && location.pathname !== '/') {
@@ -57,9 +54,14 @@ export function AppRouter() {
     return <Landing />;
   }
 
-  // Show authenticated app routes for authenticated users
+  // Show authenticated app routes for authenticated users  
   if (user) {
     const path = location.pathname;
+    
+    // If authenticated user is on landing page, allow them to stay
+    if (path === '/landing') {
+      return <Landing />;
+    }
     
     // Map routes to components
     const getComponent = () => {
