@@ -960,7 +960,7 @@ const MobileCapture = () => {
             </motion.div>
             <div>
               <h1 className="text-lg font-bold text-neural-100">
-                ScatterBrain
+                ScatterBrainAI
               </h1>
               <p className="text-xs text-neural-400">
                 Capture mode

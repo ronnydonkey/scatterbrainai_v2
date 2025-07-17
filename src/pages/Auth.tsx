@@ -127,7 +127,7 @@ const Auth = () => {
             <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
               <Brain className="w-5 h-5 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">ScatterBrain</CardTitle>
+            <CardTitle className="text-2xl font-bold text-white">ScatterBrainAI</CardTitle>
           </div>
           <CardDescription className="text-gray-300">
             AI-Powered Content Intelligence Platform

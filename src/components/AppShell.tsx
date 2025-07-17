@@ -218,7 +218,7 @@ const AppShell = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
-                ScatterBrain AI
+                ScatterBrainAI
               </h1>
               <motion.p 
                 className="text-xs text-cosmic-muted"

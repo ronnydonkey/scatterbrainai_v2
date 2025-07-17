@@ -376,7 +376,7 @@ export default function SimplifiedFlow() {
         >
           <div className="flex items-center gap-2">
             <Brain className="w-6 h-6 text-purple-400" />
-            <span className="text-white font-semibold text-lg">Scatterbrain</span>
+            <span className="text-white font-semibold text-lg">ScatterBrainAI</span>
           </div>
           
           <nav className="flex gap-6">

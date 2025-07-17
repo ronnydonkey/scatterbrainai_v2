@@ -32,7 +32,7 @@ export function ScatterBrainLogo({
       config.text,
       premium ? "bg-gradient-to-r from-neural-purple to-neural-gold bg-clip-text text-transparent" : "text-foreground"
     )}>
-      ScatterBrain
+      ScatterBrainAI
     </div>
   );
 

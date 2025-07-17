@@ -44,7 +44,7 @@ export default function SettingsPage() {
           Neural Settings
         </h1>
         <p className="text-cosmic-muted text-lg">
-          Customize your ScatterBrain AI experience
+          Customize your ScatterBrainAI experience
         </p>
       </motion.div>
 

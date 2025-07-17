@@ -146,7 +146,7 @@ export default function DesktopAppShell({ children }: DesktopAppShellProps) {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-plasma-pink bg-clip-text text-transparent">
-                ScatterBrain AI
+                ScatterBrainAI
               </h1>
               <p className="text-xs text-muted-foreground">Creative Intelligence Platform</p>
             </div>
