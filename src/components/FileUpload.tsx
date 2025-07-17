@@ -3,6 +3,8 @@ import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { validateFileUpload, validateFileContent, sanitizeErrorMessage } from "@/lib/security";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -15,6 +17,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -24,11 +27,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
+    // Validate file upload security
+    const fileValidation = validateFileUpload(file);
+    if (!fileValidation.isValid) {
       toast({
-        title: "File too large",
-        description: "Please select a file smaller than 5MB.",
+        title: "Invalid file",
+        description: fileValidation.error,
         variant: "destructive",
       });
       return;
@@ -37,23 +41,31 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     try {
       const text = await file.text();
       
-      if (text.trim()) {
-        onFileContent(text);
+      // Validate and sanitize file content
+      const contentValidation = validateFileContent(text);
+      if (!contentValidation.isValid) {
         toast({
-          title: "File uploaded",
-          description: `Content from ${file.name} has been added to your input.`,
-        });
-      } else {
-        toast({
-          title: "Empty file",
-          description: "The selected file appears to be empty.",
+          title: "Invalid file content",
+          description: contentValidation.error,
           variant: "destructive",
         });
+        return;
       }
-    } catch (error) {
+
+      if (contentValidation.content.trim()) {
+        onFileContent(contentValidation.content);
+        toast({
+          title: "File uploaded",
+          description: `Content from ${file.name} has been securely processed and added.`,
+        });
+      }
+    } catch (error: any) {
+      const sanitizedError = sanitizeErrorMessage(error);
+      handleError(error, 'file-upload');
+      
       toast({
-        title: "Error reading file",
-        description: "Could not read the selected file. Please try again.",
+        title: "Unable to read file",
+        description: sanitizedError,
         variant: "destructive",
       });
     }

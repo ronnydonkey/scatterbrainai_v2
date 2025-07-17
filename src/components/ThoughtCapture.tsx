@@ -11,6 +11,9 @@ import { EnhancedVoiceRecorder } from "./EnhancedVoiceRecorder";
 import { FileUpload } from "./FileUpload";
 import { NeuralThinkingAnimation } from "./ui/neural-thinking-animation";
 import { SimpleNeuralLoading } from "./ui/simple-neural-loading";
+import { sanitizeInput, SECURITY_LIMITS, sanitizeErrorMessage } from "@/lib/security";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { useSecurityContext } from "./SecurityProvider";
 
 interface ThoughtCaptureProps {
   onInsightGenerated?: (insight: any) => void;
@@ -26,13 +29,31 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { handleError } = useErrorHandler();
+  const { checkRateLimit } = useSecurityContext();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async () => {
-    if (!input.trim()) {
+    // Check rate limit first
+    if (!checkRateLimit('thought-submission')) {
+      return;
+    }
+
+    const sanitizedInput = sanitizeInput(input.trim());
+    
+    if (!sanitizedInput) {
       toast({
         title: "No input provided",
         description: "Please enter some text or record a voice memo first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (sanitizedInput.length > SECURITY_LIMITS.MAX_THOUGHT_LENGTH) {
+      toast({
+        title: "Input too long",
+        description: `Please limit your thought to ${SECURITY_LIMITS.MAX_THOUGHT_LENGTH} characters.`,
         variant: "destructive",
       });
       return;
@@ -50,11 +71,11 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
     setIsLoading(true);
 
     try {
-      // Store the thought
+      // Store the thought with sanitized content
       const { data: thoughtData, error: thoughtError } = await supabase
         .from('thoughts')
         .insert({
-          content: input,
+          content: sanitizedInput,
           user_id: user.id,
           organization_id: user.user_metadata?.organization_id
         })
@@ -67,7 +88,7 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
       const { data: insightData, error: insightError } = await supabase.functions
         .invoke('analyze-thought', {
           body: { 
-            content: input,
+            content: sanitizedInput,
             thoughtId: thoughtData.id
           }
         });
@@ -85,9 +106,12 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
 
       setInput('');
     } catch (error: any) {
+      const sanitizedError = sanitizeErrorMessage(error);
+      handleError(error, 'thought-capture');
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to process your thought. Please try again.",
+        title: "Unable to process thought",
+        description: sanitizedError,
         variant: "destructive",
       });
     } finally {
@@ -96,14 +120,22 @@ export const ThoughtCapture: React.FC<ThoughtCaptureProps> = ({
   };
 
   const handleVoiceTranscription = (transcription: string) => {
-    setInput(prev => prev + (prev ? ' ' : '') + transcription);
+    const sanitizedTranscription = sanitizeInput(transcription);
+    setInput(prev => {
+      const newContent = prev + (prev ? ' ' : '') + sanitizedTranscription;
+      return newContent.slice(0, SECURITY_LIMITS.MAX_THOUGHT_LENGTH);
+    });
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
   };
 
   const handleFileContent = (content: string) => {
-    setInput(prev => prev + (prev ? '\n\n' : '') + content);
+    const sanitizedContent = sanitizeInput(content);
+    setInput(prev => {
+      const newContent = prev + (prev ? '\n\n' : '') + sanitizedContent;
+      return newContent.slice(0, SECURITY_LIMITS.MAX_THOUGHT_LENGTH);
+    });
     if (textareaRef.current) {
       textareaRef.current.focus();
     }

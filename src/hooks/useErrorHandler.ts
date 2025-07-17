@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeErrorMessage } from '@/lib/security';
 
 interface ApiError {
   message: string;
@@ -13,26 +14,34 @@ export function useErrorHandler() {
 
   const handleError = useCallback((error: any, context: string | object = 'operation') => {
     const contextStr = typeof context === 'string' ? context : JSON.stringify(context);
-    console.error(`Error in ${contextStr}:`, error);
     
-    let errorMessage = 'Something unexpected happened';
-    let errorType: 'network' | 'synthesis' | 'timeout' | 'generic' = 'generic';
+    // Log the actual error for debugging (server-side logging would be better)
+    console.error(`[${new Date().toISOString()}] Error in ${contextStr}:`, {
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
+      stack: error?.stack?.slice(0, 500), // Limit stack trace length
+    });
     
-    // Determine error type and message
-    if (error.name === 'NetworkError' || error.message?.includes('fetch')) {
+    let errorType: 'network' | 'synthesis' | 'timeout' | 'auth' | 'validation' | 'generic' = 'generic';
+    
+    // Determine error type based on error characteristics
+    if (error.name === 'NetworkError' || error.message?.includes('fetch') || error.message?.includes('network')) {
       errorType = 'network';
-      errorMessage = 'Connection wandered off';
     } else if (error.message?.includes('timeout') || error.code === 'TIMEOUT') {
       errorType = 'timeout';  
-      errorMessage = 'Taking longer than expected';
+    } else if (error.message?.includes('auth') || error.code === 'UNAUTHENTICATED') {
+      errorType = 'auth';
+    } else if (error.message?.includes('validation') || error.code === 'VALIDATION_ERROR') {
+      errorType = 'validation';
     } else if (contextStr.includes('synthesis') || contextStr.includes('analyze')) {
       errorType = 'synthesis';
-      errorMessage = 'AI synthesis hit a snag';
-    } else if (error.message) {
-      errorMessage = error.message;
     }
 
-    // Show user-friendly toast
+    // Use sanitized error message for user display
+    const sanitizedMessage = sanitizeErrorMessage(error);
+
+    // Show user-friendly toast with generic messages
     toast({
       title: getErrorTitle(errorType),
       description: getErrorDescription(errorType),
@@ -40,7 +49,7 @@ export function useErrorHandler() {
       duration: 5000,
     });
 
-    return { errorType, errorMessage };
+    return { errorType, errorMessage: sanitizedMessage };
   }, [toast]);
 
   const retryOperation = useCallback(async (operation: () => Promise<any>, maxRetries: number = 3) => {
@@ -76,18 +85,22 @@ export function useErrorHandler() {
 function getErrorTitle(type: string): string {
   switch (type) {
     case 'network': return '🌐 Connection Issue';
-    case 'synthesis': return '🧠 Synthesis Hiccup';
-    case 'timeout': return '⏰ Taking Longer Than Expected';
-    default: return '⚠️ Something Went Wrong';
+    case 'synthesis': return '🧠 Processing Error';
+    case 'timeout': return '⏰ Request Timeout';
+    case 'auth': return '🔐 Authentication Required';
+    case 'validation': return '📝 Input Validation Error';
+    default: return '⚠️ Unexpected Error';
   }
 }
 
 function getErrorDescription(type: string): string {
   switch (type) {
-    case 'network': return 'Check your connection and try again';
-    case 'synthesis': return 'Our AI is having a moment. Let\'s try again';
-    case 'timeout': return 'Complex thoughts take time. Please wait or retry';
-    default: return 'We\'re working to fix this. Please try again';
+    case 'network': return 'Please check your internet connection and try again';
+    case 'synthesis': return 'Unable to process your request. Please try again later';
+    case 'timeout': return 'The request is taking longer than expected. Please try again';
+    case 'auth': return 'Please sign in to continue using this feature';
+    case 'validation': return 'Please check your input and try again';
+    default: return 'An unexpected error occurred. Please try again later';
   }
 }
 

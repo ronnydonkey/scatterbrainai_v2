@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AppRouter } from "./components/AppRouter";
+import { SecurityProvider } from "./components/SecurityProvider";
 import AuthenticatedLayout from "./components/AuthenticatedLayout";
 import ThoughtsPage from "./pages/ThoughtsPage";
 import TrendingPage from "./pages/TrendingPage";
@@ -42,11 +43,12 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <NeuralBackground variant="subtle" className="min-h-screen">
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+      <SecurityProvider>
+        <TooltipProvider>
+          <NeuralBackground variant="subtle" className="min-h-screen">
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/landing" element={<AppRouter />} />
@@ -64,9 +66,10 @@ const App = () => (
               <Route path="/settings" element={<AppRouter />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </NeuralBackground>
-      </TooltipProvider>
+            </BrowserRouter>
+          </NeuralBackground>
+        </TooltipProvider>
+      </SecurityProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
