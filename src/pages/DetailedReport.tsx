@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContentMultiplier } from '@/components/ContentMultiplier';
+import { NeuralBrainIcon } from '@/components/ui/neural-brain-icon';
 
 const DetailedReport: React.FC = () => {
   const { insightId } = useParams();
@@ -254,7 +255,10 @@ const DetailedReport: React.FC = () => {
 
         {/* Title */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-2">🧠 SCATTERBRAINAI REPORT</h1>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <NeuralBrainIcon size={48} animate variant="premium" />
+            <h1 className="text-4xl font-bold text-white">SCATTERBRAINAI REPORT</h1>
+          </div>
           <p className="text-xl text-gray-300">Insight Analysis</p>
         </div>
 
