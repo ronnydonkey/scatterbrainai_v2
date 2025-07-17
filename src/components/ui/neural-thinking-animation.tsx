@@ -15,9 +15,9 @@ export function NeuralThinkingAnimation({
   const [currentPhase, setCurrentPhase] = useState(0);
 
   const sizeConfig = {
-    sm: { width: 120, height: 120, particles: 12 },
-    md: { width: 200, height: 200, particles: 16 },
-    lg: { width: 300, height: 300, particles: 20 }
+    sm: { size: 120, particles: 8 },
+    md: { size: 200, particles: 12 },
+    lg: { size: 300, particles: 16 }
   };
 
   const config = sizeConfig[size];
@@ -33,163 +33,119 @@ export function NeuralThinkingAnimation({
   // Generate particle positions
   const particles = Array.from({ length: config.particles }, (_, i) => ({
     id: i,
-    startX: Math.random() * config.width,
-    startY: Math.random() * config.height,
-    delay: Math.random() * 3000,
+    startX: Math.random() * 160 + 20,
+    startY: Math.random() * 160 + 20,
+    delay: Math.random() * 2,
   }));
 
   return (
-    <div className={cn("relative flex items-center justify-center", className)}>
-      <svg
-        width={config.width}
-        height={config.height}
-        viewBox={`0 0 ${config.width} ${config.height}`}
-        className="overflow-visible"
+    <div className={cn("relative inline-block", className)}>
+      <div 
+        className="relative rounded-full flex items-center justify-center"
+        style={{ 
+          width: config.size, 
+          height: config.size,
+          background: 'radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 70%, transparent 100%)'
+        }}
       >
-        {/* Background Neural Network */}
-        <defs>
-          <radialGradient id="brainGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          </radialGradient>
-          
-          <linearGradient id="pathwayGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
-          </linearGradient>
+        <svg
+          width={config.size}
+          height={config.size}
+          viewBox="0 0 200 200"
+          className="absolute inset-0"
+        >
+          <defs>
+            <radialGradient id="brainGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.8)" />
+              <stop offset="70%" stopColor="rgba(59, 130, 246, 0.6)" />
+              <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" />
+            </radialGradient>
+            
+            <filter id="neuralGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            
+            <filter id="particleGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
 
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge> 
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* Central Brain Silhouette */}
-        <g transform={`translate(${config.width/2 - 40}, ${config.height/2 - 35})`}>
-          <path
-            d="M20 15C25 5, 35 5, 40 10C45 5, 55 5, 60 15C65 20, 65 30, 60 35C65 40, 65 50, 55 55C50 60, 40 60, 35 55C30 60, 20 60, 15 55C5 50, 5 40, 10 35C5 30, 5 20, 10 15C15 10, 20 15, 20 15Z"
-            fill="url(#brainGlow)"
-            className={cn(
-              "transition-all duration-1000",
-              currentPhase === 3 && "animate-pulse"
-            )}
-            style={{
-              filter: intensity === 'intense' ? 'url(#glow)' : 'none'
-            }}
-          />
-          
-          {/* Brain Regions */}
-          {/* Frontal Lobe */}
-          <circle
-            cx="20"
-            cy="25"
-            r="8"
-            fill="hsl(var(--primary))"
-            opacity={currentPhase >= 0 ? 0.7 : 0.2}
-            className="transition-all duration-500"
-          />
-          
-          {/* Temporal Lobe */}
-          <circle
-            cx="40"
-            cy="35"
-            r="6"
-            fill="hsl(var(--accent))"
-            opacity={currentPhase >= 1 ? 0.7 : 0.2}
-            className="transition-all duration-500"
-          />
-          
-          {/* Parietal Lobe */}
-          <circle
-            cx="55"
-            cy="25"
-            r="7"
-            fill="#F59E0B"
-            opacity={currentPhase >= 2 ? 0.8 : 0.2}
-            className="transition-all duration-500"
-          />
-        </g>
-
-        {/* Neural Pathways */}
-        <g className="neural-pathways">
-          {/* Connecting pathways between brain regions */}
-          <path
-            d={`M${config.width/2 - 20} ${config.height/2 - 10} Q${config.width/2} ${config.height/2 - 20} ${config.width/2 + 20} ${config.height/2 - 10}`}
-            stroke="url(#pathwayGradient)"
-            strokeWidth="2"
-            fill="none"
-            className={cn(
-              "transition-all duration-1000",
-              currentPhase >= 1 && "animate-pulse"
-            )}
-            opacity={currentPhase >= 1 ? 0.8 : 0.3}
-          />
-          
-          <path
-            d={`M${config.width/2 - 15} ${config.height/2 + 5} Q${config.width/2 + 10} ${config.height/2 + 15} ${config.width/2 + 35} ${config.height/2 + 5}`}
-            stroke="url(#pathwayGradient)"
-            strokeWidth="2"
-            fill="none"
-            className={cn(
-              "transition-all duration-1000",
-              currentPhase >= 2 && "animate-pulse"
-            )}
-            opacity={currentPhase >= 2 ? 0.8 : 0.3}
-          />
-        </g>
-
-        {/* Floating Thought Particles */}
-        {particles.map((particle) => (
-          <circle
-            key={particle.id}
-            r="2"
-            fill="hsl(var(--primary))"
-            className="animate-pulse"
-            style={{
-              filter: 'drop-shadow(0 0 4px hsl(var(--primary)))'
-            }}
-          >
-            <animateTransform
-              attributeName="transform"
-              attributeType="XML"
-              type="translate"
-              values={`${particle.startX},${particle.startY}; ${config.width/2},${config.height/2}; ${particle.startX},${particle.startY}`}
-              dur="4s"
-              repeatCount="indefinite"
-              begin={`${particle.delay}ms`}
+          {/* Brain silhouette with neural pathways */}
+          <g transform="translate(50, 60)">
+            <path
+              d="M50 10C65 10 80 20 85 35C90 25 95 28 98 40C101 52 98 64 95 75C98 86 95 97 90 105C85 118 70 125 55 125C40 125 25 118 20 105C15 97 12 86 15 75C12 64 15 52 18 40C21 28 26 25 31 35C36 20 50 10 50 10Z"
+              fill="none"
+              stroke="rgba(139, 92, 246, 0.8)"
+              strokeWidth="2"
+              filter="url(#neuralGlow)"
+              className={`${currentPhase === 2 ? 'animate-pulse' : ''}`}
             />
-            <animate
-              attributeName="opacity"
-              values="0.3;1;0.3"
-              dur="2s"
-              repeatCount="indefinite"
-              begin={`${particle.delay}ms`}
-            />
-          </circle>
-        ))}
+            
+            {/* Neural pathways within brain */}
+            <path d="M25 45 Q50 35 75 45" fill="none" stroke="rgba(59, 130, 246, 0.6)" strokeWidth="1.5" filter="url(#neuralGlow)" className={`${currentPhase === 0 ? 'opacity-100' : 'opacity-40'}`} />
+            <path d="M30 65 Q50 55 70 65" fill="none" stroke="rgba(59, 130, 246, 0.6)" strokeWidth="1.5" filter="url(#neuralGlow)" className={`${currentPhase === 1 ? 'opacity-100' : 'opacity-40'}`} />
+            <path d="M35 85 Q50 75 65 85" fill="none" stroke="rgba(59, 130, 246, 0.6)" strokeWidth="1.5" filter="url(#neuralGlow)" className={`${currentPhase === 2 ? 'opacity-100' : 'opacity-40'}`} />
+            
+            {/* Brain regions - neural nodes */}
+            <circle cx="35" cy="45" r="4" fill="url(#brainGlow)" filter="url(#particleGlow)" className={`${currentPhase === 0 ? 'animate-pulse opacity-100' : 'opacity-60'}`} />
+            <circle cx="65" cy="45" r="4" fill="url(#brainGlow)" filter="url(#particleGlow)" className={`${currentPhase === 1 ? 'animate-pulse opacity-100' : 'opacity-60'}`} />
+            <circle cx="50" cy="65" r="5" fill="url(#brainGlow)" filter="url(#particleGlow)" className={`${currentPhase === 2 ? 'animate-pulse opacity-100' : 'opacity-60'}`} />
+            <circle cx="40" cy="85" r="3" fill="url(#brainGlow)" filter="url(#particleGlow)" className={`${currentPhase === 0 ? 'animate-pulse opacity-100' : 'opacity-60'}`} />
+            <circle cx="60" cy="85" r="3" fill="url(#brainGlow)" filter="url(#particleGlow)" className={`${currentPhase === 1 ? 'animate-pulse opacity-100' : 'opacity-60'}`} />
+          </g>
 
-        {/* Synthesis Burst Effect */}
+          {/* External neural pathways */}
+          <g>
+            <path d="M60 80 Q100 60 140 80" fill="none" stroke="rgba(139, 92, 246, 0.6)" strokeWidth="2" filter="url(#neuralGlow)" className={`${currentPhase === 0 ? 'opacity-100' : 'opacity-30'}`} />
+            <path d="M60 120 Q100 140 140 120" fill="none" stroke="rgba(139, 92, 246, 0.6)" strokeWidth="2" filter="url(#neuralGlow)" className={`${currentPhase === 1 ? 'opacity-100' : 'opacity-30'}`} />
+            <path d="M80 60 Q100 100 120 140" fill="none" stroke="rgba(59, 130, 246, 0.6)" strokeWidth="2" filter="url(#neuralGlow)" className={`${currentPhase === 2 ? 'opacity-100' : 'opacity-30'}`} />
+            <path d="M120 60 Q100 100 80 140" fill="none" stroke="rgba(59, 130, 246, 0.6)" strokeWidth="2" filter="url(#neuralGlow)" className={`${currentPhase === 0 ? 'opacity-100' : 'opacity-30'}`} />
+          </g>
+
+          {/* Thought particles */}
+          {particles.map((particle, index) => (
+            <circle
+              key={index}
+              r="1.5"
+              fill="rgba(251, 191, 36, 0.8)"
+              filter="url(#particleGlow)"
+              className="animate-pulse"
+            >
+              <animateMotion
+                dur={`${4 + index}s`}
+                repeatCount="indefinite"
+                path={`M${particle.startX} ${particle.startY} Q${particle.startX + 50} ${particle.startY - 30} ${particle.startX + 100} ${particle.startY + 20} Q${particle.startX + 150} ${particle.startY + 70} ${particle.startX + 200} ${particle.startY + 50}`}
+                begin={`${particle.delay}s`}
+              />
+            </circle>
+          ))}
+
+        {/* Synthesis burst effect */}
         {currentPhase === 3 && (
           <g>
             {Array.from({ length: 8 }, (_, i) => (
               <line
                 key={i}
-                x1={config.width/2}
-                y1={config.height/2}
-                x2={config.width/2 + Math.cos(i * Math.PI / 4) * 40}
-                y2={config.height/2 + Math.sin(i * Math.PI / 4) * 40}
-                stroke="#F59E0B"
+                x1="100"
+                y1="100"
+                x2={100 + Math.cos(i * Math.PI / 4) * 60}
+                y2={100 + Math.sin(i * Math.PI / 4) * 60}
+                stroke="rgba(251, 191, 36, 0.8)"
                 strokeWidth="2"
-                opacity="0"
+                filter="url(#neuralGlow)"
                 className="animate-pulse"
               >
                 <animate
                   attributeName="opacity"
-                  values="0;0.8;0"
+                  values="0;0.9;0"
                   dur="1s"
                   repeatCount="indefinite"
                 />
@@ -197,7 +153,8 @@ export function NeuralThinkingAnimation({
             ))}
           </g>
         )}
-      </svg>
+        </svg>
+      </div>
     </div>
   );
 }

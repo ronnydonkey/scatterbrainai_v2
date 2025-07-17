@@ -550,51 +550,107 @@ export default function SimplifiedFlow() {
               exit={{ opacity: 0, y: -20 }}
               className="w-full max-w-3xl mx-auto text-center px-3 sm:px-4"
             >
-              {/* Neural Network Animation */}
+              {/* Neural Brain Animation */}
               <div className="mb-6 sm:mb-8">
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 mx-auto mb-4 sm:mb-6">
-                  {/* Main circle */}
-                  <motion.div
-                    className="w-full h-full rounded-full flex items-center justify-center relative"
-                    style={{ background: 'var(--gradient-primary)' }}
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {/* Floating dots */}
-                    {[...Array(8)].map((_, i) => (
-                      <motion.div
+                <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto mb-4 sm:mb-6">
+                  {/* Brain illustration with neural pathways */}
+                  <svg className="w-full h-full" viewBox="0 0 200 200">
+                    <defs>
+                      <radialGradient id="brainGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="rgba(139, 92, 246, 0.8)" />
+                        <stop offset="70%" stopColor="rgba(59, 130, 246, 0.6)" />
+                        <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" />
+                      </radialGradient>
+                      <filter id="neuralGlow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    
+                    {/* Brain outline */}
+                    <motion.path
+                      d="M100 20C120 20 140 35 150 55C160 45 170 50 175 65C180 80 175 95 170 110C175 125 170 140 160 150C150 165 130 175 110 175C90 175 70 165 60 150C50 140 45 125 50 110C45 95 50 80 55 65C60 50 70 45 80 55C90 35 100 20 100 20Z"
+                      fill="none"
+                      stroke="rgba(139, 92, 246, 0.8)"
+                      strokeWidth="2"
+                      filter="url(#neuralGlow)"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 2, ease: "easeInOut" }}
+                    />
+                    
+                    {/* Neural pathways */}
+                    {[...Array(6)].map((_, i) => (
+                      <motion.path
                         key={i}
-                        className="absolute w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full"
-                        style={{
-                          top: '50%',
-                          left: '50%',
-                          transformOrigin: '0 0',
-                        }}
-                        animate={{
-                          x: Math.cos((i * Math.PI * 2) / 8) * (window.innerWidth < 640 ? 35 : 50),
-                          y: Math.sin((i * Math.PI * 2) / 8) * (window.innerWidth < 640 ? 35 : 50),
-                          scale: [0.8, 1.2, 0.8],
-                        }}
+                        d={`M${70 + i * 10} ${60 + i * 15} Q${100 + i * 5} ${80 + i * 10} ${130 - i * 8} ${90 + i * 12}`}
+                        fill="none"
+                        stroke="rgba(59, 130, 246, 0.6)"
+                        strokeWidth="1.5"
+                        filter="url(#neuralGlow)"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: [0, 1, 0.5, 1] }}
                         transition={{
-                          duration: 2,
+                          duration: 3 + i * 0.5,
                           repeat: Infinity,
-                          delay: i * 0.2,
+                          delay: i * 0.3,
+                          ease: "easeInOut"
                         }}
                       />
                     ))}
                     
-                    {/* Inner brain icon */}
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center">
-                      <Brain className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-purple-600" />
-                    </div>
-                  </motion.div>
+                    {/* Synapses/nodes */}
+                    {[...Array(8)].map((_, i) => (
+                      <motion.circle
+                        key={i}
+                        cx={80 + (i % 3) * 20}
+                        cy={70 + Math.floor(i / 3) * 25}
+                        r="3"
+                        fill="url(#brainGlow)"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: [0, 1.5, 1, 1.5, 0.8] }}
+                        transition={{
+                          duration: 2.5,
+                          repeat: Infinity,
+                          delay: i * 0.2,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                    
+                    {/* Thought particles */}
+                    {[...Array(4)].map((_, i) => (
+                      <motion.circle
+                        key={`particle-${i}`}
+                        cx={100}
+                        cy={100}
+                        r="1.5"
+                        fill="rgba(251, 191, 36, 0.8)"
+                        initial={{ x: 0, y: 0, opacity: 0 }}
+                        animate={{
+                          x: [0, (i % 2 ? 40 : -40), 0],
+                          y: [0, (i < 2 ? -30 : 30), 0],
+                          opacity: [0, 1, 0.7, 0]
+                        }}
+                        transition={{
+                          duration: 4,
+                          repeat: Infinity,
+                          delay: i * 0.8,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                  </svg>
                 </div>
 
-                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4 px-2 sm:px-4">
-                  Organizing your beautiful chaos...
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent mb-3 sm:mb-4 px-2 sm:px-4">
+                  Illuminating Neural Pathways
                 </h2>
                 <p className="text-white/70 mb-6 sm:mb-8 px-2 sm:px-4 text-sm sm:text-base md:text-lg">
-                  We're connecting your ideas, finding patterns, and crafting actionable insights just for you.
+                  Your thoughts are finding their perfect form
                 </p>
               </div>
 

@@ -149,30 +149,87 @@ export const ContentGenerationAnimation: React.FC<ContentGenerationAnimationProp
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center"
+      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
     >
-      {/* Background Neural Network Animation */}
+      {/* Background Neural Network Animation - matching the style */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20" />
+        {/* Neural pathways background */}
+        <svg className="absolute inset-0 w-full h-full opacity-20">
+          <defs>
+            <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.8)" />
+              <stop offset="50%" stopColor="rgba(139, 92, 246, 0.4)" />
+              <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" />
+            </radialGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          {/* Network connections */}
+          {[...Array(15)].map((_, i) => (
+            <motion.line
+              key={i}
+              x1={Math.random() * 100 + '%'}
+              y1={Math.random() * 100 + '%'}
+              x2={Math.random() * 100 + '%'}
+              y2={Math.random() * 100 + '%'}
+              stroke="rgba(139, 92, 246, 0.3)"
+              strokeWidth="1"
+              filter="url(#glow)"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: [0, 0.7, 0] }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+          {/* Neural nodes */}
+          {[...Array(20)].map((_, i) => (
+            <motion.circle
+              key={i}
+              cx={Math.random() * 100 + '%'}
+              cy={Math.random() * 100 + '%'}
+              r="2"
+              fill="url(#nodeGlow)"
+              initial={{ scale: 0 }}
+              animate={{ scale: [0, 1.5, 1, 1.5, 0] }}
+              transition={{
+                duration: 4 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 3,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </svg>
         
-        {/* Floating Neural Nodes */}
-        {[...Array(12)].map((_, i) => (
+        {/* Floating particles */}
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-primary/40 rounded-full"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+            className="absolute w-1 h-1 bg-blue-400 rounded-full"
+            style={{
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              boxShadow: '0 0 6px rgba(59, 130, 246, 0.8)'
             }}
             animate={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: [0, Math.random() * 200 - 100, 0],
+              y: [0, Math.random() * 200 - 100, 0],
+              opacity: [0, 1, 0.5, 1, 0]
             }}
             transition={{
-              duration: 10 + Math.random() * 10,
+              duration: 6 + Math.random() * 4,
               repeat: Infinity,
-              repeatType: 'reverse',
-              ease: 'linear',
+              delay: Math.random() * 2,
+              ease: "easeInOut"
             }}
           />
         ))}
@@ -185,8 +242,8 @@ export const ContentGenerationAnimation: React.FC<ContentGenerationAnimationProp
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl font-bold text-white mb-4">
-            🧠 Neural Content Generation
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent mb-4">
+            Neural Content Generation
           </h1>
           <p className="text-xl text-gray-300">
             Transforming your insights into a complete content ecosystem
