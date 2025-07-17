@@ -25,6 +25,7 @@ const DetailedReport: React.FC = () => {
   const generateDetailedReport = async (id: string) => {
     try {
       setLoading(true);
+      console.log('Looking for detailed report with insight ID:', id);
       
       // First, check if a detailed report already exists
       const { data: existingReport, error: fetchError } = await supabase
@@ -40,15 +41,42 @@ const DetailedReport: React.FC = () => {
         return;
       }
 
-      console.log('No existing report found, generating new one');
+      console.log('No existing report found in database, checking localStorage');
       
       // Get base insight from storage
       const insights = JSON.parse(localStorage.getItem('scatterbrain_insights') || '[]');
+      console.log('Available insights in localStorage:', insights.map(i => ({ id: i.id, timestamp: i.timestamp })));
       const baseInsight = insights.find(i => i.id === id);
       
       if (!baseInsight) {
         console.error('Insight not found in localStorage for ID:', id);
         console.log('Available insights:', insights.map(i => ({ id: i.id, timestamp: i.timestamp })));
+        
+        // If we can't find the insight in localStorage but there might be a report in the database
+        // with a slightly different ID, let's try to find any report for this user
+        const { data: anyReports, error: anyError } = await supabase
+          .from('detailed_reports')
+          .select('insight_id, report_data')
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        console.log('Recent reports in database:', anyReports);
+        
+        if (anyReports && anyReports.length > 0) {
+          // Try to find a report with a similar timestamp
+          const potentialMatch = anyReports.find(report => 
+            report.insight_id.includes(id.split('_')[1]) || 
+            id.includes(report.insight_id.split('_')[1])
+          );
+          
+          if (potentialMatch) {
+            console.log('Found potential matching report:', potentialMatch.insight_id);
+            setReport(potentialMatch.report_data);
+            setLoading(false);
+            return;
+          }
+        }
+        
         throw new Error('Insight not found');
       }
 
