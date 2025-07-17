@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, Download, Target, Search, CheckSquare, BookOpen, Smartphone, Copy, Check, Sparkles } from 'lucide-react';
@@ -313,15 +312,6 @@ const DetailedReport: React.FC = () => {
               Save
             </Button>
           </div>
-        </div>
-
-        {/* Debug Info - Remove this in production */}
-        <div className="mb-4 p-3 bg-white/10 rounded text-white text-sm">
-          <div>Debug Info:</div>
-          <div>Report loaded: {report ? 'Yes' : 'No'}</div>
-          <div>Base insight loaded: {baseInsight ? 'Yes' : 'No'}</div>
-          <div>Insight ID: {insightId}</div>
-          {baseInsight && <div>Original input available: {baseInsight.originalInput ? 'Yes' : 'No'}</div>}
         </div>
 
         {/* Title */}
