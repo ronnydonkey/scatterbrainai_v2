@@ -7,6 +7,7 @@ import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingSocialProof } from '@/components/landing/LandingSocialProof';
 import { LandingSignup } from '@/components/landing/LandingSignup';
+import { LandingEmailCapture } from '@/components/landing/LandingEmailCapture';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function Landing() {
@@ -15,6 +16,7 @@ export default function Landing() {
   const [demoText, setDemoText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
 
   // Redirect authenticated users to main app
   if (user) {
@@ -31,7 +33,7 @@ export default function Landing() {
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     setIsProcessing(false);
-    setShowResults(true);
+    setShowEmailCapture(true);
   };
 
   return (
@@ -62,6 +64,14 @@ export default function Landing() {
         handleDemo={handleDemo}
         isProcessing={isProcessing}
       />
+
+      {/* Email Capture */}
+      {showEmailCapture && (
+        <LandingEmailCapture 
+          demoText={demoText}
+          onEmailSubmitted={() => setShowResults(true)}
+        />
+      )}
 
       {/* Demo Results */}
       <LandingDemo 
