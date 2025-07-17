@@ -11,6 +11,91 @@ interface LandingHeroProps {
   isProcessing: boolean;
 }
 
+const sampleInputs = [
+  {
+    label: "Try with Meeting Notes",
+    content: `Team sync - Product roadmap Q1 2024
+
+Discussed:
+- New user onboarding flow needs work, Sarah mentioned 40% drop-off at step 3
+- Mobile app performance issues on Android devices, especially Galaxy S series
+- Customer feedback: users want dark mode and better search functionality
+- Marketing wants to push the new AI features but dev says we need 2 more weeks
+- Budget approval for new analytics tool pending, CFO wants to see ROI projections
+
+Action items:
+- Fix onboarding flow by end of month
+- Performance audit scheduled for next week
+- Dark mode in sprint 3
+- AI feature demo for marketing on Friday
+- Analytics tool proposal due Thursday
+
+Random thoughts: The coffee machine is broken again. Also, should we consider that new design system everyone's talking about?`
+  },
+  {
+    label: "Try with Random Thoughts",
+    content: `Need to remember to call mom tonight about thanksgiving plans
+
+Just read this fascinating article about how octopuses have 3 hearts - imagine if humans had that kind of redundancy in our circulatory system. Makes me think about backup systems in general.
+
+Project deadline is Friday but honestly feels impossible with current scope. Maybe I should talk to James about pushing back the secondary features.
+
+Coffee shop idea keeps popping up in my head - what if there was a place that combined bookstore + coffee + coworking space? Location near campus would be perfect. Initial investment probably around 150k?
+
+Weird dream last night about flying through a library made of clouds. Dreams are so random but this one felt meaningful somehow.
+
+Doctor appointment moved to Tuesday 3pm
+Grocery list: milk, bread, those good crackers Sarah likes
+Why do I always get my best ideas in the shower???
+
+That book recommendation from last week - "Atomic Habits" - should definitely read it. Everyone says it's life-changing.`
+  },
+  {
+    label: "Try with Research Notes",
+    content: `Climate Change Adaptation Strategies - Literature Review Notes
+
+Smith et al. (2023): "Urban heat islands show 3-7°C temperature increases compared to rural areas. Green infrastructure reduces ambient temps by 2-8°C."
+
+Key findings from Copenhagen study:
+- Blue-green infrastructure reduced flood risk by 43%
+- Property values increased 15% within 500m of green corridors
+- Air quality improvements measurable up to 2km from intervention sites
+
+Nature-based solutions effectiveness:
+• Wetland restoration: 60-90% pollutant removal
+• Urban forests: 10-20% air temp reduction
+• Permeable pavements: 30-50% stormwater runoff reduction
+
+Policy implications:
+- Current building codes inadequate for projected climate scenarios
+- Need integrated approach combining grey and green infrastructure
+- Economic co-benefits often exceed implementation costs within 5-7 years
+
+Questions to explore:
+How do cultural factors influence adoption rates?
+What role does community engagement play in long-term maintenance?
+Can these solutions scale to megacities in developing countries?
+
+Citation needed: Rotterdam's water management system as best practice example.`
+  },
+  {
+    label: "Try with Voice Memo",
+    content: `Hey Siri, voice memo. Um, so I just had this conversation with my neighbor about their startup and it got me thinking about a bunch of stuff.
+
+First off, they're doing this whole subscription model for... I think it was like meal planning or something? But they're struggling with retention rates. Made me realize that maybe the problem isn't the product, it's that they're trying to solve a problem people don't actually have consistently.
+
+Like, I meal plan for maybe two weeks and then I just... don't. It's not a habit that sticks for most people, you know?
+
+Anyway, it reminded me of that book I read about Jobs to be Done theory. People don't want meal plans, they want to feel organized and in control of their week. Or maybe they want to eat healthier without thinking about it. The meal plan is just one possible solution.
+
+Oh, and speaking of solutions - I should probably figure out my own dinner situation tonight. Thai food sounds good. There's that place on Fifth Street that has those amazing pad thai noodles.
+
+Wait, where was I? Right, the startup thing. I wonder if they've actually talked to customers who canceled to understand why. Most companies just assume it's price but it's usually something totally different.
+
+Note to self: text Sarah about the networking event next Thursday. And pick up dry cleaning tomorrow.`
+  }
+];
+
 export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }: LandingHeroProps) {
   return (
     <section className="relative py-20 overflow-hidden">
@@ -41,6 +126,22 @@ export function LandingHero({ demoText, setDemoText, handleDemo, isProcessing }:
                   <Sparkles className="w-5 h-5" />
                 </div>
                 
+                {/* Example Input Buttons */}
+                <div className="flex flex-wrap gap-2 justify-center mb-4">
+                  {sampleInputs.map((sample) => (
+                    <Button
+                      key={sample.label}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDemoText(sample.content)}
+                      disabled={isProcessing}
+                      className="text-xs border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200"
+                    >
+                      {sample.label}
+                    </Button>
+                  ))}
+                </div>
+
                 <Textarea
                   placeholder="Drop your scattered thoughts here... voice memos, meeting notes, random ideas..."
                   value={demoText}
