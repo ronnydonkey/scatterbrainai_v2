@@ -291,9 +291,6 @@ const NeuralNetworkScene = ({ thoughts }: { thoughts: any[] }) => {
       <directionalLight position={[10, 10, 5]} intensity={0.6} color="#4F46E5" />
       <pointLight position={[-10, 5, -5]} intensity={0.4} color="#8B5CF6" />
       <pointLight position={[10, -5, 5]} intensity={0.3} color="#06B6D4" />
-      
-      {/* Subtle fog for depth */}
-      <fog attach="fog" args={['#000014', 8, 20]} />
 
       {/* Brain Regions */}
       {Object.entries(BRAIN_REGIONS).map(([region, data]) => {
