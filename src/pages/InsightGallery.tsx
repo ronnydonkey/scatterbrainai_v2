@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Clock, Search, Sparkles, Plus, Trash2, RotateCcw, Archive } from 'lucide-react';
+import { Star, Clock, Search, Sparkles, Plus, Trash2, RotateCcw, Archive, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOfflineInsights } from '@/hooks/api/useOfflineInsights';
 import { NeuralAmbientBackground } from '@/components/ui/neural-ambient-background';
 import { NeuralThinkingAnimation } from '@/components/ui/neural-thinking-animation';
+import { toast } from '@/hooks/use-toast';
 
 const InsightGallery: React.FC = () => {
   const navigate = useNavigate();
@@ -15,14 +15,37 @@ const InsightGallery: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [showArchived, setShowArchived] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
+    console.log('InsightGallery: Initial load');
     loadInsights();
   }, [loadInsights]);
 
   useEffect(() => {
+    console.log('InsightGallery: Insights updated', insights.length, 'insights');
     filterInsights(searchTerm, activeFilter);
   }, [insights, searchTerm, activeFilter, showArchived]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadInsights();
+      toast({
+        title: "Refreshed",
+        description: "Insights have been refreshed",
+      });
+    } catch (error) {
+      console.error('Error refreshing insights:', error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh insights",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -40,8 +63,16 @@ const InsightGallery: React.FC = () => {
   const filterInsights = (search, filter) => {
     let filtered = insights;
     
+    console.log('Filtering insights:', {
+      totalInsights: insights.length,
+      showArchived,
+      filter,
+      search
+    });
+    
     // First filter by archived status
     filtered = filtered.filter(insight => insight.archived === showArchived);
+    console.log('After archived filter:', filtered.length);
     
     // Apply additional filters
     switch(filter) {
@@ -58,6 +89,7 @@ const InsightGallery: React.FC = () => {
         break;
     }
     
+    console.log('Final filtered insights:', filtered.length);
     setFilteredInsights(filtered);
   };
 
@@ -261,10 +293,25 @@ const InsightGallery: React.FC = () => {
             >
               <Archive className="w-5 h-5" />
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="text-gray-400 hover:text-gray-300 transition-colors"
+              title="Refresh insights"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
           <p className="text-xl text-gray-300">
             {showArchived ? 'Ideas you\'ve set aside (but might want back)' : 'Your captured thoughts and their insights'}
           </p>
+          
+          {/* Debug info */}
+          <div className="mt-4 text-sm text-gray-400">
+            Total insights: {insights.length} | Filtered: {filteredInsights.length} | Loading: {isLoading ? 'Yes' : 'No'}
+          </div>
           
           {/* Temporary migration button - remove after running once */}
           {!showArchived && insights.some(insight => 
@@ -355,7 +402,7 @@ const InsightGallery: React.FC = () => {
                 onClick={() => navigate('/simplified')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 w-4 mr-2" />
                 Start Thinking
               </Button>
             )}
