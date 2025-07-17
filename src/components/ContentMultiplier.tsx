@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Zap, Loader, Sparkles, Check, Copy, Code, Calendar, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,13 @@ export const ContentMultiplier: React.FC<ContentMultiplierProps> = ({
 
     setIsGenerating(true);
     try {
+      console.log('Starting content generation with:', {
+        originalInput: originalInsight.originalInput,
+        contentTypes: selectedFormats,
+        targetAudience,
+        tone
+      });
+
       const { data, error } = await supabase.functions.invoke('content-multiply', {
         body: {
           originalInput: originalInsight.originalInput,
@@ -64,20 +72,29 @@ export const ContentMultiplier: React.FC<ContentMultiplierProps> = ({
         }
       });
 
-      if (error) throw error;
+      console.log('Content generation response:', { data, error });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from content generation');
+      }
 
       setGeneratedContent(data);
       onGenerate?.(data);
       
       toast({
-        title: "Content Generated!",
+        title: "Content Generated! ✨",
         description: `Successfully created ${selectedFormats.length} content format${selectedFormats.length > 1 ? 's' : ''}.`,
       });
     } catch (error) {
       console.error('Content generation failed:', error);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate content. Please try again.",
+        description: error.message || "Failed to generate content. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -171,8 +188,17 @@ export const ContentMultiplier: React.FC<ContentMultiplierProps> = ({
             disabled={selectedFormats.length === 0 || isGenerating}
             className="w-full py-4 text-lg"
           >
-            <Sparkles className="w-5 h-5 mr-3" />
-            Generate {selectedFormats.length} Content Format{selectedFormats.length > 1 ? 's' : ''}
+            {isGenerating ? (
+              <>
+                <Loader className="w-5 h-5 mr-3 animate-spin" />
+                Generating Content...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-3" />
+                Generate {selectedFormats.length} Content Format{selectedFormats.length > 1 ? 's' : ''}
+              </>
+            )}
           </Button>
         </div>
 
@@ -180,7 +206,6 @@ export const ContentMultiplier: React.FC<ContentMultiplierProps> = ({
         {generatedContent && (
           <GeneratedContentSuite 
             contentSuite={generatedContent} 
-            originalTheme={generatedContent.coreTheme}
           />
         )}
       </div>
@@ -190,17 +215,29 @@ export const ContentMultiplier: React.FC<ContentMultiplierProps> = ({
 
 interface GeneratedContentSuiteProps {
   contentSuite: any;
-  originalTheme: string;
 }
 
 const GeneratedContentSuite: React.FC<GeneratedContentSuiteProps> = ({ 
-  contentSuite, 
-  originalTheme 
+  contentSuite
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const { toast } = useToast();
 
-  const contentTabs = Object.entries(contentSuite.contentSuite || {}).map(([type, content]) => ({
+  console.log('Rendering content suite:', contentSuite);
+
+  // Handle different response structures from the edge function
+  const contentData = contentSuite.contentSuite || contentSuite.content || contentSuite;
+  
+  if (!contentData) {
+    console.log('No content data found in:', contentSuite);
+    return (
+      <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-border/50">
+        <p className="text-muted-foreground">No content generated yet.</p>
+      </div>
+    );
+  }
+
+  const contentTabs = Object.entries(contentData).map(([type, content]) => ({
     type,
     content,
     label: formatTypeLabel(type),
@@ -208,7 +245,11 @@ const GeneratedContentSuite: React.FC<GeneratedContentSuiteProps> = ({
   }));
 
   if (contentTabs.length === 0) {
-    return null;
+    return (
+      <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-border/50">
+        <p className="text-muted-foreground">No content formats generated.</p>
+      </div>
+    );
   }
 
   return (
@@ -241,7 +282,6 @@ const GeneratedContentSuite: React.FC<GeneratedContentSuiteProps> = ({
         <ContentFormatDisplay 
           content={contentTabs[activeTab].content}
           type={contentTabs[activeTab].type}
-          onSchedule={(content) => console.log('Schedule:', content)}
         />
       )}
     </div>
@@ -251,13 +291,11 @@ const GeneratedContentSuite: React.FC<GeneratedContentSuiteProps> = ({
 interface ContentFormatDisplayProps {
   content: any;
   type: string;
-  onSchedule: (content: any) => void;
 }
 
 const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({ 
   content, 
-  type, 
-  onSchedule 
+  type
 }) => {
   const [copied, setCopied] = useState('');
   const { toast } = useToast();
@@ -281,36 +319,60 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
   };
 
   const getContentText = (content: any, type: string) => {
+    console.log('Processing content for type:', type, content);
+
+    if (typeof content === 'string') {
+      return content;
+    }
+
     switch (type) {
       case 'blog_post':
-        return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
+        if (content.formatting?.plainText) return content.formatting.plainText;
+        if (content.content) return content.content;
+        break;
       case 'twitter_thread':
-        return content.tweets?.map((tweet: any, i: number) => 
-          `${i + 1}/${content.totalTweets || content.tweets.length} ${tweet.content}`
-        ).join('\n\n') || JSON.stringify(content, null, 2);
+        if (content.tweets && Array.isArray(content.tweets)) {
+          return content.tweets.map((tweet: any, i: number) => 
+            `${i + 1}/${content.totalTweets || content.tweets.length} ${tweet.content || tweet}`
+          ).join('\n\n');
+        }
+        if (content.content) return content.content;
+        break;
       case 'newsletter':
-        return content.formatting?.plainText || content.content || JSON.stringify(content, null, 2);
+        if (content.formatting?.plainText) return content.formatting.plainText;
+        if (content.content) return content.content;
+        break;
       case 'linkedin_article':
-        if (content.formatting?.plainText) {
-          return content.formatting.plainText;
+        if (content.formatting?.plainText) return content.formatting.plainText;
+        if (content.content) {
+          if (typeof content.content === 'string') return content.content;
+          // Build from structured content
+          let article = '';
+          if (content.content.hook) article += content.content.hook + '\n\n';
+          if (content.content.introduction) article += content.content.introduction + '\n\n';
+          if (content.content.mainSections) {
+            content.content.mainSections.forEach((section: any) => {
+              if (section.heading) article += section.heading + '\n\n';
+              if (section.content) article += section.content + '\n\n';
+            });
+          }
+          if (content.content.personalStory) article += content.content.personalStory + '\n\n';
+          if (content.content.conclusion) article += content.content.conclusion + '\n\n';
+          if (content.content.callToAction) article += content.content.callToAction;
+          return article;
         }
-        // Build from structured content
-        let article = '';
-        if (content.content?.hook) article += content.content.hook + '\n\n';
-        if (content.content?.introduction) article += content.content.introduction + '\n\n';
-        if (content.content?.mainSections) {
-          content.content.mainSections.forEach((section: any) => {
-            if (section.heading) article += section.heading + '\n\n';
-            if (section.content) article += section.content + '\n\n';
-          });
-        }
-        if (content.content?.personalStory) article += content.content.personalStory + '\n\n';
-        if (content.content?.conclusion) article += content.content.conclusion + '\n\n';
-        if (content.content?.callToAction) article += content.content.callToAction;
-        return article || JSON.stringify(content, null, 2);
+        break;
       default:
-        return content.content || JSON.stringify(content, null, 2);
+        if (content.content) return content.content;
+        break;
     }
+    
+    // Fallback: try to extract any text content
+    if (content.text) return content.text;
+    if (content.body) return content.body;
+    
+    // Last resort: stringify the object
+    return JSON.stringify(content, null, 2);
   };
 
   const contentText = getContentText(content, type);
@@ -319,7 +381,9 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
     <div className="space-y-6">
       {/* Content Preview */}
       <div className="bg-card/50 rounded-lg p-6 border border-border">
-        <h3 className="text-xl font-bold text-foreground mb-2">{content.title}</h3>
+        <h3 className="text-xl font-bold text-foreground mb-2">
+          {content.title || `${formatTypeLabel(type)} Content`}
+        </h3>
         {content.subtitle && (
           <p className="text-muted-foreground mb-4">{content.subtitle}</p>
         )}
@@ -351,9 +415,13 @@ const ContentFormatDisplay: React.FC<ContentFormatDisplayProps> = ({
           {copied === 'Content' ? 'Copied!' : 'Copy Content'}
         </Button>
         
-        
         <Button
-          onClick={() => onSchedule(content)}
+          onClick={() => {
+            toast({
+              title: "Feature coming soon!",
+              description: "Content scheduling will be available in the next update.",
+            });
+          }}
           variant="default"
         >
           <Calendar className="w-4 h-4 mr-2" />
