@@ -205,6 +205,7 @@ export default {
 				'scale-in': 'scale-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
 				'scale-out': 'scale-out 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
 				'bounce-in': 'bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+				'spark': 'spark 3s linear infinite',
 			},
 			keyframes: {
 				// === EXISTING KEYFRAMES ===
@@ -287,6 +288,11 @@ export default {
 					'50%': { opacity: '1', transform: 'scale(1.05)' },
 					'70%': { transform: 'scale(0.9)' },
 					'100%': { opacity: '1', transform: 'scale(1)' }
+				},
+				'spark': {
+					'0%, 90%, 100%': { opacity: '0', transform: 'scale(0)' },
+					'10%, 80%': { opacity: '1', transform: 'scale(1)' },
+					'45%': { opacity: '0.7', transform: 'scale(1.5)' }
 				}
 			}
 		}

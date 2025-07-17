@@ -35,18 +35,27 @@
     --electric-violet: 285 100% 80%;
     --quantum-emerald: 160 80% 60%;
     
+    /* === PREMIUM NEURAL COLORS === */
+    --neural-purple: 258 92% 67%;
+    --neural-gold: 45 96% 64%;
+    --neural-blue: 214 100% 67%;
+    
     /* === GRADIENTS === */
-    --neural-gradient: linear-gradient(135deg, hsl(var(--cosmic-purple)) 0%, hsl(var(--neural-blue)) 50%, hsl(var(--plasma-pink)) 100%);
+    --neural-gradient: linear-gradient(135deg, hsl(var(--neural-purple)) 0%, hsl(var(--neural-blue)) 50%, hsl(var(--neural-gold)) 100%);
     --cosmic-gradient: linear-gradient(135deg, hsl(var(--space-black)) 0%, hsl(var(--cosmic-deep)) 100%);
-    --iridescent-gradient: linear-gradient(90deg, hsl(var(--cosmic-purple)) 0%, hsl(var(--neural-blue)) 25%, hsl(var(--stardust-gold)) 50%, hsl(var(--plasma-pink)) 75%, hsl(var(--synapse-cyan)) 100%);
+    --iridescent-gradient: linear-gradient(90deg, hsl(var(--neural-purple)) 0%, hsl(var(--neural-blue)) 25%, hsl(var(--neural-gold)) 50%, hsl(var(--plasma-pink)) 75%, hsl(var(--synapse-cyan)) 100%);
     --card-gradient: linear-gradient(145deg, hsl(var(--space-void)) 0%, hsl(var(--nebula-dark)) 100%);
+    --neural-connection-gradient: radial-gradient(circle at center, hsl(var(--neural-purple) / 0.15) 0%, transparent 60%);
+    --brain-glow: linear-gradient(135deg, hsl(var(--neural-purple)) 0%, hsl(var(--neural-gold)) 100%);
     
     /* === SHADOWS & GLOWS === */
-    --neural-glow: 0 0 20px hsl(var(--cosmic-purple) / 0.3);
+    --neural-glow: 0 0 20px hsl(var(--neural-purple) / 0.4);
     --cosmic-shadow: 0 8px 32px hsl(var(--space-black) / 0.8);
     --plasma-glow: 0 0 40px hsl(var(--plasma-pink) / 0.4);
     --quantum-shadow: 0 4px 16px hsl(var(--neural-blue) / 0.3);
-    --neural-border-glow: 0 0 1px hsl(var(--cosmic-purple) / 0.5);
+    --neural-border-glow: 0 0 1px hsl(var(--neural-purple) / 0.5);
+    --brain-shadow: 0 0 30px hsl(var(--neural-purple) / 0.3), 0 0 60px hsl(var(--neural-gold) / 0.1);
+    --premium-glow: 0 0 40px hsl(var(--neural-purple) / 0.4), 0 0 80px hsl(var(--neural-gold) / 0.2);
     
     /* === SEMANTIC TOKENS === */
     --background: var(--space-black);
@@ -55,7 +64,7 @@
     --card-foreground: 240 10% 92%;
     --popover: var(--nebula-dark);
     --popover-foreground: 240 10% 95%;
-    --primary: var(--cosmic-purple);
+    --primary: var(--neural-purple);
     --primary-foreground: 240 10% 98%;
     --secondary: var(--neural-gray);
     --secondary-foreground: 240 10% 85%;
@@ -135,13 +144,76 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+    letter-spacing: -0.01em;
+  }
+  
+  /* === ENHANCED TYPOGRAPHY HIERARCHY === */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+    color: hsl(var(--foreground));
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl lg:text-3xl;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  
+  h5 {
+    @apply text-lg md:text-xl lg:text-2xl;
+    font-weight: 600;
+  }
+  
+  h6 {
+    @apply text-base md:text-lg lg:text-xl;
+    font-weight: 600;
+  }
+  
+  p {
+    @apply text-muted-foreground leading-relaxed;
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  
+  .text-premium {
+    @apply bg-gradient-to-r from-neural-purple via-neural-blue to-neural-gold bg-clip-text text-transparent;
+    font-weight: 700;
   }
   
   /* === NEURAL GRID BACKGROUND === */
   .neural-grid {
     background-image: 
-      radial-gradient(circle at 1px 1px, hsl(var(--cosmic-purple) / 0.08) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, hsl(var(--neural-purple) / 0.08) 1px, transparent 0);
     background-size: 24px 24px;
+  }
+  
+  /* === SUBTLE NEURAL NETWORK BACKGROUND === */
+  .neural-network-bg {
+    background-image: 
+      radial-gradient(circle at 20% 50%, hsl(var(--neural-purple) / 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(var(--neural-gold) / 0.02) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, hsl(var(--neural-blue) / 0.02) 0%, transparent 50%);
   }
   
   /* === COSMIC NOISE TEXTURE === */
@@ -154,16 +226,36 @@
     background: linear-gradient(
       45deg,
       transparent 30%,
-      hsl(var(--cosmic-purple) / 0.1) 50%,
+      hsl(var(--neural-purple) / 0.1) 50%,
       transparent 70%
     );
     background-size: 120px 120px;
     animation: flow 25s linear infinite;
   }
   
+  /* === NEURAL CONNECTION LINES === */
+  .neural-connections {
+    background-image: 
+      linear-gradient(90deg, transparent 0%, hsl(var(--neural-purple) / 0.1) 20%, transparent 40%),
+      linear-gradient(45deg, transparent 0%, hsl(var(--neural-gold) / 0.08) 30%, transparent 60%);
+    background-size: 200px 2px, 150px 1px;
+    animation: neural-flow 20s linear infinite;
+  }
+  
   @keyframes flow {
     0% { background-position: 0 0; }
     100% { background-position: 120px 120px; }
+  }
+  
+  @keyframes neural-flow {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 200px 0, -150px 0; }
+  }
+  
+  @keyframes spark {
+    0%, 90%, 100% { opacity: 0; transform: scale(0); }
+    10%, 80% { opacity: 1; transform: scale(1); }
+    45% { opacity: 0.7; transform: scale(1.5); }
   }
 }
 

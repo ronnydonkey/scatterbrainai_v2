@@ -1,6 +1,5 @@
-import { Brain } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { ScatterBrainLogo } from '@/components/ui/scatterbrain-logo';
 import UserAccountDropdown from './UserAccountDropdown';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
@@ -48,23 +47,23 @@ const AppHeader = () => {
   ];
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50">
+    <header className="bg-background/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Enhanced Logo */}
           <div 
-            className="flex items-center space-x-2 cursor-pointer"
+            className="cursor-pointer transition-transform duration-200 hover:scale-105"
             onClick={() => navigate('/')}
           >
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">
-              ScatterBrain
-            </h1>
+            <ScatterBrainLogo 
+              size="md" 
+              variant="horizontal" 
+              premium={organization?.subscription_tier === 'premium'}
+              animate={true}
+            />
           </div>
 
-          {/* Navigation */}
+          {/* Enhanced Navigation */}
           <nav className="flex items-center space-x-1">
             {navigationItems.map((item) => (
               <NavLink
@@ -72,10 +71,10 @@ const AppHeader = () => {
                 to={item.path}
                 end={item.exact}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  `px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      ? 'bg-gradient-to-r from-neural-purple to-neural-blue text-white shadow-neural'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:shadow-glow-sm'
                   }`
                 }
               >
