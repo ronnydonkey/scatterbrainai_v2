@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +8,7 @@ interface DeepDiveAnalysisProps {
   report: any;
 }
 
-export const DeepDiveAnalysis: React.FC<DeepDiveAnalysisProps> = ({ report }) => {
+export const DeepDiveAnalysis: React.FC<DeepDiveAnalysisProps> = memo(({ report }) => {
   return (
     <Card className="mb-8 bg-white/10 border-white/20 text-white">
       <CardHeader>
@@ -52,4 +52,6 @@ export const DeepDiveAnalysis: React.FC<DeepDiveAnalysisProps> = ({ report }) =>
       </CardContent>
     </Card>
   );
-};
+});
+
+DeepDiveAnalysis.displayName = 'DeepDiveAnalysis';

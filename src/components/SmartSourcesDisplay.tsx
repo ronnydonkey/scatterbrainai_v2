@@ -1,3 +1,5 @@
+
+import React, { memo, useCallback } from 'react';
 import { Search, ExternalLink } from 'lucide-react';
 
 interface SmartSources {
@@ -12,8 +14,8 @@ interface SmartSourcesDisplayProps {
   onSourceClick?: (source: string, sourceType: 'community' | 'website') => void;
 }
 
-export const SmartSourcesDisplay = ({ smartSources, onSourceClick }: SmartSourcesDisplayProps) => {
-  const handleSourceClick = (source: string, sourceType: 'community' | 'website') => {
+export const SmartSourcesDisplay = memo(({ smartSources, onSourceClick }: SmartSourcesDisplayProps) => {
+  const handleSourceClick = useCallback((source: string, sourceType: 'community' | 'website') => {
     // Track engagement if callback provided
     onSourceClick?.(source, sourceType);
     
@@ -38,7 +40,7 @@ export const SmartSourcesDisplay = ({ smartSources, onSourceClick }: SmartSource
     }
     
     window.open(url, '_blank');
-  };
+  }, [onSourceClick]);
 
   return (
     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 mb-6">
@@ -95,4 +97,6 @@ export const SmartSourcesDisplay = ({ smartSources, onSourceClick }: SmartSource
       </div>
     </div>
   );
-};
+});
+
+SmartSourcesDisplay.displayName = 'SmartSourcesDisplay';

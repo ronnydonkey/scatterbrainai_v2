@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,7 +8,7 @@ interface ResearchResourcesProps {
   report: any;
 }
 
-export const ResearchResources: React.FC<ResearchResourcesProps> = ({ report }) => {
+export const ResearchResources: React.FC<ResearchResourcesProps> = memo(({ report }) => {
   const isMobile = useIsMobile();
 
   return (
@@ -68,4 +68,6 @@ export const ResearchResources: React.FC<ResearchResourcesProps> = ({ report }) 
       </CardContent>
     </Card>
   );
-};
+});
+
+ResearchResources.displayName = 'ResearchResources';

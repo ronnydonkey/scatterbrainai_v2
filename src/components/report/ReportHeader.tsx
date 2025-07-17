@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ interface ReportHeaderProps {
   onDownload: () => void;
 }
 
-export const ReportHeader: React.FC<ReportHeaderProps> = ({
+export const ReportHeader: React.FC<ReportHeaderProps> = memo(({
   loading,
   report,
   baseInsight,
@@ -74,4 +73,6 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
       </div>
     </>
   );
-};
+});
+
+ReportHeader.displayName = 'ReportHeader';

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -7,7 +7,7 @@ interface ExecutiveSummaryProps {
   report: any;
 }
 
-export const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ report }) => {
+export const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = memo(({ report }) => {
   return (
     <Card className="mb-8 bg-white/10 border-white/20 text-white">
       <CardHeader>
@@ -26,4 +26,6 @@ export const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ report }) =>
       </CardContent>
     </Card>
   );
-};
+});
+
+ExecutiveSummary.displayName = 'ExecutiveSummary';

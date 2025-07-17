@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
 import { Smartphone, Copy, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,11 @@ interface ContentSuggestionsProps {
   report: any;
 }
 
-export const ContentSuggestions: React.FC<ContentSuggestionsProps> = ({ report }) => {
+export const ContentSuggestions: React.FC<ContentSuggestionsProps> = memo(({ report }) => {
   const isMobile = useIsMobile();
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
 
-  const copyToClipboard = async (text: string, key: string) => {
+  const copyToClipboard = useCallback(async (text: string, key: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedStates(prev => ({ ...prev, [key]: true }));
@@ -28,7 +28,11 @@ export const ContentSuggestions: React.FC<ContentSuggestionsProps> = ({ report }
       console.error('Failed to copy:', error);
       toast.error('Failed to copy to clipboard');
     }
-  };
+  }, []);
+
+  const socialPostEntries = useMemo(() => {
+    return Object.entries(report.contentSuggestions?.socialPosts || {});
+  }, [report.contentSuggestions?.socialPosts]);
 
   return (
     <Card className="mb-8 bg-white/10 border-white/20 text-white">
@@ -41,11 +45,11 @@ export const ContentSuggestions: React.FC<ContentSuggestionsProps> = ({ report }
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {report.contentSuggestions?.socialPosts && (
+          {socialPostEntries.length > 0 && (
             <div>
               <h4 className="font-semibold mb-3">Social Media Posts</h4>
               <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
-                {Object.entries(report.contentSuggestions.socialPosts).map(([platform, content]: [string, any]) => {
+                {socialPostEntries.map(([platform, content]: [string, any]) => {
                   const copyKey = `content-${platform}`;
                   return (
                     <div key={platform} className="p-4 bg-white/5 rounded-lg">
@@ -81,4 +85,6 @@ export const ContentSuggestions: React.FC<ContentSuggestionsProps> = ({ report }
       </CardContent>
     </Card>
   );
-};
+});
+
+ContentSuggestions.displayName = 'ContentSuggestions';

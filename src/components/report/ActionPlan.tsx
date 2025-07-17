@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { CheckSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,7 +8,7 @@ interface ActionPlanProps {
   report: any;
 }
 
-export const ActionPlan: React.FC<ActionPlanProps> = ({ report }) => {
+export const ActionPlan: React.FC<ActionPlanProps> = memo(({ report }) => {
   const isMobile = useIsMobile();
 
   return (
@@ -65,4 +65,6 @@ export const ActionPlan: React.FC<ActionPlanProps> = ({ report }) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+ActionPlan.displayName = 'ActionPlan';
