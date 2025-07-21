@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Brain, Sparkles, ChevronRight, Star, ArrowRight, 
   MessageSquare, Lightbulb, Users, TrendingUp, Lock,
-  CheckCircle, Zap, MousePointer
+  CheckCircle, Zap, MousePointer, PenTool
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -101,15 +101,13 @@ export default function ViralLanding() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Turn your scattered thoughts
-            <br />
-            into <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">clear insights</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-black mb-6 leading-tight drop-shadow-sm">
+            What's on your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">mind</span>?
           </h1>
 
           {/* Subheading */}
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-            Drop your messy ideas, voice notes, or random files. Watch them transform into organized summaries, action items, and shareable insights.
+          <p className="text-xl text-gray-800 mb-12 max-w-2xl mx-auto drop-shadow-sm">
+            Capture your thoughts and watch them transform into insights, content, and connections with the greatest minds in history.
           </p>
 
           {/* Demo Input */}
@@ -117,7 +115,7 @@ export default function ViralLanding() {
             <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
               <CardContent className="p-8">
                 <Textarea
-                  placeholder="Try it now — paste your scattered thoughts here..."
+                  placeholder="Share what you're thinking about..."
                   value={userThought}
                   onChange={(e) => setUserThought(e.target.value)}
                   className="min-h-[150px] text-lg border-gray-200 focus:border-purple-400"
@@ -149,6 +147,87 @@ export default function ViralLanding() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* 4-Step Process */}
+      <section className="relative z-10 container mx-auto px-6 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-6xl mx-auto"
+        >
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-black mb-2 drop-shadow-sm">Your Journey from Thought to Impact</h2>
+            <p className="text-lg text-gray-800 drop-shadow-sm">
+              Capture → Synthesize → Create → Share/Act
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: 'Capture',
+                description: 'Turn scattered thoughts into structured insights',
+                icon: Brain,
+                color: 'blue',
+                step: '1'
+              },
+              {
+                title: 'Synthesize', 
+                description: 'AI finds patterns and connections',
+                icon: Sparkles,
+                color: 'purple',
+                step: '2'
+              },
+              {
+                title: 'Create',
+                description: 'Transform insights into content that matters',
+                icon: PenTool,
+                color: 'green',
+                step: '3'
+              },
+              {
+                title: 'Share/Act',
+                description: 'Put your ideas to work',
+                icon: ArrowRight,
+                color: 'orange',
+                step: '4'
+              }
+            ].map((action, index) => {
+              const Icon = action.icon;
+              return (
+                <motion.div
+                  key={action.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Card className="shadow-lg border-0 bg-white/90 backdrop-blur cursor-pointer transition-all duration-200 hover:shadow-xl h-full">
+                    <CardContent className="p-6 text-center">
+                      <div className="relative">
+                        <div className={`w-12 h-12 mx-auto mb-4 rounded-xl bg-${action.color}-100 flex items-center justify-center`}>
+                          <Icon className={`h-6 w-6 text-${action.color}-600`} />
+                        </div>
+                        <Badge className="absolute -top-2 -right-8 w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs flex items-center justify-center">
+                          {action.step}
+                        </Badge>
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2 text-gray-900">{action.title}</h3>
+                      <p className="text-sm text-gray-600 mb-4">{action.description}</p>
+                      <div className="flex items-center justify-center text-sm text-purple-600 font-medium">
+                        Step {action.step}
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </section>
