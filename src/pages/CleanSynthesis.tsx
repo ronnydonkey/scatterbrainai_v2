@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useThoughtFlow } from '@/context/ThoughtFlowContext';
+import { synthesizeThought } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
 
 // Demo advisor insights and extrapolated thoughts
 const DEMO_ADVISOR_INSIGHTS = [
@@ -57,11 +59,45 @@ const DEMO_EXTRAPOLATED_THOUGHTS = [
 
 export default function CleanSynthesis() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { originalThought, selectedInsights, advisorQuestion, setSynthesizedThoughts } = useThoughtFlow();
   const [selectedThoughts, setSelectedThoughts] = useState<string[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showContentModal, setShowContentModal] = useState(false);
   const [selectedThoughtForContent, setSelectedThoughtForContent] = useState<any>(null);
+  const [synthesisData, setSynthesisData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSynthesis = async () => {
+      if (!originalThought) {
+        console.log('No original thought found, using demo data');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const result = await synthesizeThought(originalThought, {
+          userId: user?.id,
+          sessionId: `session_${Date.now()}`,
+          preferences: {}
+        });
+
+        setSynthesisData(result);
+        setSynthesizedThoughts([result]);
+      } catch (err: any) {
+        console.error('Synthesis failed:', err);
+        setError(err.message || 'Failed to generate synthesis');
+        toast.error('Failed to generate synthesis. Using demo data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSynthesis();
+  }, [originalThought, user?.id, setSynthesizedThoughts]);
 
   const toggleThoughtSelection = (thoughtId: string) => {
     setSelectedThoughts(prev => 
@@ -107,6 +143,59 @@ export default function CleanSynthesis() {
     }
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-6 py-12">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <div className="w-8 h-8 border-2 border-purple-600/30 border-t-purple-600 rounded-full animate-spin mx-auto" />
+            <p className="text-caption text-gray-600">Generating synthesis...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine which data to use
+  const insights = synthesisData?.insights || {};
+  const keyThemes = insights.keyThemes || [];
+  const actionItems = insights.actionItems || [];
+  const contentSuggestions = insights.contentSuggestions || {};
+  const extrapolatedThoughts = synthesisData ? [
+    {
+      id: synthesisData.id,
+      title: keyThemes[0]?.theme || 'Generated Insights',
+      content: keyThemes[0]?.evidence?.join(' ') || originalThought,
+      inspiringAdvisors: ['AI Analysis'],
+      category: keyThemes[0]?.theme || 'General',
+      impact: 'High'
+    },
+    ...keyThemes.slice(1).map((theme: any, index: number) => ({
+      id: `theme_${index + 1}`,
+      title: theme.theme,
+      content: theme.evidence?.join(' ') || theme.relatedConcepts?.join(' ') || 'Key insight discovered',
+      inspiringAdvisors: ['AI Analysis'],
+      category: theme.theme,
+      impact: theme.confidence > 0.8 ? 'High' : 'Medium'
+    }))
+  ] : DEMO_EXTRAPOLATED_THOUGHTS;
+
+  const advisorInsights = synthesisData ? [
+    {
+      advisor: { name: 'AI Synthesis', avatar: '🧠' },
+      insight: `Analyzed your thought: "${originalThought?.substring(0, 100)}..."`
+    },
+    {
+      advisor: { name: 'Content Optimizer', avatar: '✨' },
+      insight: contentSuggestions.twitter?.content?.substring(0, 100) + '...' || 'Generated content suggestions for multiple platforms'
+    },
+    {
+      advisor: { name: 'Action Planner', avatar: '🎯' },
+      insight: actionItems[0]?.task || 'Created actionable next steps based on your thinking'
+    }
+  ] : DEMO_ADVISOR_INSIGHTS;
+
   return (
     <div className="container mx-auto px-6 py-12">
       {/* Header */}
@@ -140,7 +229,7 @@ export default function CleanSynthesis() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {DEMO_ADVISOR_INSIGHTS.map((insight, index) => (
+              {advisorInsights.map((insight, index) => (
                 <div key={index} className="flex gap-3 p-3 rounded-lg bg-gray-50">
                   <Avatar className="h-8 w-8 border border-white shadow-sm">
                     <AvatarFallback className="text-sm bg-gradient-to-br from-gray-100 to-gray-200">
@@ -180,7 +269,7 @@ export default function CleanSynthesis() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {DEMO_EXTRAPOLATED_THOUGHTS.map((thought, index) => {
+          {extrapolatedThoughts.map((thought, index) => {
             const isSelected = selectedThoughts.includes(thought.id);
             
             return (

@@ -5,64 +5,95 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Brain, PenTool, Lightbulb, Crown, Mic, Upload, 
-  ArrowRight, Sparkles, MessageSquare, TrendingUp
+  ArrowRight, Sparkles, MessageSquare, TrendingUp, Target, Share2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useThoughtFlow } from '@/context/ThoughtFlowContext';
 import { NeuralAnimation } from '@/components/effects/NeuralAnimation';
+import { analyzeThought } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function CleanHomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { setOriginalThought } = useThoughtFlow();
   const [thought, setThought] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleQuickCapture = () => {
+  const handleQuickCapture = async () => {
     if (!thought.trim()) {
       toast.error('Please enter a thought first');
       return;
     }
     
-    // Store the thought in context
-    setOriginalThought(thought);
+    setIsAnalyzing(true);
     
-    // Process the thought
-    toast.success('Thought captured! Let\'s explore insights and get advisor perspectives.');
-    
-    // Navigate to insights gallery to start the flow
-    navigate('/gallery');
+    try {
+      // Analyze the thought with real API
+      const analysis = await analyzeThought(thought, { userId: user?.id });
+      
+      // Store the thought in context
+      setOriginalThought(thought);
+      
+      // Process the thought
+      toast.success('Thought captured! Let\'s explore insights and get advisor perspectives.');
+      
+      // Navigate to insights gallery to start the flow
+      navigate('/gallery');
+    } catch (error: any) {
+      console.error('Thought analysis failed:', error);
+      toast.error('Analysis failed, but we\'ll still explore your thought!');
+      
+      // Store the thought in context anyway
+      setOriginalThought(thought);
+      
+      // Navigate to insights gallery to start the flow
+      navigate('/gallery');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const quickActions = [
     {
-      title: 'Explore Insights',
-      description: 'Discover patterns and themes in your thoughts',
-      icon: Lightbulb,
-      color: 'green',
+      title: 'Capture',
+      description: 'Turn scattered thoughts into structured insights',
+      icon: Brain,
+      color: 'blue',
       action: () => navigate('/gallery'),
       primary: false,
       step: '1'
     },
     {
-      title: 'Consult Advisors',
-      description: 'Get perspectives from legendary minds',
-      icon: Crown,
+      title: 'Synthesize', 
+      description: 'AI finds patterns and connections',
+      icon: Sparkles,
       color: 'purple',
       action: () => navigate('/board'),
       primary: false,
       step: '2'
     },
     {
-      title: 'Generate Synthesis',
-      description: 'See refined thoughts from advisor insights',
-      icon: Sparkles,
-      color: 'blue',
+      title: 'Create',
+      description: 'Transform insights into content that matters',
+      icon: PenTool,
+      color: 'green',
+      action: () => navigate('/synthesis'),
+      primary: false,
+      step: '3'
+    },
+    {
+      title: 'Share/Act',
+      description: 'Put your ideas to work',
+      icon: Share2,
+      color: 'orange',
       action: () => navigate('/synthesis'),
       primary: true,
-      step: '3'
+      step: '4'
     }
   ];
 
@@ -154,11 +185,20 @@ export default function CleanHomePage() {
                     </span>
                     <Button
                       onClick={handleQuickCapture}
-                      disabled={!thought.trim()}
+                      disabled={!thought.trim() || isAnalyzing}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                     >
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Explore This Thought
+                      {isAnalyzing ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Explore This Thought
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -175,13 +215,13 @@ export default function CleanHomePage() {
           className="max-w-6xl mx-auto mb-16"
         >
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Follow Your Thinking Journey</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Journey from Thought to Impact</h2>
             <p className="text-lg text-gray-600">
-              Capture thoughts → Explore insights → Get advisor perspectives → Generate refined synthesis
+              Capture → Synthesize → Create → Share/Act
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
               return (
