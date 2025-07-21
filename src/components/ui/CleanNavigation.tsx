@@ -40,7 +40,7 @@ export const CleanNavigation = () => {
   ];
 
   return (
-    <nav className="relative z-10 border-b border-white/20 backdrop-blur-sm">
+    <nav className="relative z-10 bg-white/90 backdrop-blur border-b border-gray-200/50 shadow-sm">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
