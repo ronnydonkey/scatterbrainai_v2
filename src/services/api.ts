@@ -162,13 +162,15 @@ export const multiplyContent = async (
 // Analyze thought function  
 export const analyzeThought = async (
   input: string,
-  options: { userId?: string } = {}
+  options: { userId?: string; thoughtId?: string } = {}
 ): Promise<any> => {
+  // Generate thoughtId if not provided
+  const thoughtId = options.thoughtId || `thought_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
   const { data, error } = await supabase.functions.invoke('analyze-thought', {
     body: {
-      input,
-      userId: options.userId,
-      timestamp: new Date().toISOString()
+      thoughtId,
+      content: input
     }
   });
 
