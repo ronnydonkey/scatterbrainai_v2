@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThoughtFlowProvider } from "@/context/ThoughtFlowContext";
 import { CleanAppRouter } from "./components/CleanAppRouter";
 import { SecurityProvider } from "./components/SecurityProvider";
 import SharedInsight from "./pages/SharedInsight";
@@ -31,22 +32,24 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <SecurityProvider>
-        <TooltipProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-            <Routes>
-              <Route path="/auth/*" element={<Auth />} />
-              <Route path="/shared-insight/:insightId" element={<SharedInsight />} />
-              <Route path="/*" element={<CleanAppRouter />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            </BrowserRouter>
-          </div>
-        </TooltipProvider>
-      </SecurityProvider>
+      <ThoughtFlowProvider>
+        <SecurityProvider>
+          <TooltipProvider>
+            <div className="min-h-screen bg-gray-50">
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+              <Routes>
+                <Route path="/auth/*" element={<Auth />} />
+                <Route path="/shared-insight/:insightId" element={<SharedInsight />} />
+                <Route path="/*" element={<CleanAppRouter />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              </BrowserRouter>
+            </div>
+          </TooltipProvider>
+        </SecurityProvider>
+      </ThoughtFlowProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

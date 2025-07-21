@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { CleanLayout } from './layouts/CleanLayout';
-import { ThoughtFlowProvider } from '@/context/ThoughtFlowContext';
 import CleanHomePage from '@/pages/CleanHomePage';
 import CleanContentStudio from '@/pages/CleanContentStudio';
 import CleanInsightGallery from '@/pages/CleanInsightGallery';
@@ -73,11 +72,9 @@ export function CleanAppRouter() {
     };
     
     return (
-      <ThoughtFlowProvider>
-        <CleanLayout>
-          {getComponent()}
-        </CleanLayout>
-      </ThoughtFlowProvider>
+      <CleanLayout>
+        {getComponent()}
+      </CleanLayout>
     );
   }
 

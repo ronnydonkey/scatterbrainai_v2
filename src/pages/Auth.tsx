@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useThoughtFlow } from '@/context/ThoughtFlowContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +20,13 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
+  const { setOriginalThought } = useThoughtFlow();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the thought from location state if it exists
+  const locationState = location.state as { demoThought?: string } | null;
+  const demoThought = locationState?.demoThought;
 
   // Redirect if already authenticated
   if (user) {
@@ -39,6 +46,10 @@ const Auth = () => {
       console.log('Sign in result:', { error });
       
       if (!error) {
+        // Store the demo thought in context if it exists
+        if (demoThought) {
+          setOriginalThought(demoThought);
+        }
         navigate('/');
       }
     } catch (err) {
@@ -58,6 +69,11 @@ const Auth = () => {
       const { error } = await signUp(email, password, firstName, displayName);
       
       if (!error) {
+        // Store the demo thought in context if it exists
+        if (demoThought) {
+          setOriginalThought(demoThought);
+        }
+        
         toast({
           title: "Account Created",
           description: "Please check your email to verify your account.",
