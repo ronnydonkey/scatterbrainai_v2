@@ -12,6 +12,7 @@ import {
   Check,
   ArrowRight
 } from 'lucide-react';
+import { NeuralAnimation } from './effects/NeuralAnimation';
 
 interface ContentGenerationAnimationProps {
   isVisible: boolean;
@@ -149,103 +150,29 @@ export const ContentGenerationAnimation: React.FC<ContentGenerationAnimationProp
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+      className="fixed inset-0 z-50 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center"
     >
-      {/* Background Neural Network Animation - matching the style */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Neural pathways background */}
-        <svg className="absolute inset-0 w-full h-full opacity-20">
-          <defs>
-            <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.8)" />
-              <stop offset="50%" stopColor="rgba(139, 92, 246, 0.4)" />
-              <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" />
-            </radialGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge> 
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          {/* Network connections */}
-          {[...Array(15)].map((_, i) => (
-            <motion.line
-              key={i}
-              x1={Math.random() * 100 + '%'}
-              y1={Math.random() * 100 + '%'}
-              x2={Math.random() * 100 + '%'}
-              y2={Math.random() * 100 + '%'}
-              stroke="rgba(139, 92, 246, 0.3)"
-              strokeWidth="1"
-              filter="url(#glow)"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: [0, 0.7, 0] }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: "easeInOut"
-              }}
-            />
-          ))}
-          {/* Neural nodes */}
-          {[...Array(20)].map((_, i) => (
-            <motion.circle
-              key={i}
-              cx={Math.random() * 100 + '%'}
-              cy={Math.random() * 100 + '%'}
-              r="2"
-              fill="url(#nodeGlow)"
-              initial={{ scale: 0 }}
-              animate={{ scale: [0, 1.5, 1, 1.5, 0] }}
-              transition={{
-                duration: 4 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-                ease: "easeInOut"
-              }}
-            />
-          ))}
-        </svg>
-        
-        {/* Floating particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-blue-400 rounded-full"
-            style={{
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              boxShadow: '0 0 6px rgba(59, 130, 246, 0.8)'
-            }}
-            animate={{
-              x: [0, Math.random() * 200 - 100, 0],
-              y: [0, Math.random() * 200 - 100, 0],
-              opacity: [0, 1, 0.5, 1, 0]
-            }}
-            transition={{
-              duration: 6 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
+      <NeuralAnimation />
 
-      <div className="relative max-w-4xl mx-auto px-6 text-center">
-        {/* Main Title */}
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        {/* Scatterbrain Logo */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent mb-4">
-            Neural Content Generation
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <Brain className="h-7 w-7 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900">Scatterbrain</span>
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Neural Content <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Generation</span>
           </h1>
-          <p className="text-xl text-gray-300">
+          <p className="text-xl text-gray-600">
             Transforming your insights into a complete content ecosystem
           </p>
         </motion.div>
@@ -268,9 +195,9 @@ export const ContentGenerationAnimation: React.FC<ContentGenerationAnimationProp
           animate={{ opacity: 1 }}
           className="mt-12"
         >
-          <div className="w-full bg-gray-700/50 rounded-full h-2 mb-4">
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
             <motion.div
-              className="bg-gradient-to-r from-primary to-accent h-2 rounded-full"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full"
               initial={{ width: '0%' }}
               animate={{ 
                 width: `${((currentStageIndex + 1) / stages.length) * 100}%` 
@@ -278,7 +205,7 @@ export const ContentGenerationAnimation: React.FC<ContentGenerationAnimationProp
               transition={{ duration: 0.5 }}
             />
           </div>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-600">
             Stage {currentStageIndex + 1} of {stages.length}
           </p>
         </motion.div>
@@ -304,22 +231,22 @@ const StageCard: React.FC<StageCardProps> = ({ stage, isActive, isComplete }) =>
         x: 0,
         scale: isActive ? 1.02 : 1
       }}
-      className={`relative bg-white/10 backdrop-blur-xl rounded-2xl p-6 border transition-all duration-500 ${
+      className={`relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 border-0 shadow-xl transition-all duration-500 ${
         isActive 
-          ? 'border-primary/50 shadow-lg shadow-primary/20' 
+          ? 'shadow-2xl ring-2 ring-purple-200' 
           : isComplete
-          ? 'border-green-500/50 shadow-lg shadow-green-500/20'
-          : 'border-white/20'
+          ? 'shadow-2xl ring-2 ring-green-200'
+          : 'shadow-lg'
       }`}
     >
       <div className="flex items-start gap-6">
         {/* Status Icon */}
         <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
           isComplete 
-            ? 'bg-green-500/20 text-green-400' 
+            ? 'bg-green-100 text-green-600' 
             : isActive 
-            ? 'bg-primary/20 text-primary' 
-            : 'bg-gray-500/20 text-gray-400'
+            ? 'bg-gradient-to-br from-purple-100 to-pink-100 text-purple-600' 
+            : 'bg-gray-100 text-gray-500'
         }`}>
           {isComplete ? (
             <Check className="w-6 h-6" />
@@ -330,10 +257,10 @@ const StageCard: React.FC<StageCardProps> = ({ stage, isActive, isComplete }) =>
 
         {/* Content */}
         <div className="flex-1 text-left">
-          <h3 className="text-xl font-semibold text-white mb-2">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
             {stage.title}
           </h3>
-          <p className="text-gray-300 mb-4">
+          <p className="text-gray-600 mb-4">
             {stage.description}
           </p>
 
@@ -344,7 +271,7 @@ const StageCard: React.FC<StageCardProps> = ({ stage, isActive, isComplete }) =>
               animate={{ opacity: 1, height: 'auto' }}
               className="space-y-2"
             >
-              <p className="text-sm font-medium text-gray-400 mb-3">
+              <p className="text-sm font-medium text-gray-600 mb-3">
                 Processing sources:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -354,9 +281,9 @@ const StageCard: React.FC<StageCardProps> = ({ stage, isActive, isComplete }) =>
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.2 }}
-                    className="flex items-center gap-2 text-sm text-gray-300 bg-white/5 rounded-lg px-3 py-2"
+                    className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2"
                   >
-                    <ArrowRight className="w-3 h-3 text-primary" />
+                    <ArrowRight className="w-3 h-3 text-purple-600" />
                     {source}
                   </motion.div>
                 ))}
@@ -366,7 +293,7 @@ const StageCard: React.FC<StageCardProps> = ({ stage, isActive, isComplete }) =>
 
           {/* Completed sources summary */}
           {stage.sources && isComplete && (
-            <div className="text-sm text-green-400">
+            <div className="text-sm text-green-600">
               ✓ Processed {stage.sources.length} sources
             </div>
           )}
@@ -376,7 +303,7 @@ const StageCard: React.FC<StageCardProps> = ({ stage, isActive, isComplete }) =>
       {/* Active stage pulse effect */}
       {isActive && (
         <motion.div
-          className="absolute inset-0 rounded-2xl border-2 border-primary/30"
+          className="absolute inset-0 rounded-2xl border-2 border-purple-300/50"
           animate={{
             opacity: [0.5, 1, 0.5],
           }}

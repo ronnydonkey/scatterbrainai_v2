@@ -4,23 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { AppRouter } from "./components/AppRouter";
+import { CleanAppRouter } from "./components/CleanAppRouter";
 import { SecurityProvider } from "./components/SecurityProvider";
-import AuthenticatedLayout from "./components/AuthenticatedLayout";
-import ThoughtsPage from "./pages/ThoughtsPage";
-import TrendingPage from "./pages/TrendingPage";
-import GeneratorPage from "./pages/GeneratorPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import SettingsPage from "./pages/SettingsPage";
-import SimplifiedFlow from "./pages/SimplifiedFlow";
-import InsightGallery from "./pages/InsightGallery";
-import DetailedReport from "./pages/DetailedReport";
 import SharedInsight from "./pages/SharedInsight";
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import Billing from "./pages/Billing";
 import NotFound from "./pages/NotFound";
-import { NeuralBackground } from "@/components/ui/neural-background";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,29 +33,18 @@ const App = () => (
     <AuthProvider>
       <SecurityProvider>
         <TooltipProvider>
-          <NeuralBackground variant="subtle" className="min-h-screen">
+          <div className="min-h-screen bg-gray-50">
             <Toaster />
             <Sonner />
             <BrowserRouter>
             <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/landing" element={<AppRouter />} />
+              <Route path="/auth/*" element={<Auth />} />
               <Route path="/shared-insight/:insightId" element={<SharedInsight />} />
-              <Route path="/" element={<AppRouter />} />
-              <Route path="/thoughts" element={<AppRouter />} />
-              <Route path="/gallery" element={<AppRouter />} />
-              <Route path="/capture" element={<AppRouter />} />
-              <Route path="/report/:insightId" element={<AppRouter />} />
-              <Route path="/profile" element={<AppRouter />} />
-              <Route path="/billing" element={<AppRouter />} />
-              <Route path="/trending" element={<AppRouter />} />
-              <Route path="/generator" element={<AppRouter />} />
-              <Route path="/analytics" element={<AppRouter />} />
-              <Route path="/settings" element={<AppRouter />} />
+              <Route path="/*" element={<CleanAppRouter />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </BrowserRouter>
-          </NeuralBackground>
+          </div>
         </TooltipProvider>
       </SecurityProvider>
     </AuthProvider>

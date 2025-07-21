@@ -13,6 +13,9 @@ import InsightGallery from '@/pages/InsightGallery';
 import DetailedReport from '@/pages/DetailedReport';
 import Profile from '@/pages/Profile';
 import Billing from '@/pages/Billing';
+import AdvisoryBoard from '@/pages/AdvisoryBoard';
+import CognitiveWorkspace from '@/pages/CognitiveWorkspace';
+import ContentStudio from '@/pages/ContentStudio';
 
 export function AppRouter() {
   const { user, loading } = useAuth();
@@ -75,9 +78,12 @@ export function AppRouter() {
         case '/generator': return <GeneratorPage />;
         case '/analytics': return <AnalyticsPage />;
         case '/settings': return <SettingsPage />;
+        case '/board': return <AdvisoryBoard />;
+        case '/workspace': return <CognitiveWorkspace />;
+        case '/content': return <ContentStudio />;
         default:
           if (path.startsWith('/report/')) return <DetailedReport />;
-          return <SimplifiedFlow />; // Default home
+          return <CognitiveWorkspace />; // Default home - new cognitive workspace
       }
     };
     

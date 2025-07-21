@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { NeuralAnimation } from '@/components/effects/NeuralAnimation';
 import { toast } from 'sonner';
 
@@ -46,19 +45,12 @@ const testimonials: Testimonial[] = [
   }
 ];
 
-export default function Landing() {
+export default function ViralLanding() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [userThought, setUserThought] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [demoUsed, setDemoUsed] = useState(false);
-
-  // Redirect authenticated users to main app
-  if (user && !showResults) {
-    navigate('/');
-    return null;
-  }
 
   const handleTryDemo = async () => {
     if (!userThought.trim()) {
@@ -78,7 +70,7 @@ export default function Landing() {
 
   const handleGetStarted = () => {
     // Navigate to auth with demo state
-    navigate('/auth', { 
+    navigate('/auth/signin', { 
       state: { 
         from: '/landing',
         demoThought: userThought,
@@ -91,25 +83,6 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
       <NeuralAnimation />
       
-      {/* Header */}
-      <header className="relative z-10 border-b border-white/20 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-              <Brain className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">Scatterbrain</span>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/auth')}
-            className="border-gray-300 hover:border-purple-400 bg-white/90 backdrop-blur text-gray-700"
-          >
-            Sign In
-          </Button>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="relative z-10 container mx-auto px-6 pt-20 pb-16">
         <motion.div
@@ -117,6 +90,16 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto text-center"
         >
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <Brain className="h-7 w-7 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900">Scatterbrain</span>
+            </div>
+          </div>
+
           {/* Headline */}
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
             Turn your scattered thoughts
@@ -137,7 +120,7 @@ export default function Landing() {
                   placeholder="Try it now — paste your scattered thoughts here..."
                   value={userThought}
                   onChange={(e) => setUserThought(e.target.value)}
-                  className="min-h-[150px] text-lg border-gray-200 focus:border-purple-400 text-gray-900"
+                  className="min-h-[150px] text-lg border-gray-200 focus:border-purple-400"
                   disabled={isProcessing}
                 />
                 
@@ -360,13 +343,6 @@ export default function Landing() {
           </div>
         </section>
       )}
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-gray-200 bg-white/50 backdrop-blur py-8">
-        <div className="container mx-auto px-6 text-center text-gray-600">
-          <p>&copy; 2024 Scatterbrain. A method for your madness.</p>
-        </div>
-      </footer>
     </div>
   );
 }
