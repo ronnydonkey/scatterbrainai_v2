@@ -568,5 +568,3 @@ export default function CleanSynthesis() {
     </div>
   );
 }
-
-export default CleanSynthesis;
